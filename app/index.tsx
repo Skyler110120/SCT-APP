@@ -14,6 +14,9 @@ export default function Index() {
       <Link href="/screens/Login" asChild>
         <Button title="Go to Login" />
       </Link>
+      <Link href="/screens/Register" asChild>
+        <Button title="Go to Register" />
+      </Link>
     </View>
   );
 }

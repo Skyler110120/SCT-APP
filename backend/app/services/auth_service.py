@@ -1,0 +1,46 @@
+from datetime import timedelta
+from sqlalchemy.orm import Session
+from app.models.user import User
+from app.utils.password import verify_password
+from app.utils.tokens import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+
+def authenticate_user(
+        db: Session, 
+        email: str, password: str
+    ):
+    """
+    Verify the user's credentials
+
+    Args:
+        db: Database session
+        email: User's email
+        password: User's password
+    Returns:
+        The user object if authentication is successful, None otherwise
+    """
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(password, user.hashed_password):
+        return None
+    
+    return user
+
+def create_user_token(user: User):
+    """
+    Create access token for the user
+    Args: 
+        user: User object
+    Returns:
+        JWT access token
+    """
+
+    token_data = {
+        "sub": str(user.id),
+        "role": user.role
+    }
+
+    access_token = create_access_token(
+        data=token_data,
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return access_token
