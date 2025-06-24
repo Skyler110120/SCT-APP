@@ -19,6 +19,33 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   scheduleContainer: {
     flex: 1,
-    backgroundColor: themes.vegasGold
+    borderTopLeftRadius: 100,
+    borderTopRightRadius: 100,
+    marginTop: 70,
+    paddingRight: 16,
+    paddingLeft: 16,
+    backgroundColor: themes.vegasGold,
   },
+  scheduleText: {
+    fontSize: 48,
+    fontFamily: "Chakra-Italic",
+    marginBottom: 16,
+    textAlign: 'center',
+    color: themes.white,
+  },
+  sessionCard: {
+    flexDirection: "row",
+    borderRadius: 15,
+    padding: 16,  
+    marginBottom: 12,
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: themes.black,
+  },
+  sessionText: {
+    fontSize: 28,
+    fontFamily: "Chakra-Regular",
+    textAlign: "center",
+    color: themes.white
+  }
 });

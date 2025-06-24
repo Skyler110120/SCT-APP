@@ -19,25 +19,25 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       name: "Home",
       icon: Images.navIcons.home.homeIcon,
       activeIcon: Images.navIcons.home.homeIconActive,
-      route: "/screens/Home" as AppRouterType,
+      route: "/screens/app/Home" as AppRouterType,
     },
     {
       name: "Calendar",
       icon: Images.navIcons.calendar.calendarIcon,
       activeIcon: Images.navIcons.calendar.calendarIconActive,
-      route: "/screens/Calendar" as AppRouterType,
+      route: "/screens/app/Calendar" as AppRouterType,
     },
     {
       name: "Students",
       icon: Images.navIcons.students.studentsIcon,
       activeIcon: Images.navIcons.students.studentsIconActive,
-      route: "/screens/Students" as AppRouterType,
+      route: "/screens/app/Students" as AppRouterType,
     },
     {
       name: "Profile",
       icon: Images.navIcons.profile.profileIcon,
       activeIcon: Images.navIcons.profile.profileIconActive,
-      route: "/screens/Profile" as AppRouterType,
+      route: "/screens/app/Profile" as AppRouterType,
     },
   ];
 

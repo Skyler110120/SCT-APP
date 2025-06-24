@@ -15,6 +15,13 @@ import { themes } from "@/src/context/themes";
 import Images from "@/src/assets/images";
 import BottomNavBar from "@/src/components/NavBar";
 
+interface Session {
+  id: number;
+  time: string;
+  student: string;
+  date: string;
+}
+
 export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -26,6 +33,37 @@ export default function CalendarScreen() {
       selectedColor: themes.vegasGold,
     },
   };
+
+  const sessions: Session[] = [
+    {
+      id: 1,
+      time: "12:00 - 1:00 PM",
+      student: "Alan Honor",
+      date: "2025-06-24",
+    },
+    {
+      id: 2,
+      time: "3:00 - 4:00 PM",
+      student: "Jeff Watts",
+      date: "2025-06-24",
+    },
+    {
+      id: 3,
+      time: "4:00 - 5:00 PM",
+      student: "Tim Hardy",
+      date: "2025-06-24",
+    },
+    {
+      id: 4,
+      time: "5:00 - 6:00 PM",
+      student: "Jim Hardy",
+      date: "2025-06-24",
+    },
+  ];
+
+  const sessionsForSelectedDate = sessions.filter(
+    (sessions) => sessions.date === selectedDate
+  );
   return (
     <View style={calendarScreenStyles.container}>
       <BackgroundGradient>
@@ -50,8 +88,8 @@ export default function CalendarScreen() {
                 monthTextColor: themes.vegasGold,
                 arrowColor: themes.vegasGold,
                 textMonthFontSize: 48,
-                textDayFontSize: 14,
-                textDayHeaderFontSize: 14,
+                textDayFontSize: 12,
+                textDayHeaderFontSize: 16,
                 ...({
                   "stylesheet.day.basic": {
                     base: {
@@ -59,6 +97,20 @@ export default function CalendarScreen() {
                       height: 70,
                       alignItems: "center",
                       justifyContent: "center",
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: themes.white,
+                    },
+                  },
+                } as any),
+                ...({
+                  "stylesheet.day.header": {
+                    base: {
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      paddingHorizontal: 20,
+                      color: themes.white,
                     },
                   },
                 } as any),
@@ -67,12 +119,31 @@ export default function CalendarScreen() {
                 setSelectedDate(day.dateString);
               }}
             />
-            <View>
-              
-            </View>
+          </View>
+          <View style={calendarScreenStyles.scheduleContainer}>
+            <Text style={calendarScreenStyles.scheduleText}>Schedule</Text>
+            {sessionsForSelectedDate.length > 0 ? (
+              <ScrollView>
+                {sessionsForSelectedDate.map((session) => (
+                  <View
+                    key={session.id}
+                    style={calendarScreenStyles.sessionCard}
+                  >
+                    <Text style={calendarScreenStyles.sessionText}>
+                      {session.time} {session.student}
+                    </Text>
+                    <TouchableOpacity>
+                      <Text>VIEW</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <Text>No sessions scheduled for this date</Text>
+            )}
           </View>
         </SafeAreaView>
-        <BottomNavBar/>
+        <BottomNavBar />
       </BackgroundGradient>
     </View>
   );

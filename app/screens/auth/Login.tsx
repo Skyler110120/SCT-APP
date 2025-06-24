@@ -47,9 +47,7 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       const success = await login(credentials);
-      if (success) {
-        router.replace("/screens/Home");
-      } else {
+      if (!success) {
         Alert.alert("Login Failed", state.error || "Invalid credentials");
       }
     } catch (error) {
@@ -101,7 +99,7 @@ export default function LoginScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="fff" />
+                <ActivityIndicator color={themes.white} />
               ) : (
                 <Text style={loginScreenStyles.logInButtonText}>LOG IN</Text>
               )}

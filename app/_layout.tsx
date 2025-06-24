@@ -1,8 +1,9 @@
-// app/_layout.tsx
+import React from 'react';
 import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
+import { RouteGuard } from '@/src/components/RouteGuard';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -23,7 +24,9 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Slot />
+      <RouteGuard>
+        <Slot />
+      </RouteGuard>
     </AuthProvider>
-  ) // renders your actual pages (login, dashboard, etc.)
+  );
 }
