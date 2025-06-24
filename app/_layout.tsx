@@ -2,14 +2,15 @@
 import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
+import { AuthProvider } from '@/src/context/AuthContext';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'Chakra-Regular': require('../src/assets/fonts/ChakraPetch-Regular.ttf'),
-    'Chakra-Italic': require('../src/assets/fonts/ChakraPetch-Italic.ttf'),
-    'Chakra-Bold': require('../src/assets/fonts/ChakraPetch-Bold.ttf'),
-    'Chakra-BoldItalic': require('../src/assets/fonts/ChakraPetch-BoldItalic.ttf'),
-    'Chakra-semiBoldItalic': require('../src/assets/fonts/ChakraPetch-SemiBoldItalic.ttf'),
+    'Chakra-Regular': require('../src/assets/fonts/chakra-petch-regular.ttf'),
+    'Chakra-Italic': require('../src/assets/fonts/chakra-petch-italic.ttf'),
+    'Chakra-Bold': require('../src/assets/fonts/chakra-petch-bold.ttf'),
+    'Chakra-BoldItalic': require('../src/assets/fonts/chakra-petch-bold-italic.ttf'),
+    'Chakra-semiBoldItalic': require('../src/assets/fonts/chakra-petch-semi-bold-italic.ttf'),
   });
 
   if (!fontsLoaded) {
@@ -20,5 +21,9 @@ export default function RootLayout() {
     );
   }
 
-  return <Slot />; // renders your actual pages (login, dashboard, etc.)
+  return (
+    <AuthProvider>
+      <Slot />
+    </AuthProvider>
+  ) // renders your actual pages (login, dashboard, etc.)
 }

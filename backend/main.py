@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import auth
+from app.routers import auth, profile, session
 
 
 # Run the environment using source venv/bin/activate
@@ -12,6 +12,8 @@ app = FastAPI(
 )
 
 app.include_router(auth.router)
+app.include_router(profile.router)
+app.include_router(session.router)
 
 @app.get("/")
 def read_root():

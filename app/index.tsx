@@ -1,6 +1,5 @@
 import { Text, View, Button } from "react-native";
 import { Link } from "expo-router";
-
 export default function Index() {
   return (
     <View
@@ -16,6 +15,12 @@ export default function Index() {
       </Link>
       <Link href="/screens/Register" asChild>
         <Button title="Go to Register" />
+      </Link>
+      <Link href="/screens/Calendar" asChild>
+        <Button title="Go to Calendar" />
+      </Link>
+      <Link href="/screens/Calendar2" asChild>
+        <Button title="Go to Calendar2" />
       </Link>
     </View>
   );

@@ -4,11 +4,11 @@ import { StyleSheet } from "react-native";
 export const registerScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-
-  gradient: {
-    flex: 1,
     flexDirection: "column",
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent'
   },
   backButtonContainer: {
     flexDirection: "row",
@@ -38,6 +38,7 @@ export const registerScreenStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: themes.vegasGold,
     backgroundColor: themes.black,
+    color: themes.vegasGold,
     fontSize: 36,
     fontFamily: "Chakra-Italic",
   },
@@ -49,6 +50,7 @@ export const registerScreenStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: themes.vegasGold,
     backgroundColor: themes.black,
+    color: themes.vegasGold,
     fontSize: 36,
     fontFamily: "Chakra-Italic",
   },

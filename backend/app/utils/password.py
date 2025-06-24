@@ -1,11 +1,13 @@
 from passlib.context import CryptContext
 
 # Ceate password context with bcrypt hashing algorithm
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_context = CryptContext(
+    schemes=["argon2", "bcrypt"], 
+    deprecated=["bcrypt"])
 
 def hash_password(password: str) -> str:
     """
-    Hash a password using bcrypt
+    Hash a password using argon2
     Args:
         password: plain text password to hash
     Returns:

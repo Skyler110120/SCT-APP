@@ -14,7 +14,7 @@ def get_current_user(
         db: Session = Depends(get_db)
 ):
     """
-    Get the current user form the JWT token
+    Get the current user from the JWT token
     Args: 
         token: JWT token 
         db: Database session

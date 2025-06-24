@@ -1,5 +1,4 @@
 import { LinearGradient } from "expo-linear-gradient";
-import {loginScreenStyles} from "@/src/styles/loginScreen";
 
 export default function BackgroundGradient({
   children,
@@ -12,7 +11,7 @@ export default function BackgroundGradient({
       locations={[0, 0.3, 1]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={loginScreenStyles.gradient}
+      style={{ flex: 1}}
     >
       {children}
     </LinearGradient>
