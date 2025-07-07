@@ -8,9 +8,9 @@ class Profile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True,nullable=False)
-    bio = Column(Text, nullable=True)
-    profile_picture = Column(String, nullable=True)
-    phone_number = Column(String, nullable=True)
+    bio = Column(Text(500), nullable=True)
+    profile_picture = Column(String(255), nullable=True)
+    phone_number = Column(String(20), nullable=True)
     courses = Column(Text, nullable=True)  
     date_of_birth = Column(String, nullable=True)
 

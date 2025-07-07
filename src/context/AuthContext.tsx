@@ -1,29 +1,33 @@
 import React, {
   createContext,
-  useContext,
-  useReducer,
-  useEffect,
   ReactNode,
+  useContext,
+  useEffect,
+  useReducer,
 } from "react";
-
+import { authService } from "../services/authService";
 import {
-  User,
+  AuthResponse,
   AuthState,
   LoginCredentials,
   RegisterData,
-  AuthResponse,
+  User,
+  UserRole,
 } from "../types/auth.types";
+import { navigateByRole } from "../utils/navigationUtil";
 
-import { authService } from "../services/authService";
 interface AuthContextType {
   state: AuthState;
   login: (crdentials: LoginCredentials) => Promise<boolean>;
   register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
+  hasRole: (role: UserRole | UserRole[]) => boolean;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 type AuthAction =
   | { type: "AUTH_LOADING" }
   | { type: "AUTH_SUCCESS"; payload: { user: User; token: string } }
@@ -82,6 +86,15 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
+    if (!state.user || !state.user.role) return false;
+
+    if (Array.isArray(requiredRole)) {
+      return requiredRole.includes(state.user.role);
+    }
+    return state.user.role === requiredRole;
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -116,6 +129,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           type: "AUTH_SUCCESS",
           payload: { user: result.user, token: result.token },
         });
+        navigateByRole(
+          result.user.role,
+          result.user.hasCompletedOnboarding ?? false
+        );
         return true;
       } else {
         dispatch({
@@ -136,22 +153,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (userData: RegisterData): Promise<AuthResponse> => {
     try {
-        return await authService.register(userData);
+      return await authService.register(userData);
     } catch (error) {
-        console.error("Registration error:", error);
-        return {
-            success: false,
-            error: 'An error occurred during registration'
-        }
+      console.error("Registration error:", error);
+      return {
+        success: false,
+        error: "An error occurred during registration",
+      };
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
-        await authService.logout();
-        dispatch({ type: "AUTH_LOGOUT"});
+      await authService.logout();
+      dispatch({ type: "AUTH_LOGOUT" });
     } catch (error) {
-        console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -160,19 +177,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    hasRole,
+    isLoading: state.isLoading,
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-        {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-}
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

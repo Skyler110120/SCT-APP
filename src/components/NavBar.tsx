@@ -1,6 +1,8 @@
-import React from "react";
+import React, { act } from "react";
 import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { usePathname, useRouter, Link } from "expo-router";
+import { useAuth } from "@/src/context/AuthContext";
+import { UserRole } from "@/src/types/auth.types";
 import Images from "@/src/assets/images";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { themes } from "@/src/context/themes";
@@ -13,34 +15,108 @@ export default function BottomNavBar({}: BottomNavBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
-  const navItems = [
-    {
-      name: "Home",
-      icon: Images.navIcons.home.homeIcon,
-      activeIcon: Images.navIcons.home.homeIconActive,
-      route: "/screens/app/Home" as AppRouterType,
-    },
-    {
-      name: "Calendar",
-      icon: Images.navIcons.calendar.calendarIcon,
-      activeIcon: Images.navIcons.calendar.calendarIconActive,
-      route: "/screens/app/Calendar" as AppRouterType,
-    },
-    {
-      name: "Students",
-      icon: Images.navIcons.students.studentsIcon,
-      activeIcon: Images.navIcons.students.studentsIconActive,
-      route: "/screens/app/Students" as AppRouterType,
-    },
-    {
-      name: "Profile",
-      icon: Images.navIcons.profile.profileIcon,
-      activeIcon: Images.navIcons.profile.profileIconActive,
-      route: "/screens/app/Profile" as AppRouterType,
-    },
-  ];
+  const getNavItemsForRole = () => {
+    if (user?.role === UserRole.MASTER_ADMIN) {
+      return [
+        {
+          name: "Home",
+          route: "/screens/app/MasterAdminDashboard",
+          icon: Images.navIcons.home.homeIcon,
+          activeIcon: Images.navIcons.home.homeIconActive,
+        },
+        {
+          name: "Profile",
+          route: "/screens/app/InstructorProfile",
+          icon: Images.navIcons.profile.profileIcon,
+          activeIcon: Images.navIcons.profile.profileIconActive,
+        },
+      ];
+    } else if (user?.role === UserRole.ADMIN) {
+      return [
+        {
+          name: "Home",
+          route: "/screens/app/InstructorDashboard",
+          icon: Images.navIcons.home.homeIcon,
+          activeIcon: Images.navIcons.home.homeIconActive,
+        },
+        {
+          name: "Calendar",
+          route: "/screens/app/InstructorCalendar",
+          icon: Images.navIcons.calendar.calendarIcon,
+          activeIcon: Images.navIcons.calendar.calendarIconActive,
+        },
+        {
+          name: "Students",
+          route: "/screens/app/InstructorStudents",
+          icon: Images.navIcons.students.studentsIcon,
+          activeIcon: Images.navIcons.students.studentsIconActive,
+        },
+        {
+          name: "Profile",
+          route: "/screens/app/InstructorProfile",
+          icon: Images.navIcons.profile.profileIcon,
+          activeIcon: Images.navIcons.profile.profileIconActive,
+        },
+      ];
+    } else if (user?.role === UserRole.INSTRUCTOR) {
+      return [
+        {
+          name: "Home",
+          route: "/screens/app/InstructorDashboard",
+          icon: Images.navIcons.home.homeIcon,
+          activeIcon: Images.navIcons.home.homeIconActive,
+        },
+        {
+          name: "Calendar",
+          route: "/screens/app/InstructorCalendar",
+          icon: Images.navIcons.calendar.calendarIcon,
+          activeIcon: Images.navIcons.calendar.calendarIconActive,
+        },
+        {
+          name: "Students",
+          route: "/screens/app/InstructorStudents",
+          icon: Images.navIcons.students.studentsIcon,
+          activeIcon: Images.navIcons.students.studentsIconActive,
+        },
+        {
+          name: "Profile",
+          route: "/screens/app/InstructorProfile",
+          icon: Images.navIcons.profile.profileIcon,
+          activeIcon: Images.navIcons.profile.profileIconActive,
+        },
+      ];
+    }
+    return [
+      {
+          name: "Home",
+          route: "/screens/app/InstructorDashboard",
+          icon: Images.navIcons.home.homeIcon,
+          activeIcon: Images.navIcons.home.homeIconActive,
+        },
+        {
+          name: "Calendar",
+          route: "/screens/app/InstructorCalendar",
+          icon: Images.navIcons.calendar.calendarIcon,
+          activeIcon: Images.navIcons.calendar.calendarIconActive,
+        },
+        {
+          name: "Students",
+          route: "/screens/app/InstructorStudents",
+          icon: Images.navIcons.students.studentsIcon,
+          activeIcon: Images.navIcons.students.studentsIconActive,
+        },
+        {
+          name: "Profile",
+          route: "/screens/app/InstructorProfile",
+          icon: Images.navIcons.profile.profileIcon,
+          activeIcon: Images.navIcons.profile.profileIconActive,
+        },
+    ]; // Default return for other roles
+  };
 
+  const navItems = getNavItemsForRole();
   return (
     <View
       style={[
@@ -53,11 +129,13 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       {navItems.map((item) => {
         const isActive = pathname === item.route;
         return (
-          <View style={isActive ? styles.selectedIconBackground : undefined}>
+          <View
+            key={item.name}
+            style={isActive ? styles.selectedIconBackground : undefined}
+          >
             <TouchableOpacity
-              key={item.name}
               style={styles.navItem}
-              onPress={() => router.push(item.route)}
+              onPress={() => router.push(item.route as AppRouterType)}
             >
               <Image
                 source={isActive ? item.activeIcon : item.icon}
@@ -77,11 +155,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     backgroundColor: themes.vegasGold,
-    padding: 10
+    padding: 10,
   },
-  navItem: {
-    
-  },
+  navItem: {},
   navIcon: {
     width: 64,
     height: 50,

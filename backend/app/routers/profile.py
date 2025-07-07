@@ -4,7 +4,7 @@ from typing import List
 
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
 from app.services.profile_service import get_profile, create_profile, update_profile, get_all_instructors
 
@@ -23,12 +23,16 @@ def get_my_profile(
     
     if no profile exists, one will be created
     """
-    
-    profile = get_profile(db, current_user.id)
-    if not profile:
-        profile = create_profile(db, current_user.id, ProfileCreate())
-
-    return profile
+    try:
+        profile = get_profile(db, current_user.id)
+        if not profile:
+            profile = create_profile(db, current_user.id, ProfileCreate())
+        return profile
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving profile: {str(e)}"
+        )
 
 @router.put("/me", response_model=ProfileOut)
 def update_my_profile(
@@ -39,12 +43,18 @@ def update_my_profile(
     """
     Update the current user's profile
     """
-    
-    profile = update_profile(db, current_user.id, profile_data)
-    if not profile:
-        profile = create_profile(db, current_user.id, ProfileCreate())
-        
-    return profile
+    try:
+        profile = get_profile(db, current_user.id)
+        if not profile:
+            profile = create_profile(db, current_user.id, profile_data)
+        else:
+            profile = update_profile(db, profile.id, profile_data)
+        return profile
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating profile: {str(e)}"
+        )
 
 @router.get("/{user_id}", response_model=ProfileOut)
 def get_user_profile(
@@ -55,23 +65,48 @@ def get_user_profile(
     """
     Get a user's profile by user ID
     """
-    
-    profile = get_profile(db, user_id)
-    if not profile:
+    try: 
+        if current_user.role == UserRole.MASTERADMIN:
+            pass
+        else:
+            target_user = db.query(User).filter(User.id == user_id).first()
+            if not target_user or (target_user.company_id != current_user.company_id):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Profile not found or not in your company"
+                )
+        profile = get_profile(db, user_id)
+        if not profile:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Profile not found"
+            )
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
-            staus_code=status.HTTP_404_NOT_FOUND,
-            detail="Profile not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving profile: {str(e)}"
         )
-        
-    return profile
 
 @router.get("/instructors", response_model=List[ProfileOut])
 def get_instructors(
     skip: int = 0,
     limit: int = 100,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Get a list of all instructors
     """
-    return get_all_instructors(db, skip, limit)
+    try:
+        if current_user.role == UserRole.MASTERADMIN:
+            return get_all_instructors(db, skip=skip, limit=limit)
+        else:
+            return get_all_instructors(db, company_id=current_user.company_id, skip=skip, limit=limit)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving instructors: {str(e)}"
+        )

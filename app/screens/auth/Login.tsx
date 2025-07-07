@@ -1,7 +1,7 @@
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
-import { LoginCredentials } from "@/src/types/auth.types";
+import { LoginCredentials, UserRole } from "@/src/types/auth.types";
 import { loginScreenStyles } from "@/src/styles/loginScreen";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -115,9 +115,7 @@ export default function LoginScreen() {
               <View style={loginScreenStyles.horizontalLine} />
             </View>
             <TouchableOpacity>
-              <Image
-                source={Images.buttons.signInWithGoogle}
-              />
+              <Image source={Images.buttons.signInWithGoogle} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>

@@ -5,47 +5,48 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { themes } from '@/src/context/themes';
+import { dashboardStyles } from '@/src/styles/dashboard';
 import BottomNavBar from '@/src/components/NavBar';
 
-export default function HomeScreen() {
+export default function InstructorDashboard() {
   const router = useRouter();
   const { state, logout } = useAuth();
   const user = state.user;
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/screens/Login');
+    router.replace('/screens/auth/Login');
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Stone Cold Tactical</Text>
+    <View style={dashboardStyles.container}>
+      <View style={dashboardStyles.header}>
+        <Text style={dashboardStyles.title}>Stone Cold Tactical</Text>
       </View>
 
-      <View style={styles.userInfoSection}>
-        <Text style={styles.welcomeText}>
+      <View style={dashboardStyles.userInfoSection}>
+        <Text style={dashboardStyles.welcomeText}>
           Welcome, {user?.first_name} {user?.last_name}!
         </Text>
-        <Text style={styles.emailText}>{user?.email}</Text>
+        <Text style={dashboardStyles.emailText}>{user?.email}</Text>
       </View>
 
-      <View style={styles.contentSection}>
-        <Text style={styles.contentText}>
+      <View style={dashboardStyles.contentSection}>
+        <Text style={dashboardStyles.contentText}>
           You've successfully logged in to your account.
         </Text>
       </View>
 
       <TouchableOpacity 
-        style={styles.logoutButton}
+        style={dashboardStyles.logoutButton}
         onPress={handleLogout}
       >
-        <Text style={styles.logoutButtonText}>LOG OUT</Text>
+        <Text style={dashboardStyles.logoutButtonText}>LOG OUT</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={ styles.logoutButton }
+        style={dashboardStyles.logoutButton}
       >
-        <Text style={styles.logoutButtonText} onPress={() => router.push('/screens/Calendar')}>
+        <Text style={dashboardStyles.logoutButtonText} onPress={() => router.push('/screens/app/InstructorCalendar')}>
           Go to Calendar
         </Text>
       </TouchableOpacity>

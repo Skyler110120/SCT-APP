@@ -16,7 +16,7 @@ interface ProfileInformation {
   courses: string[];
 }
 
-export default function ProfileScreen() {
+export default function InstructorProfile() {
   const { logout} = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const profileInfo: ProfileInformation = {

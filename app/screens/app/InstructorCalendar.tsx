@@ -22,7 +22,7 @@ interface Session {
   date: string;
 }
 
-export default function CalendarScreen() {
+export default function InstructorCalendar() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -88,7 +88,7 @@ export default function CalendarScreen() {
                 monthTextColor: themes.vegasGold,
                 arrowColor: themes.vegasGold,
                 textMonthFontSize: 48,
-                textDayFontSize: 12,
+                textDayFontSize: 16,
                 textDayHeaderFontSize: 16,
                 ...({
                   "stylesheet.day.basic": {

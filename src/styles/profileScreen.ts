@@ -1,14 +1,14 @@
-import { StyleSheet } from 'react-native';
-import { themes } from '@/src/context/themes';
+import { StyleSheet } from "react-native";
+import { themes } from "@/src/context/themes";
 
 export const profileScreenStyles = StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
     flexDirection: "column",
   },
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   profileContentContainer: {
     flex: 1,
@@ -81,5 +81,5 @@ export const profileScreenStyles = StyleSheet.create({
     fontSize: 24,
     fontFamily: "Chakra-BoldItalic",
     color: themes.white,
-  }
+  },
 });

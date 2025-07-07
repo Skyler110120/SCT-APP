@@ -2,7 +2,7 @@ export enum UserRole {
     STUDENT = 'student',
     INSTRUCTOR = 'instructor',
     ADMIN = 'admin',
-    MASTER_ADMIN = 'master_admin',
+    MASTER_ADMIN = 'masteradmin',
 }
 
 export interface User {
@@ -10,7 +10,8 @@ export interface User {
     email: string;
     first_name: string;
     last_name: string;
-    role?: UserRole;
+    role: UserRole;
+    hasCompletedOnboarding: boolean;
     created_at?: string;
 }
 

@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
 from app.schemas.user import UserCreate, UserOut
-from app.schemas.auth import Token
-from app.services.user_service import create_user, get_user_by_email
+from app.schemas.auth import Token, TokenResponse
+from app.services.user_service import create_user, get_user_by_email, needs_onboarding
 from app.services.auth_service import authenticate_user, create_user_token
+from app.services.company_service import get_company_by_id
+from app.models.user import User, UserRole
 
 router = APIRouter(
     prefix="/auth",
@@ -58,22 +61,56 @@ def login(
     Raises:
         HTTPException: If authentication fails
     """
+    try:
+        print(f"Login attempt for: {form_data.username}")
+        
+        user = authenticate_user(db, form_data.username, form_data.password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+            
+        print(f"Authentication successful for: {form_data.username}")
+        access_token = create_user_token(user)
+        
+        try:
+            has_completed_onboarding = getattr(user, 'has_completed_onboarding', False)
+            onboarding_needed = user.company_id is None or not has_completed_onboarding
+        except Exception as e:
+            print(f"Error checking onboarding status: {str(e)}")
+            onboarding_needed = True 
+            
+        response_data = {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user_id": user.id,
+            "email": user.email,
+            "role": user.role,
+            "needs_onboarding": onboarding_needed,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "company_id": user.company_id
+        }
+        print("Login successful, returning response")
+        return response_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Login failed with error: {str(e)}")
+        print(traceback.format_exc())
 
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials",
-            headers={"WWW-Authenticate": "Bearer"}
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
         )
-    
-    access_token = create_user_token(user)
-
-    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserOut)
 def read_users_me(
-    current_user: UserOut = Depends(get_current_user)
+    current_user: User = Depends(get_current_user)
 ):
     """
     Get the current authenticated user

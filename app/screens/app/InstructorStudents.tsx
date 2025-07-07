@@ -5,7 +5,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { studentScreenStyles } from "@/src/styles/studentScreen";
 
-export default function StudentsScreen() {
+export default function InstructorStudents() {
     return (
         <View style={studentScreenStyles.container}>
             <SafeAreaView style={studentScreenStyles.safeArea}>

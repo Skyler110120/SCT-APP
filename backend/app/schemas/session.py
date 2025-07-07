@@ -16,13 +16,16 @@ class SessionBase(BaseModel):
         return v
     
 class AvailabilityCreate(SessionBase):
-    pass
+    instructor_id: int
 
 class BookingCreate(BaseModel):
     availability_id: int
+    student_id: int
     
 class SessionCreate(SessionBase):
     instructor_id: int
+    student_id: Optional[int] = None
+    status: Optional[SessionStatus] = SessionStatus.SCHEDULED
 
 class SessionUpdate(BaseModel):
     title: Optional[str] = None
