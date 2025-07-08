@@ -13,6 +13,7 @@ import {
   RegisterData,
   User,
   UserRole,
+  UserUpdate,
 } from "../types/auth.types";
 import { navigateByRole } from "../utils/navigationUtil";
 
@@ -21,10 +22,12 @@ interface AuthContextType {
   login: (crdentials: LoginCredentials) => Promise<boolean>;
   register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
+  updateUser: (userData: UserUpdate) => void
   hasRole: (role: UserRole | UserRole[]) => boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
   user: User | null;
+  needsOnboarding: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,7 +35,8 @@ type AuthAction =
   | { type: "AUTH_LOADING" }
   | { type: "AUTH_SUCCESS"; payload: { user: User; token: string } }
   | { type: "AUTH_ERROR"; payload: string }
-  | { type: "AUTH_LOGOUT" };
+  | { type: "AUTH_LOGOUT" }
+  | { type: "UPDATE_USER"; payload: UserUpdate };
 
 const initialState: AuthState = {
   isLoading: true,
@@ -76,6 +80,17 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       error: null,
     };
   }
+  if (action.type === "UPDATE_USER") {
+    if (state.user) {
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...action.payload
+        }
+      };
+    }
+  }
   return state;
 };
 
@@ -86,6 +101,9 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  const needsOnboarding = Boolean(
+    state.user && state.user.company_id === null
+  )
   const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!state.user || !state.user.role) return false;
 
@@ -171,16 +189,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error("Logout error:", error);
     }
   };
+  const updateUser = (userData: UserUpdate): void => {
+    dispatch({ type: "UPDATE_USER", payload: userData });
+  }
 
   const value: AuthContextType = {
     state,
     login,
     register,
     logout,
+    updateUser,
     hasRole,
     isLoading: state.isLoading,
     isAuthenticated: state.isAuthenticated,
     user: state.user,
+    needsOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

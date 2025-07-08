@@ -6,6 +6,7 @@ export enum UserRole {
 }
 
 export interface User {
+    company_id: number | null;
     id: number;
     email: string;
     first_name: string;
@@ -13,6 +14,15 @@ export interface User {
     role: UserRole;
     hasCompletedOnboarding: boolean;
     created_at?: string;
+}
+
+export interface UserUpdate {
+    company_id?: number | null;
+    role?: UserRole;
+    first_name?: string;
+    last_name?: string;
+    hasCompletedOnboarding?: boolean;
+    email?: string;
 }
 
 export interface AuthState {
