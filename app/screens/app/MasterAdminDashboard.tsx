@@ -37,8 +37,8 @@ export default function MasterAdminDashboard() {
   const [isLoadingCodes, setIsLoadingCodes] = useState<boolean>(false);
   const [isSubmittingCompany, setIsSubmittingCompany] =
     useState<boolean>(false);
-  const [isSubmittingCode, setIsSubmittingCode] = useState<boolean>(false);
-
+  const [isSubmittingCode, setIsSubmittingCode] = 
+  useState<boolean>(false);
   const [companyModalVisible, setCompanyModalVisible] =
     useState<boolean>(false);
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
@@ -97,9 +97,7 @@ export default function MasterAdminDashboard() {
     setIsLoadingCodes(true);
 
     try {
-      const response = await companyService.getInviteCodes(
-        companyId.toString()
-      );
+      const response = await companyService.getInviteCodes(companyId);
 
       if (response.success && response.data) {
         setInviteCodes(response.data);
@@ -122,7 +120,7 @@ export default function MasterAdminDashboard() {
     }
   };
 
-  const handleSeleectCompany = (company: Company) => {
+  const handleSelectCompany = (company: Company) => {
     setSelectedCompany(company);
   };
 
@@ -211,7 +209,7 @@ export default function MasterAdminDashboard() {
                 <CompanyList
                   companies={companies}
                   selectedCompany={selectedCompany}
-                  onSelectCompany={handleSeleectCompany}
+                  onSelectCompany={handleSelectCompany}
                   isLoading={isLoading}
                 />
               </View>
@@ -225,6 +223,7 @@ export default function MasterAdminDashboard() {
                 />
               </View>
             </View>
+            <AdminStats stats={stats} selectedCompany={selectedCompany} />
             <View style={masterAdminDashboardStyles.buttonContainer}>
               <TouchableOpacity
                 style={masterAdminDashboardStyles.actionButton}
@@ -253,7 +252,6 @@ export default function MasterAdminDashboard() {
                 </Text>
               </TouchableOpacity>
             </View>
-            <AdminStats stats={stats} selectedCompany={selectedCompany} />
           </View>
         </SafeAreaView>
 

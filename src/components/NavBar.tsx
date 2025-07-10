@@ -37,7 +37,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       return [
         {
           name: "Home",
-          route: "/screens/app/InstructorDashboard",
+          route: "/screens/app/AdminDashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
         },

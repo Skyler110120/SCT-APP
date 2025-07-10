@@ -23,6 +23,7 @@ export interface UserUpdate {
     last_name?: string;
     hasCompletedOnboarding?: boolean;
     email?: string;
+    is_active?: boolean;
 }
 
 export interface AuthState {

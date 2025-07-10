@@ -1,29 +1,30 @@
+import { themes } from "@/src/context/themes";
+import { dashboardStyles as comapnyCodeModal } from "@/src/styles/instructorDashboard";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
-import { dashboardStyles as comapnyCodeModal } from "@/src/styles/dashboard";
-import { themes } from "@/src/context/themes";
 
 interface OnboardingModalProps {
   isVisible: boolean;
   onSubmitCode: (code: string) => void;
-}
+  onLogout: () => Promise<void>;}
 
 export function OnboardingModal({
   isVisible,
   onSubmitCode,
+  onLogout
 }: OnboardingModalProps) {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSubmit = async () => {
     if (!code.trim()) {
@@ -48,6 +49,17 @@ export function OnboardingModal({
       setIsSubmitting(false);
     }
   };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
 
   return (
     <Modal
@@ -95,6 +107,17 @@ export function OnboardingModal({
               <ActivityIndicator color={themes.white} size="small" />
             ) : (
               <Text style={comapnyCodeModal.buttonText}>Submit</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={comapnyCodeModal.logoutButton}
+            onPress={handleLogout}
+            disabled={isSubmitting || isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <ActivityIndicator color={themes.white}/>
+            ) : (
+              <Text style={comapnyCodeModal.logoutButtonText}>LOG OUT</Text>
             )}
           </TouchableOpacity>
         </View>

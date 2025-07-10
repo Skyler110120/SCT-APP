@@ -68,8 +68,8 @@ def list_company_invite_codes(
     
     Only accessibly by company admins or master admins
     """
-    company_id = get_company_by_id(db, company_id)
-    if not company_id:
+    company = get_company_by_id(db, company_id)
+    if not company:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Company not found"

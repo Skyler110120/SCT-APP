@@ -17,7 +17,7 @@ export const navigateByRole = (
     if (role === UserRole.MASTER_ADMIN) {
         router.replace("/screens/app/MasterAdminDashboard")
     } else if (role === UserRole.ADMIN) { 
-        router.replace("/screens/app/InstructorDashboard")
+        router.replace("/screens/app/AdminDashboard")
     } else if (role === UserRole.INSTRUCTOR) {
         router.replace("/screens/app/InstructorDashboard")
     } else {

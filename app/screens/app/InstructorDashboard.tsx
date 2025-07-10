@@ -1,19 +1,44 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ScrollView,
+  SafeAreaView,
+  StatusBar
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/src/context/AuthContext";
-import { themes } from "@/src/context/themes";
-import { dashboardStyles } from "@/src/styles/dashboard";
+import { dashboardStyles } from "@/src/styles/instructorDashboard";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
 import { OnboardingModal } from "@/src/components/OnboardingModal";
 import { onboardingService } from "@/src/services/onboardingService";
 
 export default function InstructorDashboard() {
+  // Access router for navigation
   const router = useRouter();
+  
+  // Access auth context for user data and authentication functions
   const { state, logout, updateUser, needsOnboarding } = useAuth();
   const user = state.user;
+  
+  // State for onboarding modal visibility
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  
+  // Current date and selected day for the calendar
+  const [today] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(today);
+  const [weekDays, setWeekDays] = useState<Date[]>([]);
+  
+  // Mock data for classes - in a real app, fetch this from your API
+  const classesToday = [
+    { time: '12:00 PM', instructor: 'Alan Honor', type: 'Ballet' },
+    { time: '3:00 PM', instructor: 'Jeff Watts', type: 'Jazz' },
+    { time: '5:00 PM', instructor: 'Tim Hardy', type: 'Contemporary' },
+  ];
 
+  // Show onboarding modal if user needs onboarding
   useEffect(() => {
     if (needsOnboarding) {
       setShowOnboardingModal(true);
@@ -22,11 +47,70 @@ export default function InstructorDashboard() {
     }
   }, [needsOnboarding]);
 
+  // Generate week days array on component mount
+  useEffect(() => {
+    const startDay = new Date(today);
+    // Set to beginning of week (Sunday)
+    startDay.setDate(today.getDate() - today.getDay());
+    
+    const days = [];
+    // Generate array with 7 days starting from Sunday
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startDay);
+      day.setDate(startDay.getDate() + i);
+      days.push(day);
+    }
+    setWeekDays(days);
+  }, [today]);
+
+  // Format full date as "Month Day Year" (e.g. "June 3rd 2025")
+  const formatFullDate = (date: Date) => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    // Add appropriate suffix to day number
+    let suffix = 'th';
+    if (day % 10 === 1 && day !== 11) suffix = 'st';
+    if (day % 10 === 2 && day !== 12) suffix = 'nd';
+    if (day % 10 === 3 && day !== 13) suffix = 'rd';
+    
+    return `${month} ${day}${suffix} ${year}`;
+  };
+
+  // Format day name (e.g. "Mon")
+  const formatDayName = (date: Date) => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[date.getDay()];
+  };
+
+  // Format day number with leading zero if needed
+  const formatDayNumber = (date: Date) => {
+    const day = date.getDate();
+    return day < 10 ? `0${day}` : `${day}`;
+  };
+
+  // Check if two dates are the same day
+  const isSameDay = (date1: Date, date2: Date) => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
+
+  // Logout function
   const handleLogout = async () => {
     await logout();
     router.replace("/screens/auth/Login");
   };
 
+  // Handle invite code submission for onboarding
   const handleSubmitInviteCode = async (code: string) => {
     try {
       const companyData = await onboardingService.completeOnboarding(code);
@@ -52,124 +136,122 @@ export default function InstructorDashboard() {
     }
   };
 
-  return (
-    <View style={dashboardStyles.container}>
-      <View style={dashboardStyles.header}>
-        <Text style={dashboardStyles.title}>Stone Cold Tactical</Text>
-      </View>
-
-      <View style={dashboardStyles.userInfoSection}>
-        <Text style={dashboardStyles.welcomeText}>
-          Welcome, {user?.first_name} {user?.last_name}!
-        </Text>
-        <Text style={dashboardStyles.emailText}>{user?.email}</Text>
-      </View>
-
-      {!needsOnboarding ? (
-        <>
-          <View style={dashboardStyles.contentSection}>
-            <Text style={dashboardStyles.contentText}>
-              You've successfully logged in to your account.
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            style={dashboardStyles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={dashboardStyles.logoutButtonText}>LOG OUT</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={dashboardStyles.logoutButton}>
-            <Text
-              style={dashboardStyles.logoutButtonText}
-              onPress={() => router.push("/screens/app/InstructorCalendar")}
-            >
-              Go to Calendar
-            </Text>
-          </TouchableOpacity>
-          <BottomNavBar />
-        </>
-      ) : (
-        <View style={dashboardStyles.contentSection}>
-          <Text style={dashboardStyles.contentText}>
+  // If user needs onboarding, show simplified view with modal
+  if (needsOnboarding) {
+    return (
+      <View style={dashboardStyles.container}>
+        <View style={dashboardStyles.modalContent}>
+          <Text style={dashboardStyles.modalTitle}>Welcome to Stone Cold Tactical</Text>
+          <Text style={dashboardStyles.labelText}>
             Please enter your company invite code to access all features.
           </Text>
-
           <TouchableOpacity
-            style={dashboardStyles.logoutButton}
+            style={dashboardStyles.submitButton}
             onPress={handleLogout}
           >
-            <Text style={dashboardStyles.logoutButtonText}>LOG OUT</Text>
+            <Text style={dashboardStyles.buttonText}>LOG OUT</Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      <OnboardingModal
-        isVisible={showOnboardingModal}
-        onSubmitCode={handleSubmitInviteCode}
-      />
-    </View>
+        <OnboardingModal
+          isVisible={showOnboardingModal}
+          onSubmitCode={handleSubmitInviteCode}
+          onLogout={handleLogout}
+        />
+      </View>
+    );
+  }
+
+  // Main instructor dashboard view
+  return (
+    <SafeAreaView style={dashboardStyles.container}>
+      <StatusBar barStyle="light-content" />
+      
+      <ScrollView style={dashboardStyles.scrollContent}>
+        {/* Today's date section */}
+        <View style={dashboardStyles.dateContainer}>
+          <Text style={dashboardStyles.todayText}>Today</Text>
+          <Text style={dashboardStyles.fullDateText}>{formatFullDate(today)}</Text>
+        </View>
+        
+        {/* Week day selector */}
+        <View style={dashboardStyles.weekContainer}>
+          {weekDays.map((day, index) => {
+            const dayNum = formatDayNumber(day);
+            const dayName = formatDayName(day);
+            const isSelected = isSameDay(day, selectedDay);
+            
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  dashboardStyles.dayButton, 
+                  isSelected && dashboardStyles.selectedDayButton
+                ]}
+                onPress={() => setSelectedDay(day)}
+              >
+                <Text style={[
+                  dashboardStyles.dayName, 
+                  isSelected && dashboardStyles.selectedDayText
+                ]}>
+                  {dayName}
+                </Text>
+                <Text style={[
+                  dashboardStyles.dayNumber, 
+                  isSelected && dashboardStyles.selectedDayText
+                ]}>
+                  {dayNum}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        
+        {/* Videos section */}
+        <View style={dashboardStyles.sectionContainer}>
+          <Text style={dashboardStyles.sectionTitle}>Videos To Watch</Text>
+          <View style={dashboardStyles.videosRow}>
+            <View style={dashboardStyles.videoThumbnail} />
+            <View style={dashboardStyles.videoThumbnail} />
+          </View>
+        </View>
+        
+        {/* Classes section */}
+        <View style={dashboardStyles.sectionContainer}>
+          <Text style={dashboardStyles.sectionTitle}>Classes Today</Text>
+          
+          {classesToday.map((classItem, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={dashboardStyles.classCard}
+              onPress={() => {
+                // Navigate to class detail in the future
+                console.log(`Viewing class: ${classItem.instructor}`);
+              }}
+            >
+              <View style={dashboardStyles.classTypeSection}>
+                <Text style={dashboardStyles.classTypeText}>
+                  Profile Pic{"\n"}or{"\n"}Class Type
+                </Text>
+              </View>
+              
+              <View style={dashboardStyles.classInfoSection}>
+                <Text style={dashboardStyles.classTimeText}>
+                  {classItem.time} {classItem.instructor}
+                </Text>
+              </View>
+              
+              <View style={dashboardStyles.viewButtonSection}>
+                <Text style={dashboardStyles.viewButtonText}>VIEW</Text>
+                <Text style={dashboardStyles.arrowIcon}>➔</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
+      
+      {/* Bottom navigation bar */}
+      <BottomNavBar />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: themes.vegasGold || "#000033",
-    flexDirection: "column",
-  },
-  header: {
-    marginTop: 50,
-    marginBottom: 30,
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: themes.vegasGold || "#FFD700",
-    fontFamily: "Chakra-Bold",
-  },
-  userInfoSection: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 20,
-  },
-  welcomeText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "white",
-    marginBottom: 5,
-    fontFamily: "Chakra-Bold",
-  },
-  emailText: {
-    fontSize: 16,
-    color: "#cccccc",
-    fontFamily: "Chakra-Regular",
-  },
-  contentSection: {
-    flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: 10,
-    padding: 20,
-  },
-  contentText: {
-    fontSize: 16,
-    color: "white",
-    lineHeight: 24,
-    fontFamily: "Chakra-Regular",
-  },
-  logoutButton: {
-    backgroundColor: themes.black || "#FFD700",
-    borderRadius: 10,
-    padding: 15,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  logoutButtonText: {
-    color: themes.vegasGold || "#000033",
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Chakra-Bold",
-  },
-});

@@ -98,7 +98,10 @@ def validate_invite_code(db: Session, code: str) -> Tuple[Optional[int], bool]:
     if not invite_code.is_active:
         return None, False
     
-    if invite_code.expires_at and invite_code.expires_at < datetime.now(timezone.utc):
+    if invite_code.expires_at:
+        expires_at_aware = invite_code.expires_at.replace(tzinfo=timezone.utc)
+    
+    if expires_at_aware < datetime.now(timezone.utc):
         invite_code.is_active = False
         db.commit()
         return None, False

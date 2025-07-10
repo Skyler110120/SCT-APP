@@ -24,6 +24,52 @@ if (__DEV__) {
 } 
 export const companyService = {
   /**
+   * Get a company by ID
+   * @param companyID - ID of the company to fetch
+   * @returns company data or error message
+   */
+  async getCompany(companyID: number): Promise<CompanyResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+      
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+      }
+    }
+
+    const response = await fetch(`${API_URL}/companies/${companyID}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch company:", errorData);
+      return {
+        success: false,
+        error: errorData.detail || "Failed to fetch company",
+      };
+    }
+
+    const data: Company = await response.json();
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Error fetching company:", error);
+    return {
+      success: false,
+      error: "An error occurred while fetching the company",
+    };
+  }
+},
+  /**
    * Get all companies
    * @returns list of companies or error message
    */
@@ -123,7 +169,7 @@ export const companyService = {
    * @param companyID - ID of the company
    * @returns list of invite codes or error message
    */
-  async getInviteCodes(companyID: string): Promise<InviteCodeListResponse> {
+  async getInviteCodes(companyID: number): Promise<InviteCodeListResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
