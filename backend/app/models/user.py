@@ -3,7 +3,7 @@ from app.database.database import Base
 from sqlalchemy.sql import func
 import enum
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+from app.models.events import event_user_association
 
 class UserRole(str, enum.Enum):
     STUDENT = "student"
@@ -24,13 +24,17 @@ class User(Base):
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
     has_completed_onboarding = Column(Boolean, default=False)
     
+    # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    # Relationships
     company = relationship("Company", back_populates="users")
     profile = relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     student_sessions = relationship("Session", foreign_keys="[Session.student_id]", back_populates="student")
     instructor_sessions = relationship("Session", foreign_keys="[Session.instructor_id]", back_populates="instructor")
-    
+    availabilities = relationship("InstructorAvailability", back_populates="instructor", cascade="all, delete-orphan")
+    events = relationship("Event", secondary=event_user_association, back_populates="users")
+
     def __repr__(self):
         return f"<User {self.email}"

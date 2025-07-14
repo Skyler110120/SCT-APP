@@ -147,24 +147,6 @@ export default function AdminDashboard() {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View style={adminDashboardStyles.userManagementSection}>
-              <Text style={adminDashboardStyles.sectionTitle}>
-                User Management
-              </Text>
-              <TouchableOpacity
-                style={adminDashboardStyles.userActionButton}
-                onPress={() => {
-                  Alert.alert(
-                    "Coming Soon",
-                    "User management feature is coming soon."
-                  );
-                }}
-              >
-                <Text style={adminDashboardStyles.buttonText}>
-                  Manage Users
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </SafeAreaView>
         {company && (

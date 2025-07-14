@@ -175,25 +175,4 @@ export const adminDashboardStyles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 16,
   },
-  userManagementSection: {
-    marginBottom: 16,
-    padding: 16,
-    borderWidth: 2,
-    borderRadius: 20,
-    borderColor: themes.vegasGold,
-  },
-  userManagementTitle: {
-    fontSize: 28,
-    fontFamily: "Chakra-Italic",
-    textAlign: "center",
-    color: themes.vegasGold,
-    marginBottom: 16,
-  },
-  userActionButton: {
-    alignItems: "center",
-    padding: 12,
-    margin: 8,
-    borderRadius: 15,
-    backgroundColor: themes.vegasGold,
-  }
 });

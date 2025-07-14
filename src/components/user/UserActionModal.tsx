@@ -38,6 +38,8 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
     ? styles.removalButton
     : styles.confirmButton;
 
+  console.log("UserActionModal props", { visible, user, action });
+
   return (
     <Modal
       animationType="fade"
@@ -48,7 +50,7 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}> {modalTitle}</Text>
-          <View style={styles.userInfo}>
+          <View style={styles.modalUserInfo}>
             <Text style={styles.modalUserName}>
               {user.first_name} {user.last_name}
             </Text>
@@ -108,4 +110,4 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
   );
 };
 
-export default UserActionModal
+export default UserActionModal;

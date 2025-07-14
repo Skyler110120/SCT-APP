@@ -20,36 +20,13 @@ const UserTable: React.FC<UserTableProps> = ({
     return `${user.first_name} ${user.last_name}`.trim();
   };
 
-  const getRoleBadgeStyle = (role: UserRole) => {
-    let backgroundColor;
-    let textColor = themes.black;
-
-    if (role === UserRole.ADMIN) {
-      backgroundColor = themes.vegasGold;
-    } else if (role === UserRole.INSTRUCTOR) {
-      backgroundColor = "rgba(218, 165, 32, 0.6)";
-    } else if (role === UserRole.STUDENT) {
-      backgroundColor = "rgba(218, 165, 32, 0.3)";
-    } else {
-      backgroundColor = themes.white;
-      textColor = themes.black;
-    }
-
-    return {
-      ...styles.roleBadge,
-      backgroundColor,
-      borderColor: themes.vegasGold,
-      borderWidth: 1,
-    };
-  };
-
   const renderItem = ({ item }: { item: User }) => (
     <View style={styles.userRow}>
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{formatName(item)}</Text>
         <Text style={styles.userEmail}>{item.email}</Text>
         <View style={styles.userMeta}>
-          <View style={getRoleBadgeStyle(item.role)}>
+          <View style={styles.roleBadge}>
             <Text style={styles.roleBadgeText}>
               {item.role.charAt(0).toUpperCase() + item.role.slice(1)}
             </Text>

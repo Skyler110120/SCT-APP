@@ -245,10 +245,11 @@ export const userService = {
 
   /**
    * Remove a user from the company
-   * @param userId - ID of the user to remove
+   * @param companyId = ID of the company
+   * @param userId - ID of the user to remove from a company
    * @returns success message or error
    */
-  async removeUser(userId: number): Promise<MessageResponse> {
+  async removeUserFromCompany(companyId: number, userId: number): Promise<MessageResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
@@ -259,7 +260,7 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}`, {
+      const response = await fetch(`${API_URL}/companies/${companyId}/users/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -269,7 +270,7 @@ export const userService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(`Failed to remove user ${userId}:`, errorData);
+        console.error(`Failed to remove user ${userId} from company ${companyId}:`, errorData);
         return {
           success: false,
           error: errorData.error || "Failed to remove user from company"
@@ -278,10 +279,10 @@ export const userService = {
       
       return {
         success: true,
-        message: "User removed successfully"
+        message: "User removed from company successfully"
       };
     } catch (error) {
-      console.error(`Error removing user ${userId}:`, error);
+      console.error(`Error removing user ${userId} from company ${companyId}:`, error);
       return {
         success: false,
         error: "An error occurred while removing the user"

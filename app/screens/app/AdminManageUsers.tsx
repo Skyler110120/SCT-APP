@@ -96,6 +96,7 @@ export default function AdminManageUsers() {
   };
 
   const handleRemoveAction = (user: User) => {
+    console.log("handleRemoveAction called", user);
     setSelectedUser(user);
     setActionType("removal");
     setModalVisible(true);
@@ -126,7 +127,11 @@ export default function AdminManageUsers() {
           Alert.alert("Error", response.error || "Failed to update user role");
         }
       } else if (actionType === "removal") {
-        const response = await userService.removeUser(selectedUser.id);
+        if (!selectedUser.company_id) {
+          Alert.alert("Error", "User does not belong to any company");
+          return;
+        }
+        const response = await userService.removeUserFromCompany(selectedUser.company_id, selectedUser.id);
 
         if (response.success) {
           setUsers(users.filter((u) => u.id !== selectedUser.id));

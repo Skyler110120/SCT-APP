@@ -14,6 +14,7 @@ from app.services.company_service import (
     update_company,
     delete_company
 )
+from app.services.user_service import get_user_by_id
 
 router = APIRouter(
     prefix="/companies",
@@ -150,3 +151,36 @@ def delete_company_endpoint(
         )
     delete_company(db, company_id)
     return {"message": "Company deleted successfully"}
+
+@router.delete("/{company_id}/users/{user_id}", response_model=dict)
+async def remove_user_from_company(
+    company_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+): 
+    """
+    Remove a user from a company
+    Only master admins and admins of the company can remove users
+    """
+    db_user = get_user_by_id(db, user_id)
+    if not db_user or db_user.company_id != company_id:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found in this company"
+        )
+        
+    if current_user.role == UserRole.MASTERADMIN:
+        pass
+    elif current_user.role == UserRole.ADMIN and current_user.company_id == company_id:
+        pass
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to remove users from this company"
+        )
+    db_user.company_id = None
+    db_user.has_completed_onboarding = False
+    db.commit()
+    return {"success": True, "message": "User remove from company"}
+    
