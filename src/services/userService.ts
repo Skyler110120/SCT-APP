@@ -6,12 +6,12 @@ let API_URL: string;
 
 if (__DEV__) {
   if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:3000/api";
+    API_URL = "http://10.0.2.2:8000";
   } else {
-    API_URL = "http://localhost:3000/api";
+    API_URL = "http://localhost:8000";
   }
 } else {
-  API_URL = "https://your-production-url.com/api";
+  API_URL = "https://your-production-api.com";
 }
 
 export interface UserResponse {
@@ -244,6 +244,52 @@ export const userService = {
   },
 
   /**
+   * Remove a user from the company
+   * @param userId - ID of the user to remove
+   * @returns success message or error
+   */
+  async removeUser(userId: number): Promise<MessageResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(`${API_URL}/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json"
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(`Failed to remove user ${userId}:`, errorData);
+        return {
+          success: false,
+          error: errorData.error || "Failed to remove user from company"
+        };
+      }
+      
+      return {
+        success: true,
+        message: "User removed successfully"
+      };
+    } catch (error) {
+      console.error(`Error removing user ${userId}:`, error);
+      return {
+        success: false,
+        error: "An error occurred while removing the user"
+      };
+    }
+  },
+
+  /**
    * Helper method to update user's role
    * @param userId - ID of the user to update
    * @param role - New role to assign
@@ -252,14 +298,5 @@ export const userService = {
   async updateUserRole(userId: number, role: UserRole): Promise<UserResponse> {
     return this.updateUser(userId, { role })
   },
-  
-  /**
-   * Helper method to udpate user's active status
-   * @param userId - ID of the user to update
-   * @param isActive - Whether the user should be active
-   * @returns updated user or error message
-   */
-  async updateUserStatus(userId: number, isActive: boolean): Promise<UserResponse> {
-    return this.updateUser(userId, { is_active: isActive});
-  }
+
 };

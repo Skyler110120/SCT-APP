@@ -48,10 +48,10 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
         {
-          name: "Students",
-          route: "/screens/app/InstructorStudents",
-          icon: Images.navIcons.students.studentsIcon,
-          activeIcon: Images.navIcons.students.studentsIconActive,
+          name: "Users",
+          route: "/screens/app/AdminManageUsers",
+          icon: Images.navIcons.profile.profileIcon,
+          activeIcon: Images.navIcons.profile.profileIconActive,
         },
         {
           name: "Profile",

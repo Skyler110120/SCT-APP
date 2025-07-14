@@ -13,6 +13,7 @@ export interface User {
     last_name: string;
     role: UserRole;
     hasCompletedOnboarding: boolean;
+    is_active: boolean;
     created_at?: string;
 }
 
