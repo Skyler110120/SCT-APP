@@ -35,6 +35,7 @@ class User(Base):
     instructor_sessions = relationship("Session", foreign_keys="[Session.instructor_id]", back_populates="instructor")
     availabilities = relationship("InstructorAvailability", back_populates="instructor", cascade="all, delete-orphan")
     events = relationship("Event", secondary=event_user_association, back_populates="users")
+    created_events = relationship("Event", back_populates="created_by_user", foreign_keys="Event.created_by_user_id")
 
     def __repr__(self):
         return f"<User {self.email}"

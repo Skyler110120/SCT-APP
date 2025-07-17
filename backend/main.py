@@ -1,5 +1,15 @@
 from fastapi import FastAPI
-from app.routers import auth, profile, session, user, onboarding, company, invite_code
+from app.routers import (
+    auth, 
+    profile, 
+    session, 
+    user, 
+    onboarding, 
+    company, 
+    invite_code,
+    events,
+    instructor_availability
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -19,6 +29,9 @@ app.include_router(user.router)
 app.include_router(company.router)
 app.include_router(invite_code.router)
 app.include_router(onboarding.router)
+app.include_router(events.router)
+app.include_router(instructor_availability.router)
+
 
 app.add_middleware(
     CORSMiddleware,

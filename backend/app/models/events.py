@@ -16,9 +16,12 @@ class Event(Base):
     company_id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"))
     title = Column(String(255), nullable=False)
     description = Column(String, nullable=True)
+    image = Column(String(255), nullable=True)
     start_time = Column(DateTime(timezone=True), nullable=False)
     end_time = Column(DateTime(timezone=True), nullable=False)
-    
+    created_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
     # Relationships
     company = relationship("Company", back_populates="events")
     users = relationship("User", secondary=event_user_association, back_populates="events")
+    created_by_user = relationship("User", back_populates="created_events")

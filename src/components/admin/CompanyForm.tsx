@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { masterAdminDashboardStyles as companyForm } from "@/src/styles/masterDashboardScreen";
-import { CreateCompanyRequest, Company } from "@/src/types/company.types";
+import { CreateCompanyRequest} from "@/src/types/company.types";
 import { themes } from "@/src/context/themes";
 
 interface CompanyFormProps {

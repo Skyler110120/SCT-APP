@@ -2,9 +2,7 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Company,
-  CompanyWithUserCount,
   CreateCompanyRequest,
-  UpdateCompanyRequest,
   InviteCode,
   CreateInviteCodeRequest,
   CompanyResponse,
