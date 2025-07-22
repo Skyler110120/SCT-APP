@@ -47,5 +47,83 @@ export const calendarScreenStyles = StyleSheet.create({
     fontFamily: "Chakra-Regular",
     textAlign: "center",
     color: themes.white
-  }
+  },
+  
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+  },
+  modalContent: {
+    width: "90%",
+    maxHeight: "80%",
+    padding: 20,
+    backgroundColor: themes.black,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+  },
+  modalTitle: {
+    marginBottom: 20,
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+    textAlign: "center",
+  },
+  modalText: {
+    marginBottom: 12,
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  modalButton: {
+    padding: 12,
+    marginVertical: 6,
+    alignItems: "center",
+    backgroundColor: themes.vegasGold,
+    borderRadius: 15,
+  },
+  modalButtonContainer: {
+    marginBottom: 16,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
+  },
+  modalDayContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  modalDayButton: {
+    width: "13%",
+    padding: 8,
+    marginVertical: 4,
+    alignItems: "center",
+    backgroundColor: "rgba(197, 179, 88, 0.2)",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+  },
+  modalDayButtonSelected: {
+    backgroundColor: themes.vegasGold,
+  },
+  modalDayText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  modalDayTextSelected: {
+    color: themes.black,
+  },
+  errorText: {
+    marginTop: 4,
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: "#FF4444",
+  },
 });
