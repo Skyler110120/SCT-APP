@@ -12,8 +12,7 @@ class InstructorAvailabilityBase(BaseModel):
     end_date: Optional[date] = None
 
 class InstructorAvailabilityCreate(InstructorAvailabilityBase):
-    instructor_id: int
-    company_id: int
+    pass
     
 class InstructorAvailabilityUpdate(BaseModel):
     day_of_week: Optional[int] = None

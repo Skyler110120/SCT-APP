@@ -9,6 +9,13 @@ export interface Event {
     createdById: number;
 }
 
+export interface CreateEventRequest {
+    title: string;
+    description: string;
+    startTime: string;
+    endTime: string;
+}
+
 export interface UpdateEventRequest {
     title?: string;
     description?: string;

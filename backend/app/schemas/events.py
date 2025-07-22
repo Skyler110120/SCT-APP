@@ -4,7 +4,7 @@ from datetime import datetime
 
 class EventBase(BaseModel):
     title: str = Field(..., max_length=255)
-    description: Optional[str] = None
+    description: str = Field(..., max_length=1000)
     start_time: datetime
     end_time: datetime
     image: Optional[str] = None
@@ -17,7 +17,7 @@ class EventUpdate(EventBase):
     user_ids: Optional[List[int]] = None
     
 class EventCreate(EventBase):
-    company_id: int
+    pass
 
 class EventRead(EventBase):
     id: int

@@ -43,7 +43,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Calendar",
-          route: "/screens/app/InstructorCalendar",
+          route: "/screens/app/Calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
@@ -70,7 +70,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Calendar",
-          route: "/screens/app/InstructorCalendar",
+          route: "/screens/app/Calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
@@ -97,7 +97,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Calendar",
-          route: "/screens/app/InstructorCalendar",
+          route: "/screens/app/Calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },

@@ -43,6 +43,8 @@ def create_availability(
         
     availability = InstructorAvailability(
         **availability_create.dict(),
+        instructor_id=instructor.id,
+        company_id=instructor.company_id
     )
     db.add(availability)
     db.commit()

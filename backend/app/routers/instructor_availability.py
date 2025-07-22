@@ -26,7 +26,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=InstructorAvailabilityRead, status_code=status.HTTP_201_CREATED)
-def add_availability(
+def create_availability(
     availability_create: InstructorAvailabilityCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

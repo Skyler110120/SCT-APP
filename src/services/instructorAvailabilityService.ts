@@ -4,6 +4,7 @@ import {
   Availability,
   AvailabilityUpdate,
   AvailabilityResponse,
+  AvailabilityListResponse,
 } from "../types/availability.types";
 
 let API_URL: string;
@@ -23,7 +24,7 @@ export const instructorAvailabilityService = {
    * gets the current user's availability (for instructor)
    * @returns Promise with availability data or null
    */
-  async getMyAvailability(): Promise<AvailabilityResponse> {
+  async getMyAvailability(): Promise<AvailabilityListResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
@@ -51,7 +52,7 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const data: Availability = await response.json();
+      const data: Availability[] = await response.json();
       return {
         success: true,
         data,
@@ -72,7 +73,7 @@ export const instructorAvailabilityService = {
    */
   async getAvailabilityForCalendar(
     instructorId: number
-  ): Promise<AvailabilityResponse> {
+  ): Promise<AvailabilityListResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
@@ -104,7 +105,7 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const data: Availability = await response.json();
+      const data: Availability[] = await response.json();
       return {
         success: true,
         data,

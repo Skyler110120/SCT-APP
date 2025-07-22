@@ -16,6 +16,14 @@ export interface Availability {
     endDate?: string;
 }
 
+export interface CreateAvailabilityRequest {
+    dayOfWeek: number,
+    startTime: string;
+    endTime: string;
+    startDate: string;
+    endDate?: string;
+}
+
 export interface AvailabilityUpdate {
     startTime?: string;
     endTime?: string;
@@ -28,5 +36,11 @@ export interface AvailabilityUpdate {
 export interface AvailabilityResponse {
     success: boolean;
     data?: Availability;
+    error?: string;
+}
+
+export interface AvailabilityListResponse {
+    success: boolean;
+    data?: Availability[];
     error?: string;
 }

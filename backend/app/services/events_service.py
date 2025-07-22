@@ -43,6 +43,7 @@ def create_event(db: Session, created_by: User, event_create: EventCreate) -> Ev
 
     event = Event(
         **event_create.dict(),
+        company_id=created_by.company_id,
         created_by_user_id=created_by.id,
     )
     

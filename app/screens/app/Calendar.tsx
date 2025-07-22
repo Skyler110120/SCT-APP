@@ -10,9 +10,7 @@ import { calendarScreenStyles } from "@/src/styles/calendarScreen";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { Calendar } from "react-native-calendars";
 import { useState } from "react";
-import { useRouter } from "expo-router";
 import { themes } from "@/src/context/themes";
-import Images from "@/src/assets/images";
 import BottomNavBar from "@/src/components/NavBar";
 
 interface Session {
@@ -22,7 +20,7 @@ interface Session {
   date: string;
 }
 
-export default function InstructorCalendar() {
+export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );

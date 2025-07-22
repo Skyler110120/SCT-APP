@@ -125,6 +125,8 @@ export const adminDashboardStyles = StyleSheet.create({
     marginVertical: 4,
     backgroundColor: themes.vegasGold,
   },
+
+  // Modal styles
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

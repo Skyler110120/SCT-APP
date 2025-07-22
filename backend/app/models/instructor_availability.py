@@ -6,7 +6,6 @@ import enum
 
 class AvailabilityStatus(str, enum.Enum):
     AVAILABLE = "available"
-    BOOKED = "booked"
     UNAVAILABLE = "unavailable"
     
 class InstructorAvailability(Base):

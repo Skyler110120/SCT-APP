@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
