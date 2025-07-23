@@ -5,6 +5,7 @@ import {
   AvailabilityUpdate,
   AvailabilityResponse,
   AvailabilityListResponse,
+  CreateAvailabilityRequest
 } from "../types/availability.types";
 
 let API_URL: string;
@@ -38,7 +39,7 @@ export const instructorAvailabilityService = {
       const response = await fetch(`${API_URL}/availability/me`, {
         method: "GET",
         headers: {
-          Authorization: `Beare ${token}`,
+          Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
@@ -125,7 +126,7 @@ export const instructorAvailabilityService = {
    * @returns Promise with success status or error message
    */
   async createAvailability(
-    availability: Availability
+    availability: CreateAvailabilityRequest
   ): Promise<AvailabilityResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");

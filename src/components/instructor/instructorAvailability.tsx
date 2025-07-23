@@ -23,9 +23,9 @@ type AvailabilityModalProps = {
   mode: "create" | "edit" | "delete";
   selectedAvailability?: Availability | null;
   onClose: () => void;
-  onCreate?: (availability: CreateAvailabilityRequest) => void;
-  onDelete?: (availabilityId: number) => void;
-  onEdit?: (
+  onCreate: (availability: CreateAvailabilityRequest) => void;
+  onDelete: (availabilityId: number) => void;
+  onUpdate: (
     availabilityId: number,
     updateAvailability: AvailabilityUpdate
   ) => void;
@@ -50,23 +50,23 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   onClose,
   onCreate,
   onDelete,
-  onEdit,
+  onUpdate,
 }) => {
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [formData, setFormData] = useState<
-    Omit<CreateAvailabilityRequest, "dayOfWeek">
+    Omit<CreateAvailabilityRequest, "day_of_week">
   >({
-    startTime: "",
-    endTime: "",
-    startDate: "",
-    endDate: "",
+    start_time: "",
+    end_time: "",
+    start_date: "",
+    end_date: "",
   });
   const [errors, setErrors] = useState<{
-    startTime?: string;
-    endTime?: string;
-    dayOfWeek?: string;
-    startDate?: string;
-    endDate?: string;
+    start_time?: string;
+    end_time?: string;
+    day_of_week?: string;
+    start_date?: string;
+    end_date?: string;
   }>({});
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -77,20 +77,20 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   useEffect(() => {
     if (visible) {
       if (mode === "edit" && selectedAvailability) {
-        setSelectedDays([selectedAvailability.dayOfWeek]);
+        setSelectedDays([selectedAvailability.day_of_week]);
         setFormData({
-          startTime: selectedAvailability.startTime,
-          endTime: selectedAvailability.endTime,
-          startDate: selectedAvailability.startDate,
-          endDate: selectedAvailability.endDate || "",
+          start_time: selectedAvailability.start_time,
+          end_time: selectedAvailability.end_time,
+          start_date: selectedAvailability.start_date,
+          end_date: selectedAvailability.end_date || "",
         });
       } else {
         setSelectedDays([]);
         setFormData({
-          startTime: "",
-          endTime: "",
-          startDate: "",
-          endDate: "",
+          start_time: "",
+          end_time: "",
+          start_date: "",
+          end_date: "",
         });
       }
       setErrors({});
@@ -113,33 +113,38 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
 
   const validateForm = () => {
     const newErrors: {
-      startTime?: string;
-      endTime?: string;
-      startDate?: string;
-      endDate?: string;
-      dayOfWeek?: string;
+      start_time?: string;
+      end_time?: string;
+      start_date?: string;
+      end_date?: string;
+      day_of_week?: string;
     } = {};
 
     if (selectedDays.length === 0) {
-      newErrors.dayOfWeek = "At least one day of the week must be selected";
+      newErrors.day_of_week = "At least one day of the week must be selected";
     }
-    if (!formData.startTime) {
-      newErrors.startTime = "Start time is required";
+    if (!formData.start_time) {
+      newErrors.start_time = "Start time is required";
     }
-    if (!formData.endTime) {
-      newErrors.endTime = "End time is required";
+    if (!formData.end_time) {
+      newErrors.end_time = "End time is required";
     }
-    if (!formData.startDate) {
-      newErrors.startDate = "Start date is required";
+    if (!formData.start_date) {
+      newErrors.start_date = "Start date is required";
     }
     if (
-      formData.endDate &&
-      new Date(formData.endDate) < new Date(formData.startDate)
+      formData.end_date &&
+      new Date(formData.end_date) < new Date(formData.start_date)
     ) {
-      newErrors.endDate = "End date cannot be before start date";
+      newErrors.end_date = "End date cannot be before start date";
     }
-    if (new Date(formData.startTime) >= new Date(formData.endTime)) {
-      newErrors.endTime = "End time must be after start time";
+    if (
+      formData.start_time &&
+      formData.end_time &&
+      new Date(`1970-01-01T${formData.start_time}`) >=
+        new Date(`1970-01-01T${formData.end_time}`)
+    ) {
+      newErrors.end_time = "End time must be after start time";
     }
 
     setErrors(newErrors);
@@ -147,6 +152,8 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   };
 
   const handleDaySelect = (dayValue: number) => {
+    if (mode === "edit") return;
+
     setSelectedDays((prev) =>
       prev.includes(dayValue)
         ? prev.filter((day) => day !== dayValue)
@@ -155,20 +162,20 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   };
   const handleSubmit = () => {
     if (validateForm()) {
-      if (mode === "edit" && selectedAvailability && onEdit) {
+      if (mode === "edit" && selectedAvailability && onUpdate) {
         const updateAvailability: AvailabilityUpdate = {
-          startTime: formData.startTime,
-          endTime: formData.endTime,
-          startDate: formData.startDate,
-          endDate: formData.endDate,
-          dayOfWeek: selectedDays[0],
+          start_time: formData.start_time,
+          end_time: formData.end_time,
+          start_date: formData.start_date,
+          end_date: formData.end_date,
+          day_of_week: selectedDays[0],
         };
-        onEdit(selectedAvailability.id, updateAvailability);
+        onUpdate(selectedAvailability.id, updateAvailability);
       } else if (mode === "create" && onCreate) {
         selectedDays.forEach((day) => {
           const newAvailability: CreateAvailabilityRequest = {
-            dayOfWeek: day,
             ...formData,
+            day_of_week: day,
           };
           onCreate(newAvailability);
         });
@@ -194,221 +201,297 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
               <Text style={styles.modalText}>
                 Are you sure you want to delete this availability
               </Text>
+              <Text style={styles.modalText}>
+                {daysOfWeek[selectedAvailability.day_of_week].label}{" "}
+                {new Date(selectedAvailability.start_time).toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )}{" "}
+                -{" "}
+                {new Date(selectedAvailability.end_time).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity style={styles.modalButton} onPress={onClose}>
                   <Text style={styles.modalButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.modalButton}
+                  style={[styles.modalButton, { backgroundColor: "red" }]}
                   onPress={() => handleDelete(selectedAvailability.id)}
+                  disabled={isSubmitting}
                 >
-                  <Text style={styles.modalButtonText}>Confirm Delete</Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={themes.white} />
+                  ) : (
+                    <Text style={styles.modalButtonText}>Delete</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </>
-          ) : null}
-          {mode === "edit" && selectedAvailability ? (
-            <Text style={styles.modalTitle}>
-              Edit Availability for{" "}
-              {daysOfWeek[selectedAvailability.dayOfWeek].label}
-            </Text>
           ) : (
-            <Text style={styles.modalTitle}>Set Availability</Text>
-          )}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={styles.modalTitle}>Your Current Availabilites:</Text>
-            {availabilities.length > 0 ? (
-              <Text style={styles.modalText}>No availabilities set.</Text>
-            ) : (
-              availabilities.map((availability, index) => (
-                <View
-                  key={availability.id || index}
-                  style={{ flexDirection: "row", alignItems: "center" }}
-                >
+            <>
+              {mode === "edit" && selectedAvailability ? (
+                <Text style={styles.modalTitle}>
+                  Edit Availability for{" "}
+                  {daysOfWeek[selectedAvailability.day_of_week].label}
+                </Text>
+              ) : (
+                <Text style={styles.modalTitle}>Set Availability</Text>
+              )}
+
+              <View style={{ marginBottom: 16 }}>
+                <Text style={styles.modalTitle}>
+                  Your Current Availabilites:
+                </Text>
+                {availabilities.length > 0 ? (
+                  <Text style={styles.modalText}>No availabilities set.</Text>
+                ) : (
+                  availabilities.map((availability, index) => (
+                    <View
+                      key={availability.id || index}
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      <Text style={styles.modalText}>
+                        {daysOfWeek[availability.day_of_week].label}:{" "}
+                        {new Date(availability.start_time).toLocaleTimeString(
+                          [],
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}{" "}
+                        -
+                        {new Date(availability.end_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        ({new Date(availability.start_date).toLocaleDateString()}
+                        {availability.end_date
+                          ? ` - ${new Date(
+                              availability.end_date
+                            ).toLocaleDateString()}`
+                          : ""}
+                        )
+                      </Text>
+                    </View>
+                  ))
+                )}
+              </View>
+              <Text style={styles.modalText}>Select Days of Week</Text>
+              {mode === "edit" && selectedAvailability ? (
+                <View style={styles.modalDayContainer}>
+                  <View
+                    style={[styles.modalDayButtonSelected, { opacity: 0.7 }]}
+                  >
+                    <Text style={styles.modalDayTextSelected}>
+                      {daysOfWeek[selectedAvailability.day_of_week].label}
+                    </Text>
+                  </View>
                   <Text style={styles.modalText}>
-                    {
-                      daysOfWeek.find(
-                        (day) => day.value === availability.dayOfWeek
-                      )?.label
-                    }
-                    :{" "}
-                    {new Date(availability.startTime).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    -
-                    {new Date(availability.endTime).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    ({new Date(availability.startDate).toLocaleDateString()}
-                    {availability.endDate
-                      ? ` - ${new Date(
-                          availability.endDate
-                        ).toLocaleDateString()}`
-                      : ""}
-                    )
+                    Day cannot be changed when editing
                   </Text>
                 </View>
-              ))
-            )}
-          </View>
-          <Text style={styles.modalText}>Select Day of Week</Text>
-          <View style={styles.modalDayContainer}>
-            {daysOfWeek.map((day) => (
-              <TouchableOpacity
-                key={day.value}
-                style={[
-                  styles.modalDayButton,
-                  selectedDays.includes(day.value)
-                    ? styles.modalDayButtonSelected
-                    : null,
-                ]}
-                onPress={() => handleDaySelect(day.value)}
-              >
-                <Text
-                  style={[
-                    styles.modalDayText,
-                    selectedDays.includes(day.value)
-                      ? styles.modalDayTextSelected
-                      : null,
-                  ]}
+              ) : (
+                <View style={styles.modalDayContainer}>
+                  {daysOfWeek.map((day) => (
+                    <TouchableOpacity
+                      key={day.value}
+                      style={[
+                        styles.modalDayButton,
+                        selectedDays.includes(day.value)
+                          ? styles.modalDayButtonSelected
+                          : null,
+                      ]}
+                      onPress={() => handleDaySelect(day.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.modalDayText,
+                          selectedDays.includes(day.value)
+                            ? styles.modalDayTextSelected
+                            : null,
+                        ]}
+                      >
+                        {day.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              {errors.day_of_week && (
+                <Text style={styles.modalText}>{errors.day_of_week}</Text>
+              )}
+              <Text style={styles.modalText}>Select Start and End Date</Text>
+              <Text style={styles.modalText}>End Date is Optional</Text>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setShowStartDatePicker(true)}
                 >
-                  {day.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {errors.dayOfWeek && (
-            <Text style={styles.modalText}>{errors.dayOfWeek}</Text>
+                  <Text style={styles.modalButtonText}>
+                    {formData.start_date
+                      ? new Date(formData.start_date).toLocaleDateString()
+                      : "Select Start Date"}
+                  </Text>
+                </TouchableOpacity>
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={
+                      formData.start_date
+                        ? new Date(formData.start_date)
+                        : new Date()
+                    }
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={(_, date) => {
+                      setShowStartDatePicker(false);
+                      if (date) {
+                        handleChange("start_date", date.toLocaleTimeString());
+                      }
+                    }}
+                  />
+                )}
+                {errors.start_date && (
+                  <Text style={styles.errorText}>{errors.start_date}</Text>
+                )}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setShowEndDatePicker(true)}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {formData.end_date
+                      ? new Date(formData.end_date).toLocaleDateString()
+                      : "Select End Date (Optional)"}
+                  </Text>
+                </TouchableOpacity>
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={
+                      formData.end_date ? new Date(formData.end_date) : new Date()
+                    }
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={(_, date) => {
+                      setShowEndDatePicker(false);
+                      if (date) {
+                        handleChange("end_date", date.toISOString());
+                      }
+                    }}
+                  />
+                )}
+                {errors.end_date && (
+                  <Text style={styles.errorText}>{errors.end_date}</Text>
+                )}
+              </View>
+              <Text style={styles.modalText}>Select Start and End Time</Text>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setShowStartTimePicker(true)}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {formData.start_time
+                      ? new Date(
+                          `1970-01-01T${formData.start_time}`
+                        ).toLocaleString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Select Start Time"}
+                  </Text>
+                </TouchableOpacity>
+                {showStartTimePicker && (
+                  <DateTimePicker
+                    value={
+                      formData.start_time
+                        ? new Date(`1970-01-01T${formData.start_time}`)
+                        : new Date()
+                    }
+                    mode="time"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={(_, time) => {
+                      setShowStartTimePicker(false);
+                      if (time) {
+                        const timeString = time
+                          .toTimeString()
+                          .split(" ")[0]
+                          .slice(0, 5);
+                        handleChange("start_time", timeString);
+                      }
+                    }}
+                  />
+                )}
+                {errors.start_time && (
+                  <Text style={styles.errorText}>{errors.start_time}</Text>
+                )}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setShowEndTimePicker(true)}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {formData.end_time
+                      ? new Date(
+                          `1970-01-01T${formData.end_time}`
+                        ).toLocaleString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Select End Time"}
+                  </Text>
+                </TouchableOpacity>
+                {showEndTimePicker && (
+                  <DateTimePicker
+                    value={
+                      formData.end_time
+                        ? new Date(`1970-01-01T${formData.end_time}`)
+                        : new Date()
+                    }
+                    mode="time"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={(_, time) => {
+                      setShowEndTimePicker(false);
+                      if (time) {
+                        const timeString = time
+                          .toTimeString()
+                          .split(" ")[0]
+                          .slice(0, 5);
+                        handleChange("end_time", timeString);
+                      }
+                    }}
+                  />
+                )}
+                {errors.end_time && (
+                  <Text style={styles.errorText}>{errors.end_time}</Text>
+                )}
+              </View>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={onClose}
+                >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={themes.vegasGold} />
+                  ) : (
+                    <Text style={styles.modalButtonText}>
+                        {mode === "edit" ? "Update" : "Create"}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
           )}
-          <Text style={styles.modalText}>Select Start and End Date</Text>
-          <Text style={styles.modalText}>End Date is Optional</Text>
-          <View style={styles.modalButtonContainer}>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowStartDatePicker(true)}
-            >
-              <Text style={styles.modalButtonText}>
-                {formData.startDate
-                  ? new Date(formData.startDate).toLocaleDateString()
-                  : "Select Start Date"}
-              </Text>
-            </TouchableOpacity>
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={
-                  formData.startDate ? new Date(formData.startDate) : new Date()
-                }
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, date) => {
-                  setShowStartDatePicker(false);
-                  if (date) {
-                    handleChange("startDate", date.toLocaleTimeString());
-                  }
-                }}
-              />
-            )}
-            {errors.startDate && (
-              <Text style={styles.errorText}>{errors.startDate}</Text>
-            )}
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowEndDatePicker(true)}
-            >
-              <Text style={styles.modalButtonText}>
-                {formData.endDate
-                  ? new Date(formData.endDate).toLocaleDateString()
-                  : "Select End Date (Optional)"}
-              </Text>
-            </TouchableOpacity>
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={
-                  formData.endDate ? new Date(formData.endDate) : new Date()
-                }
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, date) => {
-                  setShowEndDatePicker(false);
-                  if (date) {
-                    handleChange("endDate", date.toISOString());
-                  }
-                }}
-              />
-            )}
-            {errors.endDate && (
-              <Text style={styles.errorText}>{errors.endDate}</Text>
-            )}
-          </View>
-          <Text style={styles.modalText}>Select Start and End Time</Text>
-          <View style={styles.modalButtonContainer}>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowStartTimePicker(true)}
-            >
-              <Text style={styles.modalButtonText}>
-                {formData.startTime
-                  ? formData.startTime.toLocaleString()
-                  : "Select Start Time"}
-                ;
-              </Text>
-            </TouchableOpacity>
-            {showStartTimePicker && (
-              <DateTimePicker
-                value={new Date(formData.startTime) || new Date()}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, time) => {
-                  setShowStartTimePicker(false);
-                  if (time) {
-                    handleChange("startTime", time.toISOString());
-                  }
-                }}
-              />
-            )}
-            {errors.startTime && (
-              <Text style={styles.errorText}>{errors.startTime}</Text>
-            )}
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setShowEndTimePicker(true)}
-            >
-              <Text style={styles.modalButtonText}>
-                {formData.endTime
-                  ? formData.endTime.toLocaleString()
-                  : "Select End Time"}
-              </Text>
-            </TouchableOpacity>
-            {showEndTimePicker && (
-              <DateTimePicker
-                value={new Date(formData.endTime) || new Date()}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, time) => {
-                  setShowEndTimePicker(false);
-                  if (time) {
-                    handleChange("endTime", time.toISOString());
-                  }
-                }}
-              />
-            )}
-            {errors.endTime && (
-              <Text style={styles.errorText}>{errors.endTime}</Text>
-            )}
-          </View>
-          <TouchableOpacity
-            style={styles.modalButton}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color={themes.vegasGold} />
-            ) : (
-              <Text style={styles.modalButtonText}>Submit</Text>
-            )}
-          </TouchableOpacity>
         </View>
       </View>
     </Modal>

@@ -6,31 +6,31 @@ export enum AvailabilityStatus {
 
 export interface Availability {
     id: number;
-    companyId: number;
-    instructorId: number;
-    startTime: string;
-    endTime: string;
-    dayOfWeek: number;
+    company_id: number;
+    instructor_id: number;
+    start_time: string;
+    end_time: string;
+    day_of_week: number;
     status: AvailabilityStatus;
-    startDate: string;
-    endDate?: string;
+    start_date: string;
+    end_date?: string;
 }
 
 export interface CreateAvailabilityRequest {
-    dayOfWeek: number,
-    startTime: string;
-    endTime: string;
-    startDate: string;
-    endDate?: string;
+    day_of_week: number,
+    start_time: string;
+    end_time: string;
+    start_date: string;
+    end_date?: string;
 }
 
 export interface AvailabilityUpdate {
-    startTime?: string;
-    endTime?: string;
-    dayOfWeek?: number;
+    start_time?: string;
+    end_time?: string;
+    day_of_week?: number;
     status?: AvailabilityStatus;
-    startDate?: string;
-    endDate?: string;
+    start_date?: string;
+    end_date?: string;
 }
 
 export interface AvailabilityResponse {

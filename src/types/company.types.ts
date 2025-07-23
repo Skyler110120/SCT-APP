@@ -19,10 +19,10 @@ export interface CreateCompanyRequest {
 }
 
 export interface CompanyStats {
-    totalCompanies: number;
-    activeCompanies: number;
-    totalUsers: number;
-    pendingInvites: number;
+    total_companies: number;
+    active_companies: number;
+    total_users: number;
+    pending_invites: number;
 }
 
 export interface UpdateCompanyRequest {

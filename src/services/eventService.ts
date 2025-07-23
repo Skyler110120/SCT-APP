@@ -5,6 +5,7 @@ import {
   UpdateEventRequest,
   EventResponse,
   EventListResponse,
+  CreateEventRequest,
 } from "../types/event.types";
 
 let API_URL: string;
@@ -174,10 +175,10 @@ export const eventService = {
 
   /**
    * Creates a new event
-   * @param event - Event data to create
+   * @param eventData - Event data to create
    * @return Promise with created event data or error message
    */
-  async createEvent(eventData: Event): Promise<EventResponse> {
+  async createEvent(eventData: CreateEventRequest): Promise<EventResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 

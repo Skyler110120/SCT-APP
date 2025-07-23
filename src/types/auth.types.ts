@@ -12,7 +12,7 @@ export interface User {
     first_name: string;
     last_name: string;
     role: UserRole;
-    hasCompletedOnboarding: boolean;
+    has_completed_onboarding: boolean;
     is_active: boolean;
     created_at?: string;
 }
@@ -22,14 +22,14 @@ export interface UserUpdate {
     role?: UserRole;
     first_name?: string;
     last_name?: string;
-    hasCompletedOnboarding?: boolean;
+    has_completed_onboarding?: boolean;
     email?: string;
     is_active?: boolean;
 }
 
 export interface AuthState {
-    isLoading: boolean;
-    isAuthenticated: boolean;
+    is_loading: boolean;
+    is_authenticated: boolean;
     user: User | null;
     token: string | null;
     error: string | null;

@@ -53,7 +53,7 @@ export const calendarScreenStyles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 16,
   },
-  button: {
+  actionButton: {
     flex: 1,
     marginHorizontal: 8,
     paddingVertical: 12,
@@ -62,9 +62,136 @@ export const calendarScreenStyles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: themes.vegasGold,
   },
-  buttonText: {
+  actionButtonText: {
     fontSize: 24,
     fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  actionButtonActive: {
+    opacity: 0.7,
+    backgroundColor: themes.vegasGold
+  },
+  actionButtonTextActive: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
+  },
+  addButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 16,
+    alignItems: "center",
+    backgroundColor: themes.vegasGold,
+  },
+  addButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  availabilityCardSelected: {
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
+  },
+  availabilityInfo: {
+    flex: 1,
+  },
+  availabilityTimeText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  availabilityDateText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  selectionIndicator: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: themes.vegasGold,
+  },
+  selectionIndicatorText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
+  },
+  availabilityActionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+    gap: 12,
+  },
+  updateButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    backgroundColor: themes.vegasGold,
+  },
+  updateButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  }, 
+  deleteButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    backgroundColor: themes.vegasGold,
+  },
+  deleteButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  weeklyScheduleContainer: {
+    marginTop: 16,
+  },
+  dayScheduleContainer: {
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: themes.vegasGold,
+  },
+  dayTitle: {
+    marginBottom: 8,
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  compactAvailabilityCard: {
+    marginBottom: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  noAvailabilityText: {
+    paddingLeft: 12,
+    fontSize: 20,
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.white,
+  },
+  sectionSubtitle: {
+    marginBottom: 12,
+    fontSize: 20,
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.vegasGold,
+  },
+  availabilityDateRange: {
+    marginTop: 4,
+    fontSize: 16,
+    color: themes.white,
+  },
+  hintText: {
+    marginTop: 8,
+    textAlign: "center",
+    fontSize: 16,
+    fontFamily: "Chakra-Italic",
     color: themes.white,
   },
 
@@ -157,9 +284,9 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: "#FF4444",
     marginTop: 8,
     textAlign: "center",
     fontFamily: "Chakra-Bold",
+    color: "#FF4444",
   }
 });
