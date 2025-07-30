@@ -24,6 +24,13 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  console.log("=== UserActionModal Debug ===");
+  console.log("visible:", visible);
+  console.log("user:", user);
+  console.log("user?.id:", user?.id, "type:", typeof user?.id);
+  console.log("action:", action);
+  console.log("newRole:", newRole);
+  console.log("================================");
   if (!user) return null;
 
   const isRemovalAction = action === "removal";

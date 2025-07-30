@@ -1,6 +1,19 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User, UserRole, UserUpdate } from "@/src/types/auth.types";
+import {
+  User,
+  UserRole,
+  UserUpdate,
+  UserResponse,
+  UserListResponse,
+  PasswordUpdateRequest,
+  MessageResponse,
+  StudentInstructorAssignment,
+  UserWithInstructor,
+  UserWithStudents,
+  UserWithInstructorResponse,
+  UserWithStudentsResponse,
+} from "@/src/types/auth.types";
 
 let API_URL: string;
 
@@ -12,29 +25,6 @@ if (__DEV__) {
   }
 } else {
   API_URL = "https://your-production-api.com";
-}
-
-export interface UserResponse {
-  success: boolean;
-  data?: User;
-  error?: string;
-}
-
-export interface UserListResponse {
-  success: boolean;
-  data?: User[];
-  error?: string;
-}
-
-export interface PasswordUpdateRequest {
-  current_password: string;
-  new_password: string;
-}
-
-export interface MessageResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
 }
 
 export const userService = {
@@ -249,7 +239,10 @@ export const userService = {
    * @param userId - ID of the user to remove from a company
    * @returns success message or error
    */
-  async removeUserFromCompany(companyId: number, userId: number): Promise<MessageResponse> {
+  async removeUserFromCompany(
+    companyId: number,
+    userId: number
+  ): Promise<MessageResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
@@ -260,32 +253,41 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/companies/${companyId}/users/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json"
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/companies/${companyId}/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(`Failed to remove user ${userId} from company ${companyId}:`, errorData);
+        console.error(
+          `Failed to remove user ${userId} from company ${companyId}:`,
+          errorData
+        );
         return {
           success: false,
-          error: errorData.error || "Failed to remove user from company"
+          error: errorData.error || "Failed to remove user from company",
         };
       }
-      
+
       return {
         success: true,
-        message: "User removed from company successfully"
+        message: "User removed from company successfully",
       };
     } catch (error) {
-      console.error(`Error removing user ${userId} from company ${companyId}:`, error);
+      console.error(
+        `Error removing user ${userId} from company ${companyId}:`,
+        error
+      );
       return {
         success: false,
-        error: "An error occurred while removing the user"
+        error: "An error occurred while removing the user",
       };
     }
   },
@@ -297,7 +299,278 @@ export const userService = {
    * @returns update user or error message
    */
   async updateUserRole(userId: number, role: UserRole): Promise<UserResponse> {
-    return this.updateUser(userId, { role })
+    return this.updateUser(userId, { role });
   },
 
+  /**
+   * Get all instructors for a company
+   * @param companyId - ID of the company
+   * @returns list of instructors or error message
+   */
+  async getInstructorsByCompany(companyId: number): Promise<UserListResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(
+        `${API_URL}/users/instructors/company/${companyId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Failed to fetch instructors for company ${companyId}:`,
+          errorData
+        );
+        return {
+          success: false,
+          error: errorData.error || "Failed to fetch instructors",
+        };
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(
+        `Error fetching instructors for company ${companyId}:`,
+        error
+      );
+      return {
+        success: false,
+        error: "An error occurred while fetching instructors",
+      };
+    }
+  },
+
+  /**
+   * Get user with their instructor information
+   * @param userId - ID of the user
+   * @returns user with instructor data or error message
+   */
+  async getUserWithInstructor(
+    userId: number
+  ): Promise<UserWithInstructorResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(`${API_URL}/users/${userId}/instructor`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Failed to fetch user ${userId} with instructor:`,
+          errorData
+        );
+        return {
+          success: false,
+          error: errorData.error || "Failed to fetch user with instructor",
+        };
+      }
+
+      const data: UserWithInstructor = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(`Error fetching user ${userId} with instructor:`, error);
+      return {
+        success: false,
+        error: "An error occurred while fetching user with instructor",
+      };
+    }
+  },
+
+  /**
+   * Get instructors with their students
+   * @param instructorId - ID of the instructor
+   * @returns instructor with students data or error message
+   */
+  async getInstructorWithStudents(
+    instructorId: number
+  ): Promise<UserWithStudentsResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(
+        `${API_URL}/users/${instructorId}/students`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Failed to fetch instructor ${instructorId} with students:`,
+          errorData
+        );
+        return {
+          success: false,
+          error: errorData.error || "Failed to fetch instructor with students",
+        };
+      }
+
+      const data: UserWithStudents = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(
+        `Error fetching instructor ${instructorId} with students:`,
+        error
+      );
+      return {
+        success: false,
+        error: "An error occurred while fetching instructor with students",
+      };
+    }
+  },
+
+  /**
+   * Assign a student to an instructor
+   * @param assignment - Student-instructor assignment data
+   * @returns updated student-instructor assignment or error message
+   */
+  async assignStudentToInstructor(
+    assignment: StudentInstructorAssignment
+  ): Promise<UserResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(`${API_URL}/users/assign-instructor`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(assignment),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(`Failed to assign student to instructor:`, errorData);
+        return {
+          success: false,
+          error: errorData.error || "Failed to assign instructor",
+        };
+      }
+
+      const data: User = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(`Error assigning student to instructor:`, error);
+      return {
+        success: false,
+        error: "An error occurred while assigning instructor",
+      };
+    }
+  },
+
+  /**
+   * Unassign a student from their instructor
+   * @param studentId - ID of the student
+   * @returns updated student or error message
+   */
+  async unassignStudentFromInstructor(
+    studentId: number
+  ): Promise<UserResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(`${API_URL}/users/${studentId}/instructor`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          `Failed to unassign student ${studentId} from instructor:`,
+          errorData
+        );
+        return {
+          success: false,
+          error: errorData.error || "Failed to unassign instructor",
+        };
+      }
+
+      const data: User = await response.json();
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(
+        `Error unassigning student ${studentId} from instructor:`,
+        error
+      );
+      return {
+        success: false,
+        error: "An error occurred while unassigning instructor",
+      };
+    }
+  },
 };

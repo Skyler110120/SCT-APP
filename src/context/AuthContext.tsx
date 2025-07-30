@@ -6,23 +6,27 @@ import React, {
   useReducer,
 } from "react";
 import { authService } from "../services/authService";
+import { onboardingService } from "../services/onboardingService";
 import {
   AuthResponse,
   AuthState,
   LoginCredentials,
-  RegisterData,
   User,
   UserRole,
   UserUpdate,
+  UserInfo,
+  TokenResponse,
 } from "../types/auth.types";
+import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
 import { navigateByRole } from "../utils/navigationUtil";
 
+// ✅ LEARNING: Interface defines the "contract" of what our context provides
 interface AuthContextType {
   state: AuthState;
-  login: (crdentials: LoginCredentials) => Promise<boolean>;
-  register: (data: RegisterData) => Promise<AuthResponse>;
+  login: (credentials: LoginCredentials) => Promise<boolean>;
+  register: (data: EnhancedSignupData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
-  updateUser: (userData: UserUpdate) => void
+  updateUser: (userData: UserUpdate) => void;
   hasRole: (role: UserRole | UserRole[]) => boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -31,6 +35,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// ✅ LEARNING: Union types help us define all possible actions in our reducer
 type AuthAction =
   | { type: "AUTH_LOADING" }
   | { type: "AUTH_SUCCESS"; payload: { user: User; token: string } }
@@ -39,59 +45,101 @@ type AuthAction =
   | { type: "UPDATE_USER"; payload: UserUpdate };
 
 const initialState: AuthState = {
-  isLoading: true,
-  isAuthenticated: false,
-  user: null,
+  is_loading: true,
+  is_authenticated: false,
+  needs_onboarding: true,
+  user: null, // This will be User type after conversion
   token: null,
   error: null,
 };
 
+// ✅ LEARNING: Pure functions make state changes predictable and testable
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
-  if (action.type === "AUTH_LOADING") {
-    return { ...state, isLoading: true, error: null };
-  }
-  if (action.type === "AUTH_SUCCESS") {
-    return {
-      ...state,
-      isLoading: false,
-      isAuthenticated: true,
-      user: action.payload.user,
-      token: action.payload.token,
-      error: null,
-    };
-  }
-  if (action.type === "AUTH_ERROR") {
-    return {
-      ...state,
-      isLoading: false,
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      error: action.payload,
-    };
-  }
-  if (action.type === "AUTH_LOGOUT") {
-    return {
-      ...state,
-      isLoading: false,
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      error: null,
-    };
-  }
-  if (action.type === "UPDATE_USER") {
-    if (state.user) {
+  switch (action.type) {
+    case "AUTH_LOADING":
+      return { ...state, is_loading: true, error: null };
+    
+    case "AUTH_SUCCESS":
       return {
         ...state,
-        user: {
-          ...state.user,
-          ...action.payload
-        }
+        is_loading: false,
+        is_authenticated: true,
+        user: action.payload.user as any, // Temporary cast - see note below
+        token: action.payload.token,
+        error: null,
       };
-    }
+    
+    case "AUTH_ERROR":
+      return {
+        ...state,
+        is_loading: false,
+        is_authenticated: false,
+        user: null,
+        token: null,
+        error: action.payload,
+      };
+    
+    case "AUTH_LOGOUT":
+      return {
+        ...state,
+        is_loading: false,
+        is_authenticated: false,
+        user: null,
+        token: null,
+        error: null,
+      };
+    
+    case "UPDATE_USER":
+      if (state.user) {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            ...action.payload
+          } as any, // Temporary cast
+        };
+      }
+      return state;
+    
+    default:
+      return state;
   }
-  return state;
+};
+
+// ✅ LEARNING: Helper functions keep your code DRY (Don't Repeat Yourself)
+// This converts API response format to our internal User format
+const convertUserInfoToUser = (userInfo: UserInfo): User => {
+  return {
+    user_id: userInfo.user_id,
+    email: userInfo.email,
+    first_name: userInfo.first_name,
+    last_name: userInfo.last_name,
+    role: userInfo.role,
+    company_id: userInfo.company_id,
+    instructor_id: userInfo.instructor_id || null,
+    has_completed_onboarding: userInfo.has_completed_onboarding,
+    is_active: userInfo.is_active,
+    // ✅ Add the missing fields that User expects
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+};
+
+// ✅ LEARNING: Convert signup response to User format
+const convertSignupUserToUser = (signupUser: EnhancedSignupUser): User => {
+  return {
+    user_id: signupUser.user_id,
+    email: signupUser.email,
+    first_name: signupUser.first_name,
+    last_name: signupUser.last_name,
+    role: signupUser.role,
+    company_id: signupUser.company_id,
+    instructor_id: signupUser.instructor_id || null,
+    has_completed_onboarding: signupUser.has_completed_onboarding,
+    is_active: signupUser.is_active,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 };
 
 interface AuthProviderProps {
@@ -101,9 +149,11 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // ✅ LEARNING: Computed values derived from state
   const needsOnboarding = Boolean(
     state.user && state.user.company_id === null
-  )
+  );
+
   const hasRole = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!state.user || !state.user.role) return false;
 
@@ -113,20 +163,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return state.user.role === requiredRole;
   };
 
+  // ✅ LEARNING: useEffect runs side effects when component mounts
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("🔍 Checking authentication status...");
         const result = await authService.checkAuth();
+        
         if (result) {
+          console.log("✅ User is authenticated");
+          const user = convertUserInfoToUser(result.user);
           dispatch({
             type: "AUTH_SUCCESS",
-            payload: { user: result.user, token: result.token },
+            payload: { user, token: result.token },
           });
         } else {
+          console.log("❌ No valid authentication found");
           dispatch({ type: "AUTH_LOGOUT" });
         }
       } catch (error) {
-        console.error("Auth check error:", error);
+        console.error("💥 Auth check error:", error);
         dispatch({
           type: "AUTH_ERROR",
           payload: "Failed to authenticate",
@@ -134,65 +190,187 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
     checkAuth();
-  }, []);
+  }, []); // Empty dependency array means "run once on mount"
 
+  // ✅ LEARNING: Async functions in React must be handled carefully
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     dispatch({ type: "AUTH_LOADING" });
 
     try {
-      const result = await authService.login(credentials);
+      console.log("🔐 Starting login process for:", credentials.email);
+      
+      // Step 1: Authenticate and get token
+      const loginResult = await authService.login(credentials);
 
-      if (result) {
-        dispatch({
-          type: "AUTH_SUCCESS",
-          payload: { user: result.user, token: result.token },
-        });
-        navigateByRole(
-          result.user.role,
-          result.user.hasCompletedOnboarding ?? false
-        );
-        return true;
-      } else {
+      if (!loginResult.success || !loginResult.data) {
+        console.log("❌ Login failed:", loginResult.error);
         dispatch({
           type: "AUTH_ERROR",
-          payload: "Invalid credentials",
+          payload: loginResult.error || "Invalid credentials",
         });
         return false;
       }
+
+      console.log("✅ Login successful, fetching user profile...");
+      
+      // Step 2: Get detailed user information
+      const userResult = await authService.getCurrentUser(loginResult.data.access_token);
+
+      if (!userResult.success || !userResult.data) {
+        console.log("❌ Failed to fetch user data:", userResult.error);
+        dispatch({
+          type: "AUTH_ERROR",
+          payload: userResult.error || "Failed to fetch user data",
+        });
+        return false;
+      }
+
+      console.log("✅ User profile fetched successfully");
+      
+      // Convert API response to our internal format
+      const user = convertUserInfoToUser(userResult.data);
+      
+      dispatch({
+        type: "AUTH_SUCCESS",
+        payload: { 
+          user, 
+          token: loginResult.data.access_token 
+        },
+      });
+
+      // Navigate user to appropriate screen
+      navigateByRole(
+        user.role,
+        user.has_completed_onboarding ?? false
+      );
+      
+      return true;
+
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("💥 Login error:", error);
       dispatch({
         type: "AUTH_ERROR",
-        payload: "An error occurred during login",
+        payload: "Network error occurred during login",
       });
       return false;
     }
   };
 
-  const register = async (userData: RegisterData): Promise<AuthResponse> => {
-    try {
-      return await authService.register(userData);
-    } catch (error) {
-      console.error("Registration error:", error);
+  // ✅ LEARNING: Registration using your enhanced onboarding flow
+  const register = async (userData: EnhancedSignupData): Promise<AuthResponse> => {
+  dispatch({ type: "AUTH_LOADING" });
+  
+  try {
+    console.log("📝 Starting enhanced signup for:", userData.email);
+    
+    // Step 1: Create the account
+    const signupResult = await onboardingService.completeEnhancedSignup(userData);
+    
+    if (!signupResult.success || !signupResult.data) {
+      dispatch({
+        type: "AUTH_ERROR",
+        payload: signupResult.error || "Registration failed"
+      });
+      
       return {
         success: false,
-        error: "An error occurred during registration",
+        error: signupResult.error || "Registration failed"
       };
     }
-  };
+
+    console.log("✅ Account created successfully");
+    
+    // Step 2: Auto-login the new user
+    console.log("🔐 Logging in new user...");
+    
+    const loginResult = await authService.login({
+      email: userData.email,
+      password: userData.password
+    });
+
+    if (!loginResult.success || !loginResult.data) {
+      // Account was created but login failed
+      dispatch({
+        type: "AUTH_ERROR",
+        payload: "Account created but automatic login failed. Please login manually."
+      });
+      
+      return {
+        success: false,
+        error: "Registration completed but automatic login failed"
+      };
+    }
+
+    // Step 3: Get user data (like in login flow)
+    const userResult = await authService.getCurrentUser(loginResult.data.access_token);
+
+    if (!userResult.success || !userResult.data) {
+      dispatch({
+        type: "AUTH_ERROR",
+        payload: "Login successful but failed to fetch user data"
+      });
+      
+      return {
+        success: false,
+        error: "Registration completed but failed to fetch user data"
+      };
+    }
+
+    const user = convertUserInfoToUser(userResult.data);
+    
+    dispatch({
+      type: "AUTH_SUCCESS",
+      payload: { 
+        user: user, 
+        token: loginResult.data.access_token 
+      },
+    });
+
+    navigateByRole(
+      user.role,
+      user.has_completed_onboarding
+    );
+    
+    return {
+      success: true,
+      data: user
+    };
+
+  } catch (error) {
+    console.error("💥 Registration error:", error);
+    
+    const errorMessage = error instanceof Error ? error.message : "An error occurred during registration";
+    
+    dispatch({
+      type: "AUTH_ERROR",
+      payload: errorMessage
+    });
+    
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+};
 
   const logout = async (): Promise<void> => {
     try {
+      console.log("👋 Logging out user...");
       await authService.logout();
       dispatch({ type: "AUTH_LOGOUT" });
+      console.log("✅ Logout successful");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("💥 Logout error:", error);
+      // Even if logout fails, clear local state
+      dispatch({ type: "AUTH_LOGOUT" });
     }
   };
+
   const updateUser = (userData: UserUpdate): void => {
     dispatch({ type: "UPDATE_USER", payload: userData });
-  }
+  };
 
+  // ✅ LEARNING: The context value - this is what components will access
   const value: AuthContextType = {
     state,
     login,
@@ -200,15 +378,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateUser,
     hasRole,
-    isLoading: state.isLoading,
-    isAuthenticated: state.isAuthenticated,
-    user: state.user,
+    isLoading: state.is_loading,
+    isAuthenticated: state.is_authenticated,
+    user: state.user as User | null, // Cast to match interface
     needsOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// ✅ LEARNING: Custom hook pattern - encapsulates context usage
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {

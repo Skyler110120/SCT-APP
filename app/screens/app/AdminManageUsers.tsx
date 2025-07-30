@@ -137,7 +137,7 @@ export default function AdminManageUsers() {
 
           Alert.alert(
             "Success",
-            `${selectedUser.first_name} hase been removed from the company`
+            `${selectedUser.first_name} has been removed from the company`
           );
         } else {
           Alert.alert("Error", response.error || "Failed to remove user");

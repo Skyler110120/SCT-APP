@@ -12,8 +12,6 @@ import { useAuth } from "@/src/context/AuthContext";
 import { dashboardStyles } from "@/src/styles/instructorDashboard";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import { OnboardingModal } from "@/src/components/OnboardingModal";
-import { onboardingService } from "@/src/services/onboardingService";
 
 export default function InstructorDashboard() {
   // Access router for navigation
@@ -110,32 +108,6 @@ export default function InstructorDashboard() {
     router.replace("/screens/auth/Login");
   };
 
-  // Handle invite code submission for onboarding
-  const handleSubmitInviteCode = async (code: string) => {
-    try {
-      const companyData = await onboardingService.completeOnboarding(code);
-
-      if (!companyData || !user) {
-        throw new Error("Failed to validate invite code");
-      }
-
-      const updatedUser = await onboardingService.updateUserAfterOnboarding(
-        user.id,
-        companyData.company_id
-      );
-
-      if (updatedUser) {
-        updateUser({
-          company_id: companyData.company_id,
-        });
-      } else {
-        throw new Error("Failed to join company");
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
   // If user needs onboarding, show simplified view with modal
   if (needsOnboarding) {
     return (
@@ -152,12 +124,6 @@ export default function InstructorDashboard() {
             <Text style={dashboardStyles.buttonText}>LOG OUT</Text>
           </TouchableOpacity>
         </View>
-
-        <OnboardingModal
-          isVisible={showOnboardingModal}
-          onSubmitCode={handleSubmitInviteCode}
-          onLogout={handleLogout}
-        />
       </View>
     );
   }
@@ -165,7 +131,6 @@ export default function InstructorDashboard() {
   // Main instructor dashboard view
   return (
     <SafeAreaView style={dashboardStyles.container}>
-      <StatusBar barStyle="light-content" />
       
       <ScrollView style={dashboardStyles.scrollContent}>
         {/* Today's date section */}

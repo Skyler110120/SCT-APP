@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from datetime import datetime, timezone
 from typing import Optional, List
@@ -6,6 +6,9 @@ from typing import Optional, List
 from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserUpdate, UserOut
 from app.utils.password import hash_password, verify_password
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_user_by_email(db: Session, email: str):
     """
@@ -43,8 +46,33 @@ def create_user(db: Session, user_data: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    if user_data.instructor_id:
+        if user_data.role != UserRole.STUDENT:
+            raise HTTPException(
+                status_code=400,
+                detail="Instructor ID can only be set for students"
+            )
+            
+        instructor = get_user_by_id(db, user_data.instructor_id)
+        if not instructor:
+            raise HTTPException(
+                status_code=400,
+                detail="Instructor not found"
+            )
+    
+        if instructor.role != UserRole.INSTRUCTOR:
+            raise HTTPException(
+                status_code=400,
+                detail="Selected user is not an instructor"
+            )
+            
+        if instructor.company_id != user_data.company_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Instructor must be in the same company"
+            )
+    
     hashed_password = hash_password(user_data.password)
-
     role = getattr(user_data, 'role', UserRole.STUDENT)
     
     user_dict = user_data.dict(exclude={"password"})
@@ -55,6 +83,9 @@ def create_user(db: Session, user_data: UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    if db_user.instructor_id:
+        logger.info(f"Student {db_user.id} assigned to instructor {db_user.instructor_id}")
 
     return db_user
 
@@ -75,22 +106,72 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User:
         HTTPException: If user not found or email already exists
     """
     
+    # Step 1: Get the user
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Step 2: Convert to dict for processing
     update_data = user_data.dict(exclude_unset=True, exclude_none=True)
     
-    if "email" in update_data and update_data["email"] != db_user.email:
+    # Step 3: Validate email uniqueness (if email is being changed)
+    if update_data.get("email") and update_data.get("email") != db_user.email:
         existing_user = get_user_by_email(db, update_data["email"])
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Step 4: Handle role changes (this is key for promotion!)
+    if "role" in update_data:
+        new_role = update_data["role"]
         
+        # If promoting from student to instructor/admin, clear instructor assignment
+        if new_role != UserRole.STUDENT and db_user.instructor_id is not None:
+            update_data["instructor_id"] = None
+            logger.info(f"Cleared instructor assignment for user {user_id} due to role promotion to {new_role}")
+    
+    # Step 5: Validate instructor assignment (only for students)
+    if "instructor_id" in update_data:
+        instructor_id = update_data["instructor_id"]
+        
+        if instructor_id is not None:  # They want to assign an instructor
+            # Determine what the final role will be after this update
+            final_role = update_data.get("role", db_user.role)
+            
+            # Only students can have instructors
+            if final_role != UserRole.STUDENT:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Only students can be assigned to an instructor"
+                )
+            
+            # Validate the instructor exists and is valid
+            instructor = get_user_by_id(db, instructor_id)
+            if not instructor: 
+                raise HTTPException(
+                    status_code=400,
+                    detail="Instructor not found"
+                )
+            
+            if instructor.role != UserRole.INSTRUCTOR:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Selected user is not an instructor"
+                )
+            
+            # Validate instructor is in same company
+            final_company_id = update_data.get("company_id", db_user.company_id)
+            if instructor.company_id != final_company_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Instructor must be in the same company"
+                )
+    
+    # Step 6: Apply all updates
     for key, value in update_data.items():
         setattr(db_user, key, value)
         
+    # Step 7: Update timestamp and save
     db_user.updated_at = datetime.now(timezone.utc)
-        
     db.commit()
     db.refresh(db_user)
     
@@ -203,12 +284,19 @@ def promote_user(db: Session, user_id: int, new_role: UserRole, admin_user: User
     if new_role == UserRole.MASTERADMIN:
         raise HTTPException(status_code=400, detail="Cannot promote users to MasterAdmin")
     
+    old_role = user.role
+    if old_role == UserRole.STUDENT and new_role != UserRole.STUDENT:
+        if user.instructor_id is not None:
+            user.instructor_id = None
+            logger.info(f"Cleared instructor assignment for user {user_id} due to promotion")
+    
     user.role = new_role
     user.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(user)
     
+    logger.infor(f"User {user_id} promoted from {old_role} to {new_role}")
     return user
 
 def needs_onboarding(db: Session, user_id: int) -> bool:
@@ -228,3 +316,175 @@ def needs_onboarding(db: Session, user_id: int) -> bool:
         return False
     
     return user.company_id is None or not user.has_completed_onboarding
+
+def get_instructors_by_company(db: Session, company_id: int) -> List[User]:
+    """
+    Get all instructors in a company
+    
+    Args: 
+        db: Database session
+        company_id: ID of the company
+    Returns:
+        List of instructors in the company
+    """
+    
+    return db.query(User).filter(
+        User.company_id == company_id,
+        User.role == UserRole.INSTRUCTOR,
+        User.is_active == True
+    ).all()
+    
+def get_user_with_instructor(db: Session, user_id: int) -> Optional[UserOut]:
+    """
+    Get a user along with their instructor information loaded
+    
+    Args: 
+        db: Database session
+        user_id: ID of the user to retrieve
+    Returns:
+        User object with instructor relationship loaded
+    """
+    
+    return db.query(User).options(
+        joinedload(User.instructor)
+    ).filter(User.id == user_id).first()
+
+def get_instructor_with_students(db: Session, instructor_id: int) -> Optional[User]:
+    """
+    Get an instructor with their students loaded
+    
+    Args:
+        db: Database session
+        instructor_id: ID of the instructor to retrieve
+    Returns:
+        Instructor object with students relationship loaded
+    """
+    
+    return db.query(User).options(
+        joinedload(User.students)
+    ).filter(
+        User.id == instructor_id,
+        User.role == UserRole.INSTRUCTOR,
+        User.is_active == True
+    ).first()
+    
+def assign_student_to_instructor(db: Session, student_id: int, instructor_id: int, current_user: User) -> User:
+    """
+    Assign a student to an instructor
+    
+    Args:
+        db: Database session
+        student_id: ID of the student to assign
+        instructor_id: ID of the instructor to assign to
+        current_user: User making the assignment
+    Returns: 
+        Updated student object
+    Raises:
+        ValueError: If assignment is invalid
+        HTTPException: If not authorized
+    """
+    
+    if current_user.role not in [UserRole.ADMIN]:
+        if current_user.id != student_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Not authorized to assign instructor"
+            )
+    
+    student = get_user_by_id(db, student_id)
+    if not student:
+        raise ValueError("Student not found")
+    
+    if student.role != UserRole.STUDENT:
+        raise ValueError("User is not a student")
+    
+    instructor = get_user_by_id(db, instructor_id)
+    if not instructor:
+        raise ValueError("Instructor not found")
+    
+    if instructor.role != UserRole.INSTRUCTOR:
+        raise ValueError("User is not an instructor")
+    
+    if student.company_id != instructor.company_id:
+        raise ValueError("Instructor must be from the same company as student")
+    
+    if current_user.role == UserRole.ADMIN:
+        if current_user.company_id != student.company_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Can only assign students in your company"
+            )
+    
+    try:
+        student.instructor_id = instructor_id
+        student.updated_at = datetime.now(timezone.utc)
+        
+        db.commit()
+        db.refresh(student)
+        
+        logger.info(f"Student {student_id} assigned to instructor {instructor_id} by user {current_user.id}")
+        return student
+    
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error assigning student to instructor: {e}")
+        raise ValueError("Failed to assign instructor")
+
+def unassign_student_from_instructor(db: Session, student_id: int, current_user: User) -> User:
+    """
+    Remove instructor assignment from a student
+    
+    Args:
+        db: Database session
+        student_id: ID of the student to unassign
+        current_user: User making the change
+    Returns:
+        Update student object with instructor assignment cleared
+    Raises:
+        HTTPException: If not authorized or student not found
+    """
+    
+    if current_user.role not in [UserRole.ADMIN]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only admins can unassign instructors"
+        )
+    
+    student = get_user_by_id(db, student_id)
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+    
+    if student.role != UserRole.STUDENT:
+        raise HTTPException(
+            status_code=400,
+            detail="User is not a student"
+        )
+    
+    if current_user.role == UserRole.ADMIN:
+        if current_user.company_id != student.company_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Can only modify students in your company"
+            )
+            
+    try:
+        old_instructor_id = student.instructor_id
+        student.instructor_id = None
+        student.updated_at = datetime.now(timezone.utc)
+        
+        db.commit()
+        db.refresh(student)
+        
+        logger.info(f"Student {student_id} unassigned from instructor {old_instructor_id} by user {current_user.id}")
+        return student
+    
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error unassigning student: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to unassign instructor"
+        )

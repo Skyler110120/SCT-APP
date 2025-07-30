@@ -12,6 +12,33 @@ router = APIRouter(
     tags=["onboarding"]
 )
 
+@router.post("/validate-invite", status_code=status.HTTP_200_OK)
+def validate_invite_code_endpoint(
+    code: str = Body(..., embed=True),
+    db: Session = Depends(get_db)
+):
+    """
+    Validate an invite code and return company information
+    
+    Called during signup flow to validate invite codes
+    and provide company information for role selection.
+    """
+    
+    try:
+        company_info = validate_invite_code(db=db, code=code)
+        
+        if not company_info:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired invite code"
+            )
+        
+        return company_info
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while validating the invite code"
+        )
 @router.post("/complete", status_code=status.HTTP_200_OK)
 def complete_onboarding(
     code: str = Body(..., embed=True),

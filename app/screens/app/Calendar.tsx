@@ -12,7 +12,7 @@ import { Calendar } from "react-native-calendars";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import InstructorAvailabilityModal from "@/src/components/instructor/instructorAvailability";
+import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability"
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
 
 import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";

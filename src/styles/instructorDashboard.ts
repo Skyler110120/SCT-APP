@@ -144,7 +144,7 @@ export const dashboardStyles = StyleSheet.create({
     fontSize: 24,
   },
   
-  // Onboarding modal styles (keeping these from your previous styles)
+  // Onboarding modal styles 
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -200,11 +200,16 @@ export const dashboardStyles = StyleSheet.create({
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
-  errorText: {
+  buttonContainer: {
+    gap: 12,
     marginTop: 8,
-    fontSize: 14,
+  },
+  errorText: {
+    fontSize: 16,
     fontFamily: "Chakra-Regular",
     color: "#FF4444",
+    textAlign: "center",
+    marginVertical: 10,
   },
   
   // Navigation bar styles
@@ -222,5 +227,5 @@ export const dashboardStyles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Chakra-Regular",
     color: themes.black,
-  }
+  },
 });

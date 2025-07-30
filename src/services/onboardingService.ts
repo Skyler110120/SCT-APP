@@ -1,5 +1,20 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  InviteCodeValidationRequest,
+  InviteCodeValidationResponse,
+  CompanyInfo,
+  InstructorOption,
+  InstructorsResponse,
+  EnhancedSignupData,
+  EnhancedSignupResponse,
+  UserFormData,
+} from "@/src/types/onboarding.types";
+import { UserRole, UserResponse } from "../types/auth.types";
+import {
+  isValidEnhancedSignupData,
+  userFormDataToSignupData,
+} from "../utils/onboardingValidationUtils";
 
 let API_URL: string;
 
@@ -13,34 +28,225 @@ if (__DEV__) {
   API_URL = "https://your-production-api.com";
 }
 
-interface OnboardingResponse {
-  message: string;
-  company_id: number;
-  role: string;
-}
-
-interface UserUpdateResponse {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  company_id: number;
-}
+const ONBOARDING_STORAGE_KEYS = {
+  INVITE_CODE: "onboarding_invite_code",
+  COMPANY_INFO: "onboarding_company_info",
+  SELECTED_ROLE: "onboarding_selected_role",
+  SELECTED_INSTRUCTOR: "onboarding_selected_instructor",
+  FORM_DATA: "onboarding_form_data",
+  CURRENT_STEP: "onboarding_current_step",
+};
 
 export const onboardingService = {
+  /**
+   * Validates a company invite code and returns company information
+   * @param code - company invite code entered by the user
+   * @returns Promise with company data or error
+   */
+  async validateCompanyCode(
+    code: string
+  ): Promise<InviteCodeValidationResponse> {
+    try {
+      const response = await fetch(`${API_URL}/auth/validate-invite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return {
+          success: false,
+          error: errorData.detail || "Invalid invite code",
+        };
+      }
+
+      const data: CompanyInfo = await response.json();
+
+      await this.saveOnboardingData("inviteCode", code);
+      await this.saveOnboardingData("companyInfo", data);
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error("Invite code validation error:", error);
+      return {
+        success: false,
+        error: "An error occurred while validating the invite code",
+      };
+    }
+  },
+
+  /**
+   * Returns a list of all instructors for a given company
+   * @param companyId - ID of the company
+   * @returns Promise with list of instructors or error
+   */
+  async getCompanyInstructors(companyId: number): Promise<InstructorsResponse> {
+    try {
+      console.log("Getching instructors for company:", companyId);
+
+      const response = await fetch(
+        `${API_URL}/users/instructors/company/${companyId}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+      if (!response.ok) { 
+        const errorData = await response.json();
+        return {
+          success: false,
+          error: errorData.detail || "Failed to fetch instructors",
+        };
+      }
+      const data = await response.json();
+      console.log(`Found ${data.length} instructors`);
+
+      return {
+        success: true,
+        data: data as InstructorOption[],
+      };
+    } catch (error) {
+      console.error("Get instructors error:", error);
+      return {
+        success: false,
+        error: "An error occurred while fetching instructors",
+      };
+    }
+  },
+
+  /**
+   * Completes the enhanced signup process
+   * @param signupData - user data for enhanced signup
+   * @returns Promise with user data or error
+   */
+  async completeEnhancedSignup(
+    signupData: EnhancedSignupData
+  ): Promise<EnhancedSignupResponse> {
+    try {
+      console.log("Attempting enhanced signup for:", signupData.email);
+      console.log("Signup data:", signupData);
+
+      if (!isValidEnhancedSignupData(signupData)) {
+        return {
+          success: false,
+          error: "Incomplete signup data - please check all required fields",
+        };
+      }
+
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(signupData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Enhanced signup failed:", errorData);
+        if (response.status === 409) {
+          return {
+            success: false,
+            error: "An account with this email already exists",
+          };
+        }
+
+        if (response.status === 400 && errorData.detail?.includes("invite")) {
+          return {
+            success: false,
+            error: "Invalid invite code - please check and try again",
+          };
+        }
+
+        return {
+          success: false,
+          error: errorData.detail || "Account creation failed",
+        };
+      }
+
+      console.log("Enhanced signup successful for:", signupData.email);
+      const data = await response.json();
+      await this.clearOnboardingData();
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error("Enhanced signup error:", error);
+      return {
+        success: false,
+        error: "Network error occurred during account creation",
+      };
+    }
+  },
+
+  async createSignupDataFromOnboarding(
+    formData: UserFormData
+  ): Promise<EnhancedSignupData | null> {
+    try {
+      console.log("Assembling signup data from onboarding flow");
+
+      const [inviteCode, companyInfo, intendedRole, selectedInstructor] =
+        await Promise.all([
+          this.getStoredInviteCode(),
+          this.getStoredCompanyInfo(),
+          this.getStoredSelectedRole(),
+          this.getStoredSelectedInstructor(),
+        ]);
+
+      if (!inviteCode || !companyInfo || !intendedRole) {
+        console.error("Missing required onboarding context:")
+        return null;
+      }
+
+      const needsInstructor = intendedRole === UserRole.STUDENT;
+
+      if (needsInstructor && !selectedInstructor) {
+        console.error("Student role requires instructor selection");
+        return null;
+      }
+
+      const signupData = userFormDataToSignupData(
+        formData,
+        companyInfo.company_id,
+        UserRole.STUDENT,
+        inviteCode,
+        needsInstructor ? selectedInstructor?.id || null : null
+      );
+
+      console.log("✅ Signup data assembled successfully");
+      return signupData;
+    } catch (error) {
+      console.error("Create signup data error:", error);
+      return null;
+    }
+  },
+
   /**
    * Completes the onboarding process by submitting an invite code
    * @param code - company invite code entered by the user
    * @returns Promise with onboarding data or null if submission fails
    */
-  async completeOnboarding(code: string): Promise<OnboardingResponse | null> {
+  async completeOnboarding(code: string): Promise<UserResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
 
       if (!token) {
-        console.error("No authentication token found");
-        return null;
+        console.error("❌ No authentication token found");
+        return {
+          success: false,
+          error: "Authentication required for onboarding",
+        };
       }
 
       const response = await fetch(`${API_URL}/onboarding/complete`, {
@@ -55,63 +261,217 @@ export const onboardingService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage =
-          errorData.detail || "Failed to complete onboarding";
-
-        console.error("Onboarding failed:", errorMessage);
-
-        throw new Error(errorMessage);
+        console.error("❌ Legacy onboarding failed:", errorData);
+        return {
+          success: false,
+          error: errorData.detail || "Failed to complete onboarding",
+        };
       }
 
-      const data: OnboardingResponse = await response.json();
-      return data;
+      const data = await response.json();
+      return {
+        success: true,
+        data,
+      };
     } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      console.error("Onboarding error:", error);
-      throw new Error("An unexpected error occured during onboarding");
+      console.error("💥 Complete legacy onboarding error:", error);
+      return {
+        success: false,
+        error: "Network error occurred during onboarding",
+      };
     }
   },
 
   /**
-   * Updates the user data after successful onboarding
-   * @param userId - partial user data to update
-   * @param comapnyId - the company ID to assign the user to
-   * @returns Promise indicating success or failure
+   * Save onboarding data to device storage
+   * @param key - Type of data being saved
+   * @param data - Data to persist
    */
-  async updateUserAfterOnboarding(
-    userId: number,
-    companyId: number
-  ): Promise<UserUpdateResponse | null> {
+  async saveOnboardingData(key: string, data: any): Promise<void> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        console.error("No auth token available");
-        return null;
-      }
-
-      const response = await fetch(`${API_URL}/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ company_id: companyId}),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("User update failed:", errorData);
-        return null;
-      }
-
-      return await response.json();
+      const storageKey = `onboarding_${key}`;
+      await AsyncStorage.setItem(storageKey, JSON.stringify(data));
+      console.log(`✅ Onboarding data saved saved:`, key);
     } catch (error) {
-      console.error("Update user error:", error);
+      console.error("Save onboarding data error:", error);
+    }
+  },
+
+  /**
+   * Retrieve saved onboarding data from device storage
+   * @param key - Type of data to retrieve
+   * @returns Parsed data or null if not found/invalid
+   */
+  async getOnboardingData(key: string): Promise<any | null> {
+    try {
+      const storageKey = `onboarding_${key}`;
+      const data = await AsyncStorage.getItem(storageKey);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error("Get onboarding data error:", error);
       return null;
     }
   },
+
+  /**
+   * Clear all onboarding data from device storage
+   */
+  async clearOnboardingData(): Promise<void> {
+    try {
+      const keysToRemove = [
+        ...Object.values(ONBOARDING_STORAGE_KEYS),
+        "onboarding_invite_code",
+        "onboarding_company_info",
+        "onboarding_selected_role",
+        "onboarding_selected_instructor",
+        "onboarding_form_data",
+      ];
+
+      await AsyncStorage.multiRemove(keysToRemove);
+      console.log("✅ All onboarding data cleared");
+    } catch (error) {
+      console.error("Clear onboarding data error:", error);
+    }
+  },
+
+  async getStoredInviteCode(): Promise<string | null> {
+    return this.getOnboardingData('inviteCode');
+  },
+
+  async getStoredCompanyInfo(): Promise<CompanyInfo | null> {
+    return this.getOnboardingData('companyInfo');
+  },
+
+  async getStoredSelectedRole(): Promise<UserRole | null> {
+    return this.getOnboardingData('selectedRole');
+  },
+
+  async getStoredSelectedInstructor(): Promise<InstructorOption | null> {
+    return this.getOnboardingData('selectedInstructor');
+  },
+
+  async getStoredFormData(): Promise<UserFormData | null> {
+    return this.getOnboardingData('formData');
+  },
+
+   async saveInviteCode(code: string): Promise<void> {
+    return this.saveOnboardingData('inviteCode', code);
+  },
+
+  async saveCompanyInfo(info: CompanyInfo): Promise<void> {
+    return this.saveOnboardingData('companyInfo', info);
+  },
+
+  async saveSelectedRole(role: UserRole): Promise<void> {
+    return this.saveOnboardingData('selectedRole', role);
+  },
+
+  async saveSelectedInstructor(instructor: InstructorOption): Promise<void> {
+    return this.saveOnboardingData('selectedInstructor', instructor);
+  },
+
+  async saveFormData(data: UserFormData): Promise<void> {
+    return this.saveOnboardingData('formData', data);
+  },
+
+  /**
+   * Check if all required onboarding data is present for signup
+   * @returns True if signup can proceed, false if data is missing
+   */
+  async isOnboardingDataComplete(): Promise<boolean> {
+    try {
+      const [inviteCode, companyInfo, selectedRole, formData] = await Promise.all([
+        this.getStoredInviteCode(),
+        this.getStoredCompanyInfo(),
+        this.getStoredSelectedRole(),
+        this.getStoredFormData(),
+      ]);
+
+      if (!inviteCode || !companyInfo || !selectedRole || !formData) {
+        console.log('Missing basic onboarding data');
+        return false;
+      }
+
+      if (selectedRole === UserRole.STUDENT) {
+        const selectedInstructor = await this.getStoredSelectedInstructor();
+        if (!selectedInstructor) {
+          console.log('Student role requires instructor selection');
+          return false
+        }
+      }
+
+      console.log('Onboarding data is complete')
+      return true;
+    } catch (error) {
+      console.error("Check onboarding data completeness error:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Get comprehensive onboarding progress summary
+   * @returns detailed breakdown of what data is present vs missing
+   */
+  async getOnboardingProgress(): Promise<{
+    hasInviteCode: boolean;
+    hasCompanyInfo: boolean;
+    hasSelectedRole: boolean;
+    hasSelectedInstructor: boolean;
+    hasFormData: boolean;
+    isComplete: boolean;
+    nextStepNeeded?: string;
+  }> {
+    try {
+      const [
+        inviteCode,
+        companyInfo,
+        selectedRole,
+        selectedInstructor,
+        formData
+      ] = await Promise.all([
+        this.getStoredInviteCode(),
+        this.getStoredCompanyInfo(),
+        this.getStoredSelectedRole(),
+        this.getStoredSelectedInstructor(),
+        this.getStoredFormData()
+      ]);
+
+      const progress = {
+        hasInviteCode: !!inviteCode,
+        hasCompanyInfo: !!companyInfo,
+        hasSelectedRole: !!selectedRole,
+        hasSelectedInstructor: !!selectedInstructor,
+        hasFormData: !!formData,
+        isComplete: false,
+        nextStepNeeded: undefined as string | undefined
+      };
+
+      if (!progress.hasInviteCode) {
+        progress.nextStepNeeded = 'Enter invite code';
+      } else if (!progress.hasCompanyInfo) {
+        progress.nextStepNeeded = 'Validate company information';
+      } else if (!progress.hasSelectedRole) {
+        progress.nextStepNeeded = 'Select your role';
+      } else if (selectedRole === UserRole.STUDENT && !progress.hasSelectedInstructor) {
+        progress.nextStepNeeded = 'Choose your instructor';
+      } else if (!progress.hasFormData) {
+        progress.nextStepNeeded = 'Complete personal information';
+      }
+
+      progress.isComplete = await this.isOnboardingDataComplete();
+
+      return progress;
+    } catch (error) {
+      console.error('💥 Get onboarding progress error:', error);
+      return {
+        hasInviteCode: false,
+        hasCompanyInfo: false,
+        hasSelectedRole: false,
+        hasSelectedInstructor: false,
+        hasFormData: false,
+        isComplete: false,
+        nextStepNeeded: 'Start onboarding process'
+      };
+    }
+  }
 };

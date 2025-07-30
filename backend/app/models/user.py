@@ -22,6 +22,7 @@ class User(Base):
     last_name = Column(String(100), nullable=False)
     is_active = Column(Boolean, default=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=True)
+    instructor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     has_completed_onboarding = Column(Boolean, default=False)
     
     # Timestamps
@@ -36,6 +37,8 @@ class User(Base):
     availabilities = relationship("InstructorAvailability", back_populates="instructor", cascade="all, delete-orphan")
     events = relationship("Event", secondary=event_user_association, back_populates="users")
     created_events = relationship("Event", back_populates="created_by_user", foreign_keys="Event.created_by_user_id")
+    instructor = relationship("User", remote_side=[id], back_populates="students", post_update=True)
+    students = relationship("User", back_populates="instructor", cascade="save-update")
 
     def __repr__(self):
         return f"<User {self.email}"

@@ -220,7 +220,7 @@ export const adminManageUsersStyles = StyleSheet.create({
     opacity: 0.5,
   },
 
-  // Modal styles
+  // RoleSelection Modal Styles
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -326,5 +326,85 @@ export const adminManageUsersStyles = StyleSheet.create({
     fontSize: 24,
     fontFamily: "Chakra-BoldItalic",
     color: themes.white,
+  },
+
+  // Instructor Selection Modal Styles
+  contentContainer: {
+    minHeight: 200,
+  },
+  pickerSection: {
+    padding: 4,
+  },
+  pickerDescription: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 20,
+    opacity: 0.9,
+  },
+  savingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    gap: 8,
+  },
+  savingText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  footerInfoInstructor: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: themes.vegasGold,
+  },
+  footerTextInstructor: {
+    fontSize: 12,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+    textAlign: "center",
+    lineHeight: 16,
+    opacity: 0.8,
+  },
+  emptyStateContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  emptyStateDescription: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 24,
+    opacity: 0.9,
+  },
+  footerInfo: {
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: themes.vegasGold,
+  },
+  footerText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+    textAlign: "center",
+    lineHeight: 16,
   },
 });
