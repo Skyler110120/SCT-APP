@@ -8,10 +8,18 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { CreateEventRequest } from "@/src/types/event.types";
 import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
 import { themes } from "@/src/context/themes";
+import {
+  formatTimeString,
+  formatDateString,
+  formatDateRange,
+  formatISOTime,
+  getDayName,
+  createLocalDate
+} from "@/src/utils/dateTimeUtils";
 
 type modalProps = {
   visible: boolean;
@@ -45,18 +53,49 @@ const CreateEventModal: React.FC<modalProps> = ({
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
+  const createDateTimeFromComponents = (dateString: string, hour: number, minute: number = 0): Date => {
+    try {
+      const baseDate = createLocalDate(dateString);
+      const dateTime = new Date(baseDate);
+      dateTime.setHours(hour, minute, 0, 0)
+      return dateTime;
+    } catch (error) {
+      console.error("Error creating datetime:", { dateString, hour, minute}, error)
+      return new Date()
+    }
+  }
+
   useEffect(() => {
-    if (visible) {
-      const baseDateTime = selectedDate ? new Date(selectedDate) : new Date();
+    console.log("Modal opened with selected date:", selectedDate);
+
+    if (visible && selectedDate) {
+      const now = new Date();
+      const baseDate = createLocalDate(selectedDate);
+
+      let defaultHour = 9;
+
+      if (baseDate.toDateString() === now.toDateString() && now.getHours() >= 9) {
+        defaultHour = Math.min(now.getHours() + 1, 23);
+      }
+
+      const defaultStartTime = createDateTimeFromComponents(selectedDate, defaultHour, 0);
+      const defaultEndTime = createDateTimeFromComponents(selectedDate, defaultHour + 1, 0);
       setFormData({
         title: "",
         description: "",
-        start_time: "",
-        end_time: "",
+        start_time: defaultStartTime.toISOString(),
+        end_time: defaultEndTime.toISOString(),
       });
       setErrors({});
     }
   }, [visible, selectedDate]);
+
+  useEffect(() => {
+    if (!visible) {
+      setShowStartPicker(false);
+      setShowEndPicker(false);
+    }
+  }, [visible]);
 
   const handleChange = (field: keyof CreateEventRequest, value: string) => {
     setFormData((prev) => ({
@@ -68,6 +107,30 @@ const CreateEventModal: React.FC<modalProps> = ({
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
+
+  const handleStartTimeConfirm = (selectedDate: Date) => {
+    handleChange("start_time", selectedDate.toISOString());
+    setShowStartPicker(false);
+
+    if (formData.end_time && new Date(formData.end_time) <= selectedDate) {
+      const newEndTime = new Date(selectedDate);
+      newEndTime.setHours(selectedDate.getHours() + 1);
+      handleChange("end_time", newEndTime.toISOString());
+    }
+  };
+
+  const handleStartTimeCancel = () => {
+    setShowStartPicker(false);
+  };
+
+  const handleEndTimeConfirm = (selectedDate: Date) => {
+    handleChange("end_time", selectedDate.toISOString());
+    setShowEndPicker(false);
+  };
+
+  const handleEndTimeCancel = () => {
+    setShowEndPicker(false);
+  }
 
   const validateForm = () => {
     const newErrors: {
@@ -123,13 +186,31 @@ const CreateEventModal: React.FC<modalProps> = ({
 
   const formatDisplayTime = (isoString: string) => {
     if (!isoString) return "";
-    return new Date(isoString).toLocaleString([], {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(isoString);
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const isTomorrow = date.toDateString() === new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString();
+
+    if (isToday) {
+      return `Today at ${date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+    } else if (isTomorrow) {
+      return `Tomorrow at ${date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
+    } else {
+      return date.toLocaleString([], {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
   };
 
   return (
@@ -144,13 +225,14 @@ const CreateEventModal: React.FC<modalProps> = ({
           <Text style={styles.modalTitle}>Create Event</Text>
           <Text style={styles.modalText}>Fill out event details</Text>
           <View style={styles.modalTextInputContainer}>
-            <Text style={styles.modalText}>Event Title</Text>
+            <View style={styles.eventTitleContainer}>
             <TextInput
               value={formData.title}
               onChangeText={(text) => handleChange("title", text)}
               maxLength={255}
               placeholder="Enter Event Title"
               placeholderTextColor={themes.white}
+              textAlign="center"
               style={[
                 styles.modalTextInput,
                 errors.title && {
@@ -159,26 +241,29 @@ const CreateEventModal: React.FC<modalProps> = ({
                 },
               ]}
             />
+            </View>
             {errors.title && (
               <Text style={styles.errorText}>{errors.title}</Text>
             )}
+            <View style={styles.eventDescriptionContainer}>
             <TextInput
               value={formData.description}
               onChangeText={(text) => handleChange("description", text)}
               maxLength={500}
               placeholder="Event Description"
               placeholderTextColor={themes.white}
+              textAlign="center"
               multiline={true}
-              numberOfLines={3}
+              numberOfLines={4}
               style={[
                 styles.modalTextInput,
-                { height: 80, textAlignVertical: "top" },
                 errors.description && {
                   borderColor: "#FF4444",
                   borderWidth: 1,
                 },
               ]}
             />
+            </View>
             {errors.description && (
               <Text style={styles.errorText}>{errors.description}</Text>
             )}
@@ -191,26 +276,10 @@ const CreateEventModal: React.FC<modalProps> = ({
             >
               <Text style={styles.modalButtonText}>
                 {formData.start_time
-                  ? formData.start_time.toLocaleString()
+                  ? formatDisplayTime(formData.start_time)
                   : "Select Start Time"}
               </Text>
             </TouchableOpacity>
-            {showStartPicker && (
-              <DateTimePicker
-                value={
-                  formData.start_time ? new Date(formData.start_time) : new Date()
-                }
-                mode="datetime"
-                display={Platform.OS === "ios" ? "inline" : "default"}
-                onChange={(_, time) => {
-                  setShowStartPicker(false);
-                  if (time) {
-                    handleChange("start_time", time.toISOString());
-                  }
-                }}
-                minimumDate={new Date()}
-              />
-            )}
             {errors.start_time && (
               <Text style={styles.errorText}>{errors.start_time}</Text>
             )}
@@ -220,28 +289,10 @@ const CreateEventModal: React.FC<modalProps> = ({
             >
               <Text style={styles.modalButtonText}>
                 {formData.end_time
-                  ? formData.end_time.toLocaleString()
+                  ? formatDisplayTime(formData.end_time)
                   : "Select End Time"}
               </Text>
             </TouchableOpacity>
-            {showEndPicker && (
-              <DateTimePicker
-                value={
-                  formData.end_time ? new Date(formData.end_time) : new Date()
-                }
-                mode="datetime"
-                display={Platform.OS === "ios" ? "inline" : "default"}
-                onChange={(_, time) => {
-                  setShowEndPicker(false);
-                  if (time) {
-                    handleChange("end_time", time.toISOString());
-                  }
-                }}
-                minimumDate={
-                  formData.start_time ? new Date(formData.start_time) : new Date()
-                }
-              />
-            )}
             {errors.end_time && (
               <Text style={styles.errorText}>{errors.end_time}</Text>
             )}
@@ -267,6 +318,34 @@ const CreateEventModal: React.FC<modalProps> = ({
           </View>
         </View>
       </View>
+
+      <DateTimePickerModal
+        isVisible={showStartPicker}
+        mode='datetime'
+        onConfirm={handleStartTimeConfirm}
+        onCancel={handleStartTimeCancel}
+        date={formData.start_time ? new Date(formData.start_time) : new Date()}
+        minimumDate={new Date()}
+        title="Select Start Time"
+        cancelTextIOS="Cancel"
+        confirmTextIOS="Confirm"
+        isDarkModeEnabled={true}
+        display={Platform.OS === "ios" ? "inline" : "default"}
+      />
+
+      <DateTimePickerModal
+        isVisible={showEndPicker}
+        mode='datetime'
+        onConfirm={handleEndTimeConfirm}
+        onCancel={handleEndTimeCancel}
+        date={formData.end_time ? new Date(formData.end_time) : new Date()}
+        minimumDate={formData.start_time ? new Date(formData.start_time) : new Date()}
+        title="Select End Time"
+        cancelTextIOS="Cancel"
+        confirmTextIOS="Confirm"
+        isDarkModeEnabled={true}
+        display={Platform.OS === "ios" ? "inline" : "default"}
+      />
     </Modal>
   );
 };

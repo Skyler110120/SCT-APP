@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRef } from "react";
 import {
   View,
   Text,
@@ -12,7 +13,7 @@ import { Calendar } from "react-native-calendars";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability"
+import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability";
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
 
 import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
@@ -27,8 +28,17 @@ import {
   AvailabilityUpdate,
   Availability,
 } from "@/src/types/availability.types";
+
+import {
+  formatTimeString,
+  formatDateString,
+  formatDateRange,
+  formatDateForAPI,
+  formatISOTime,
+  getDayName,
+} from "@/src/utils/dateTimeUtils";
 import { Event, CreateEventRequest } from "@/src/types/event.types";
-import { is } from "date-fns/locale";
+import { format } from "date-fns";
 
 interface Session {
   id: number;
@@ -40,6 +50,7 @@ interface Session {
 
 export default function CalendarScreen() {
   const { user } = useAuth();
+  const availabilityScrollViewRef = useRef<ScrollView>(null);
 
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
@@ -109,7 +120,11 @@ export default function CalendarScreen() {
       const endOfMonth = new Date(
         selectedDateObject.getFullYear(),
         selectedDateObject.getMonth() + 1,
-        0
+        0,
+        23,
+        59,
+        99,
+        999
       );
 
       const response = await eventService.getEventsByCompanyAndTimeRange(
@@ -146,9 +161,24 @@ export default function CalendarScreen() {
 
   const loadInstructorAvailabilities = async (instructorId: number) => {
     try {
+      const selectedDateObject = new Date(selectedDate);
+      const startOfMonth = new Date(
+        selectedDateObject.getFullYear(),
+        selectedDateObject.getMonth(),
+        1
+      );
+      const endOfMonth = new Date(
+        selectedDateObject.getFullYear(),
+        selectedDateObject.getMonth() + 1,
+        0
+      );
+      const startDateString = formatDateForAPI(startOfMonth);
+      const endDateString = formatDateForAPI(endOfMonth);
       const response =
         await instructorAvailabilityService.getAvailabilityForCalendar(
-          instructorId
+          instructorId,
+          startDateString,
+          endDateString
         );
 
       if (response.success && response.data) {
@@ -193,8 +223,12 @@ export default function CalendarScreen() {
       return;
     }
 
-    setShowAvailabilityManagement(true);
-    setSelectedAvailabilityForActions(null);
+    const newShowState = !showAvailabilityManagement;
+    setShowAvailabilityManagement(newShowState);
+
+    if (!newShowState) {
+      setSelectedAvailabilityForActions(null);
+    }
   };
 
   const handleSelectAvailabilityForActions = (availability: Availability) => {
@@ -203,6 +237,10 @@ export default function CalendarScreen() {
     } else {
       setSelectedAvailabilityForActions(availability);
     }
+
+    setTimeout(() => {
+      availabilityScrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   const handleAddAvailability = () => {
@@ -326,15 +364,44 @@ export default function CalendarScreen() {
   };
 
   const eventsForSelectedDate = events.filter((event) => {
-    const eventDate = new Date(event.start_time).toISOString().split("T")[0];
-    return eventDate === selectedDate;
+    const eventDate = new Date(event.start_time);
+    const selectedDateObj = new Date(selectedDate + "T00:00:00");
+
+    const eventDateString = eventDate.toISOString().split("T")[0];
+    const selectedDateString = selectedDateObj.toISOString().split("T")[0];
+    return eventDateString === selectedDateString;
   });
 
-  const selectedDateObject = new Date(selectedDate);
+  const getDateObject = (dateString: string) => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const selectedDateObject = getDateObject(selectedDate);
   const selectedDayOfWeek = selectedDateObject.getDay();
-  const availabilitiesForSelectedDate = availabilities.filter(
-    (availability) => availability.day_of_week === selectedDayOfWeek
-  );
+  const getAvailabilitiesForSelectedDate = () => {
+    return availabilities.filter((availability) => {
+      if (availability.day_of_week !== selectedDayOfWeek) {
+        return false;
+      }
+
+      const selectedDateObj = new Date(selectedDate + "T00:00:00");
+      const startDate = new Date(availability.start_date + "T00:00:00");
+
+      if (selectedDateObj < startDate) {
+        return false;
+      }
+
+      if (availability.end_date) {
+        const endDate = new Date(availability.end_date + "T00:00:00");
+        if (selectedDateObj > endDate) {
+          return false;
+        }
+      }
+      return true;
+    });
+  };
+  const availabilitiesForSelectedDate = getAvailabilitiesForSelectedDate();
 
   useEffect(() => {
     if (user) {
@@ -404,36 +471,43 @@ export default function CalendarScreen() {
       <View>
         <Text style={styles.scheduleText}>Manage Availability</Text>
 
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={handleAddAvailability}
+        <ScrollView
+          ref={availabilityScrollViewRef}
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={true}
         >
-          <Text style={styles.addButtonText}>+ Add Availability</Text>
-        </TouchableOpacity>
-        {availabilities.length > 0 ? (
-          renderAvailabilityByDay()
-        ) : (
-          <Text style={styles.noAvailabilityText}>
-            No availability set. Click "Add Availability" to create one.
-          </Text>
-        )}
-
-        {selectedAvailabilityForActions && (
-          <View style={styles.availabilityActionButtons}>
+          <View style={styles.addButtonContainer}>
             <TouchableOpacity
-              style={styles.updateButton}
-              onPress={handleUpdateAvailability}
+              style={styles.addButton}
+              onPress={handleAddAvailability}
             >
-              <Text style={styles.updateButtonText}>Update Availability</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={handleDeleteAvailability}
-            >
-              <Text style={styles.deleteButtonText}>Delete Availability</Text>
+              <Text style={styles.addButtonText}>Add Availability</Text>
             </TouchableOpacity>
           </View>
-        )}
+          {availabilities.length > 0 ? (
+            renderAvailabilityByDay()
+          ) : (
+            <Text style={styles.noAvailabilityText}>
+              No availability set. Click "Add Availability" to create one.
+            </Text>
+          )}
+          {selectedAvailabilityForActions && (
+            <View style={styles.availabilityActionButtons}>
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={handleUpdateAvailability}
+              >
+                <Text style={styles.updateButtonText}>Update Availability</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDeleteAvailability}
+              >
+                <Text style={styles.deleteButtonText}>Delete Availability</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
       </View>
     );
   };
@@ -449,9 +523,15 @@ export default function CalendarScreen() {
       { day: 6, name: "Saturday" },
     ];
 
+    const daysWithAvailability = dayOfWeek.filter(({ day }) => {
+      return availabilities.some(
+        (availability) => availability.day_of_week === day
+      );
+    });
+
     return (
       <View style={styles.weeklyScheduleContainer}>
-        {dayOfWeek.map(({ day, name }) => {
+        {daysWithAvailability.map(({ day, name }) => {
           const dayAvailabilities = availabilities.filter(
             (availability) => availability.day_of_week === day
           );
@@ -464,7 +544,6 @@ export default function CalendarScreen() {
                     key={availability.id}
                     style={[
                       styles.sessionCard,
-                      styles.compactAvailabilityCard,
                       selectedAvailabilityForActions?.id === availability.id &&
                         styles.availabilityCardSelected,
                     ]}
@@ -473,13 +552,13 @@ export default function CalendarScreen() {
                     }
                   >
                     <View style={styles.availabilityInfo}>
-                      <Text style={styles.availabilityTimeText}>
-                        {availability.start_time} - {availability.end_time}
-                      </Text>
-                      <Text style={styles.availabilityDateText}>
-                        {availability.start_date}
-                        {availability.end_date &&
-                          ` to ${availability.end_date}`}
+                      <Text style={styles.sessionText}>
+                        {formatTimeString(availability.start_time)} -{" "}
+                        {formatTimeString(availability.end_time)}{" "}
+                        {formatDateRange(
+                          availability.start_date,
+                          availability.end_date
+                        )}
                       </Text>
                     </View>
 
@@ -627,34 +706,29 @@ export default function CalendarScreen() {
           {renderActionButtons()}
 
           <View style={styles.scheduleContainer}>
-            <ScrollView>
-              {user?.role === "instructor" && showAvailabilityManagement ? (
-                renderAvailabilityManagement()
-              ) : (
-                <>
-                  <Text style={styles.scheduleText}>Schedule</Text>
-
+            {user?.role === "instructor" && showAvailabilityManagement ? (
+              renderAvailabilityManagement()
+            ) : (
+              <>
+                <Text style={styles.scheduleText}>Schedule</Text>
+                <ScrollView>
                   {eventsForSelectedDate.length > 0 && (
                     <>
                       <Text style={styles.sectionSubtitle}>Events</Text>
                       {eventsForSelectedDate.map((event) => (
                         <View key={event.id} style={styles.sessionCard}>
-                          <View>
-                            <Text style={styles.sessionText}>
-                              {event.title}
-                            </Text>
-                            <Text style={styles.availabilityTimeText}>
-                              {new Date(event.start_time).toLocaleString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}{" "}
-                              -{" "}
-                              {new Date(event.end_time).toLocaleString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </Text>
-                          </View>
+                          <Text style={[styles.sessionText]}>
+                            {event.title}: {""}
+                            {new Date(event.start_time).toLocaleString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}{" "}
+                            -{" "}
+                            {new Date(event.end_time).toLocaleString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Text>
                         </View>
                       ))}
                     </>
@@ -683,6 +757,27 @@ export default function CalendarScreen() {
                     </>
                   )}
 
+                  {eventsForSelectedDate.length === 0 &&
+                    sessionsForSelectedDate.length === 0 &&
+                    availabilitiesForSelectedDate.length === 0 && (
+                      <Text style={styles.noAvailabilityText}>
+                        No schedule items for this date.
+                      </Text>
+                    )}
+
+                  {user?.role === "instructor" &&
+                    availabilities.length === 0 && (
+                      <>
+                        <Text style={styles.sectionSubtitle}>
+                          Your Availability
+                        </Text>
+                        <Text style={styles.noAvailabilityText}>
+                          No availability set. Click "Manage Availability" to
+                          create your schedule.
+                        </Text>
+                      </>
+                    )}
+
                   {availabilities.length > 0 && (
                     <>
                       <Text style={styles.sectionSubtitle}>
@@ -697,8 +792,9 @@ export default function CalendarScreen() {
                             style={styles.sessionCard}
                           >
                             <Text style={styles.sessionText}>
-                              Available: {availability.start_time} -{" "}
-                              {availability.end_time}
+                              Available:{" "}
+                              {formatTimeString(availability.start_time)} -{" "}
+                              {formatTimeString(availability.end_time)}
                             </Text>
                           </View>
                         ))
@@ -715,7 +811,8 @@ export default function CalendarScreen() {
                               "Friday",
                               "Saturday",
                             ][selectedDayOfWeek]
-                          }
+                          }{" "}
+                          {formatDateString(selectedDate)}
                         </Text>
                       )}
                       {user?.role === "instructor" && (
@@ -726,17 +823,9 @@ export default function CalendarScreen() {
                       )}
                     </>
                   )}
-
-                  {eventsForSelectedDate.length === 0 &&
-                    sessionsForSelectedDate.length === 0 &&
-                    availabilitiesForSelectedDate.length === 0 && (
-                      <Text style={styles.noAvailabilityText}>
-                        No schedule items for this date.
-                      </Text>
-                    )}
-                </>
-              )}
-            </ScrollView>
+                </ScrollView>
+              </>
+            )}
           </View>
         </SafeAreaView>
 
@@ -744,7 +833,7 @@ export default function CalendarScreen() {
           <CreateEventModal
             visible={showCreateEventModal}
             isSubmitting={isSubmittingEvent}
-            selectedDate={`${selectedDate}T09:00:00.000Z`}
+            selectedDate={selectedDate}
             onClose={() => setShowCreateEventModal(false)}
             onSubmit={handleCreateEventSubmit}
           />

@@ -8,7 +8,7 @@ from app.models.company import Company
 from app.models.user import User, UserRole
 from app.schemas.events import EventCreate, EventUpdate
 
-def create_event(db: Session, created_by: User, event_create: EventCreate) -> Event: 
+def create_event_service(db: Session, created_by: User, event_create: EventCreate) -> Event: 
     """
     Create a new event under a specific company
     
@@ -23,28 +23,26 @@ def create_event(db: Session, created_by: User, event_create: EventCreate) -> Ev
     Raises: 
         HTTPException: If the user does not have permission to create the event or the company does not exist
     """
-    company = db.query(Company).filter(Company.id == event_create.company_id).first()
+    company = db.query(Company).filter(Company.id == created_by.company_id).first()
     
     if not company:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Company not found"
         )
-    if created_by.company_id != company.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to create events for this company"
-        ) 
     if created_by.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to create events"
         )
 
+    event_data = event_create.dict()
     event = Event(
-        **event_create.dict(),
+        **event_data,
         company_id=created_by.company_id,
         created_by_user_id=created_by.id,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
     )
     
     db.add(event)
@@ -52,7 +50,7 @@ def create_event(db: Session, created_by: User, event_create: EventCreate) -> Ev
     db.refresh(event)
     return event
 
-def get_event(db: Session, user: User, event_id: int): 
+def get_event_service(db: Session, user: User, event_id: int): 
     """
     Retrieve an event by its ID    
         
@@ -81,7 +79,7 @@ def get_event(db: Session, user: User, event_id: int):
         
     return event
 
-def get_events_by_company(db: Session, user: User, company_id: int):
+def get_events_by_company_service(db: Session, user: User, company_id: int):
     """
     Retrieve all events for a specific company
     
@@ -111,7 +109,7 @@ def get_events_by_company(db: Session, user: User, company_id: int):
         
     return db.query(Event).filter(Event.company_id == company_id).all()
 
-def get_events_by_time_range(
+def get_events_by_time_range_service(
     db: Session, 
     user: User, 
     company_id: int, 
@@ -144,7 +142,7 @@ def get_events_by_time_range(
         .filter(Event.end_time <= end_time)
         .all()
     )
-def update_event(db: Session, event_id: int, event_update: EventUpdate, user: User):
+def update_event_service(db: Session, event_id: int, event_update: EventUpdate, user: User):
     """
     Update an existing event
     
@@ -184,7 +182,7 @@ def update_event(db: Session, event_id: int, event_update: EventUpdate, user: Us
     db.refresh(event)
     return event
 
-def delete_event(db: Session, event_id: int, user: User):
+def delete_event_service(db: Session, event_id: int, user: User):
     """
     Delete an existing event
     

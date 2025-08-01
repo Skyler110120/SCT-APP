@@ -5,11 +5,12 @@ from datetime import datetime
 
 from app.schemas.events import EventCreate, EventUpdate, EventRead
 from app.services.events_service import (
-    create_event,
-    get_event,
-    get_events_by_company,
-    update_event,
-    delete_event
+    create_event_service,
+    get_event_service,
+    get_events_by_company_service,
+    get_events_by_time_range_service,
+    update_event_service,
+    delete_event_service
 )
 from app.models.user import User, UserRole
 from app.dependencies.database import get_db
@@ -31,7 +32,7 @@ def create_event(
     
     Admin users can create events for their company
     """
-    return create_event(db, current_user, event_create)
+    return create_event_service(db, current_user, event_create)
 
 @router.get("/{event_id}", response_model=EventRead)
 def get_event(
@@ -44,7 +45,7 @@ def get_event(
     
     Only accessible to user who are are in the company 
     """
-    return get_event(db, current_user, event_id)
+    return get_event_service(db, current_user, event_id)
 
 @router.get("/company/{company_id}", response_model=List[EventRead])
 def get_events_by_company(
@@ -57,7 +58,7 @@ def get_events_by_company(
     
     Only accessible to users who are part of the company
     """
-    return get_events_by_company(db, current_user, company_id)
+    return get_events_by_company_service(db, current_user, company_id)
 
 @router.get("/company/{company_id}/time", response_model=List[EventRead], status_code=status.HTTP_200_OK)
 def get_events_by_time_range(
@@ -72,7 +73,7 @@ def get_events_by_time_range(
     
     Only accessible to users who are part of the company
     """
-    return get_events_by_time_range(db, current_user, company_id, start_time, end_time)
+    return get_events_by_time_range_service(db, current_user, company_id, start_time, end_time)
 
 @router.patch("/{event_id}", response_model=EventRead)
 def update_event(
@@ -86,7 +87,7 @@ def update_event(
     
     Only accessible to admins of the company
     """
-    return update_event(db, event_id, event_update, current_user)
+    return update_event_service(db, event_id, event_update, current_user)
 
 @router.delete("/{event_id}", response_model=EventRead)
 def delete_event(
@@ -99,5 +100,5 @@ def delete_event(
     
     Only accessible to admins of the company
     """
-    return delete_event(db, event_id, current_user)
+    return delete_event_service(db, event_id, current_user)
 

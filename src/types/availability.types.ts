@@ -36,6 +36,7 @@ export interface AvailabilityUpdate {
 export interface AvailabilityResponse {
     success: boolean;
     data?: Availability;
+    message?: string;
     error?: string;
 }
 

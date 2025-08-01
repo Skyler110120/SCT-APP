@@ -11,7 +11,7 @@ from app.schemas.instructor_availability import (
  )
 from app.models.user import UserRole, User
 
-def create_availability(
+def create_availability_service(
     db: Session,
     instructor: User,
     availability_create: InstructorAvailabilityCreate
@@ -35,23 +35,24 @@ def create_availability(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You do not have permission to create availability"
         )
-    if availability_create.instructor_id != instructor.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only create your own availability"
-        )
         
     availability = InstructorAvailability(
-        **availability_create.dict(),
+        day_of_week=availability_create.day_of_week,
+        start_time=availability_create.start_time,
+        end_time=availability_create.end_time,
+        start_date=availability_create.start_date,
+        end_date=availability_create.end_date,
+        status=availability_create.status,
         instructor_id=instructor.id,
         company_id=instructor.company_id
     )
+    
     db.add(availability)
     db.commit()
     db.refresh(availability)
     return availability
 
-def update_availability(
+def update_availability_service(
     db: Session,
     instructor: User,
     availability_id: int,
@@ -89,7 +90,7 @@ def update_availability(
     db.refresh(availability)
     return availability
 
-def list_my_availability(
+def list_my_availability_service(
     db: Session,
     instructor: User
 ) -> List[InstructorAvailability]:
@@ -107,7 +108,7 @@ def list_my_availability(
         InstructorAvailability.instructor_id == instructor.id
     ).all()
     
-def list_availability_for_student(
+def list_availability_for_student_service(
     db: Session,
     instructor: User,
     student: User
@@ -137,7 +138,7 @@ def list_availability_for_student(
         InstructorAvailability.status == AvailabilityStatus.AVAILABLE
     ).all()
     
-def delete_availability(
+def delete_availability_service(
     db: Session,
     instructor: User,
     availability_id: int 
@@ -174,7 +175,7 @@ def delete_availability(
     db.commit()
     return None
 
-def get_availability_for_calendar(
+def get_availability_for_calendar_service(
     db: Session,
     instructor: User,
     current_user: User,

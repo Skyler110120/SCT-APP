@@ -308,10 +308,10 @@ export const eventService = {
         }
       }
 
-      const data: Event = await response.json();
+      
       return {
         success: true,
-        data,
+        message: "Event deleted successfully",
       }
     } catch (error) {
       console.error("Error deleting event:", error);

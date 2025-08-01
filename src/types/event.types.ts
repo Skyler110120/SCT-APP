@@ -28,6 +28,7 @@ export interface UpdateEventRequest {
 
 export interface EventResponse {
     success: boolean;
+    message?: string;
     data?: Event;
     error?: string
 }

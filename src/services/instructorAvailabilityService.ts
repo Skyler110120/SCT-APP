@@ -70,10 +70,14 @@ export const instructorAvailabilityService = {
   /**
    * Get an instructor's availability to display in the calendar
    * @param instructorId - ID of the instructor
+   * @param startDate - Start date for the availability range (ISO string)
+   * @param endDate - End date for the availability range (ISO string)
    * @returns Promise with availability data or null
    */
   async getAvailabilityForCalendar(
-    instructorId: number
+    instructorId: number,
+    startDate: string,
+    endDate: string
   ): Promise<AvailabilityListResponse> {
     try {
       const token = await AsyncStorage.getItem("auth_token");
@@ -85,8 +89,13 @@ export const instructorAvailabilityService = {
         };
       }
 
+      const queryParams = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      })
+
       const response = await fetch(
-        `${API_URL}/availability/instructor/${instructorId}/calendar`,
+        `${API_URL}/availability/instructor/${instructorId}/calendar?${queryParams}`,
         {
           method: "GET",
           headers: {
@@ -194,7 +203,7 @@ export const instructorAvailabilityService = {
       const response = await fetch(
         `${API_URL}/availability/${availabilityId}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -265,10 +274,10 @@ export const instructorAvailabilityService = {
         }
       }
 
-      const data: Availability = await response.json();
+      
       return {
         success: true,
-        data,
+        message: "Availability deleted successfully",
       }
     } catch (error) {
       console.error("Failed to delete availability:", error);

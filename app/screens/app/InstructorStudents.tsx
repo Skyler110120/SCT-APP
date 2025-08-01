@@ -6,14 +6,14 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { studentScreenStyles } from "@/src/styles/studentScreen";
 
 export default function InstructorStudents() {
-    return (
-        <View style={studentScreenStyles.container}>
-            <SafeAreaView style={studentScreenStyles.safeArea}>
-                <BackgroundGradient>
-                    <Text>Students Screen</Text>
-                </BackgroundGradient>
-            </SafeAreaView>
-            <BottomNavBar />
-        </View>
-    )
+  return (
+    <View style={studentScreenStyles.container}>
+      <SafeAreaView style={studentScreenStyles.safeArea}>
+        <BackgroundGradient>
+          <Text>Students Screen</Text>
+        </BackgroundGradient>
+      </SafeAreaView>
+      <BottomNavBar />
+    </View>
+  );
 }

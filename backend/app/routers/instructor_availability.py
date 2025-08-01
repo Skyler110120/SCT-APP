@@ -9,12 +9,12 @@ from app.schemas.instructor_availability import (
     InstructorAvailabilityRead
 )
 from app.services.instructor_availability import (
-    create_availability,
-    list_my_availability,
-    list_availability_for_student,
-    update_availability,
-    delete_availability,
-    get_availability_for_calendar
+    create_availability_service,
+    list_my_availability_service,
+    list_availability_for_student_service,
+    update_availability_service,
+    delete_availability_service,
+    get_availability_for_calendar_service
 )
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
@@ -36,7 +36,7 @@ def create_availability(
     
     only instructors can create thier own availability
     """
-    return create_availability(db, current_user, availability_create)
+    return create_availability_service(db, current_user, availability_create)
 
 @router.patch("/{availability_id}", response_model=InstructorAvailabilityRead)
 def update_availability_route(
@@ -50,7 +50,7 @@ def update_availability_route(
     
     only instructors can update their own availability
     """
-    return update_availability(db, current_user, availability_id, availability_update)
+    return update_availability_service(db, current_user, availability_id, availability_update)
 
 @router.get("/me", response_model=List[InstructorAvailabilityRead])
 def list_my_availability_route(
@@ -60,7 +60,7 @@ def list_my_availability_route(
     """
     List availability for a specific instructor
     """
-    return list_my_availability(db, current_user)
+    return list_my_availability_service(db, current_user)
 
 """
 Not currently used
@@ -80,7 +80,7 @@ def list_availability_for_student(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Instructor not found"
         )
-    return list_availability_for_student(db, instructor, current_user)
+    return list_availability_for_student_service(db, instructor, current_user)
 
 @router.get("/instructor/{instructor_id}/calendar", response_model=List[InstructorAvailabilityRead])
 def get_instructor_availability_calendar(
@@ -99,8 +99,8 @@ def get_instructor_availability_calendar(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Instructor not found"
         )
-        
-    return get_availability_for_calendar(
+
+    return get_availability_for_calendar_service(
         db=db,
         instructor=instructor,
         current_user=current_user,
@@ -119,7 +119,7 @@ def delete_availability_route(
     
     only instructors can delete their own availability
     """
-    
-    delete_availability(db, current_user, availability_id)
+
+    delete_availability_service(db, current_user, availability_id)
     return None
     

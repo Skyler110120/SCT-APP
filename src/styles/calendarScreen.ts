@@ -21,14 +21,16 @@ export const calendarScreenStyles = StyleSheet.create({
     flex: 1,
     borderTopLeftRadius: 100,
     borderTopRightRadius: 100,
-    marginTop: 70,
+    marginTop: 30,
     paddingRight: 16,
     paddingLeft: 16,
-    backgroundColor: themes.vegasGold,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
   },
   scheduleText: {
     fontSize: 48,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Chakra-BoldItalic",
     marginBottom: 16,
     textAlign: 'center',
     color: themes.white,
@@ -37,30 +39,34 @@ export const calendarScreenStyles = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 15,
     padding: 16,  
-    marginBottom: 12,
+    marginBottom: 8,
+
+    borderWidth: 1,
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
   },
   sessionText: {
     fontSize: 28,
     fontFamily: "Chakra-Regular",
-    textAlign: "center",
     color: themes.white
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     marginTop: 16,
   },
   actionButton: {
-    flex: 1,
+    width: "75%",
     marginHorizontal: 8,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 20,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
   },
   actionButtonText: {
     fontSize: 24,
@@ -69,23 +75,30 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   actionButtonActive: {
     opacity: 0.7,
-    backgroundColor: themes.vegasGold
+    backgroundColor: themes.black
   },
   actionButtonTextActive: {
     fontSize: 24,
     fontFamily: "Chakra-Bold",
-    color: themes.black,
+    color: themes.white,
+  },
+  addButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 16,
   },
   addButton: {
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     marginBottom: 16,
+    borderWidth: 1,
     alignItems: "center",
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
   },
   addButtonText: {
-    fontSize: 24,
+    fontSize: 32,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
@@ -96,16 +109,21 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   availabilityInfo: {
     flex: 1,
+    justifyContent: "space-between"
   },
   availabilityTimeText: {
-    fontSize: 16,
+    marginBottom: 8,
+    
+    fontSize: 24,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
   availabilityDateText: {
-    fontSize: 16,
+    marginBottom: 4,
+    fontSize: 24,
     fontFamily: "Chakra-Regular",
     color: themes.white,
+
   },
   selectionIndicator: {
     paddingHorizontal: 8,
@@ -114,7 +132,7 @@ export const calendarScreenStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   selectionIndicatorText: {
-    fontSize: 12,
+    fontSize: 20,
     fontFamily: "Chakra-Bold",
     color: themes.black,
   },
@@ -129,8 +147,10 @@ export const calendarScreenStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
+    borderWidth: 1,
     alignItems: "center",
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
   },
   updateButtonText: {
     fontSize: 24,
@@ -142,8 +162,10 @@ export const calendarScreenStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
+    borderWidth: 1,
     alignItems: "center",
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
   },
   deleteButtonText: {
     fontSize: 24,
@@ -156,29 +178,31 @@ export const calendarScreenStyles = StyleSheet.create({
   dayScheduleContainer: {
     marginBottom: 20,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: themes.vegasGold,
   },
   dayTitle: {
     marginBottom: 8,
-    fontSize: 20,
+    fontSize: 28,
     fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    color: themes.white,
   },
   compactAvailabilityCard: {
     marginBottom: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
   },
   noAvailabilityText: {
     paddingLeft: 12,
-    fontSize: 20,
-    fontFamily: "Chakra-BoldItalic",
+    fontSize: 28,
+    textAlign: "center",
+    fontFamily: "Chakra-Regular",
     color: themes.white,
   },
   sectionSubtitle: {
     marginBottom: 12,
-    fontSize: 20,
+    fontSize: 28,
+    textAlign: "center",
     fontFamily: "Chakra-BoldItalic",
     color: themes.vegasGold,
   },
@@ -190,7 +214,7 @@ export const calendarScreenStyles = StyleSheet.create({
   hintText: {
     marginTop: 8,
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 24,
     fontFamily: "Chakra-Italic",
     color: themes.white,
   },
@@ -224,6 +248,9 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   modalTextInputContainer: {
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
     marginBottom: 16,
   },
   modalTextInput: {
@@ -232,7 +259,7 @@ export const calendarScreenStyles = StyleSheet.create({
     borderRadius: 10,
     borderColor: themes.vegasGold,
     backgroundColor: themes.black,
-    fontSize: 16,
+    fontSize: 24,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
@@ -240,6 +267,12 @@ export const calendarScreenStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 16,
+  },
+  eventDescriptionContainer: {
+    width: "60%"
+  },
+  eventTitleContainer: {
+    width: "40%",
   },
   modalButton: {
     flex: 1,
@@ -255,8 +288,14 @@ export const calendarScreenStyles = StyleSheet.create({
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
-  modalDayContainer: {
+  modalCreateContainer: {
     flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 16,
+  },
+  modalUpdateContainer: {
+    flexDirection: "column",
+    alignItems: "center",
     justifyContent: "space-around",
     marginBottom: 16,
   },
@@ -288,5 +327,12 @@ export const calendarScreenStyles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "Chakra-Bold",
     color: "#FF4444",
+  },
+  availabilityScrollContainer: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: 120,
+    flexGrow: 1,
   }
 });

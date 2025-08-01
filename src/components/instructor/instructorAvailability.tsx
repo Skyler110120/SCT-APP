@@ -16,6 +16,15 @@ import {
 } from "@/src/types/availability.types";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+import {
+  formatTimeString,
+  formatDateString,
+  formatDateRange,
+  formatISOTime,
+  getDayName,
+  createLocalDate
+} from "@/src/utils/dateTimeUtils";
+
 type AvailabilityModalProps = {
   visible: boolean;
   isSubmitting?: boolean;
@@ -74,6 +83,19 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
+  const formatDateToLocalString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatTimeToString = (date: Date): string => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+
   useEffect(() => {
     if (visible) {
       if (mode === "edit" && selectedAvailability) {
@@ -82,14 +104,16 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
           start_time: selectedAvailability.start_time,
           end_time: selectedAvailability.end_time,
           start_date: selectedAvailability.start_date,
-          end_date: selectedAvailability.end_date || "",
+          end_date: selectedAvailability.end_date || undefined,
         });
       } else {
+        const today = new Date();
+        const todayString = formatDateToLocalString(today);
         setSelectedDays([]);
         setFormData({
-          start_time: "",
-          end_time: "",
-          start_date: "",
+          start_time: "09:00",
+          end_time: "10:00",
+          start_date: todayString,
           end_date: "",
         });
       }
@@ -132,19 +156,23 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     if (!formData.start_date) {
       newErrors.start_date = "Start date is required";
     }
-    if (
-      formData.end_date &&
-      new Date(formData.end_date) < new Date(formData.start_date)
-    ) {
-      newErrors.end_date = "End date cannot be before start date";
+
+    if (formData.end_date && formData.start_date) {
+      const startDate = createLocalDate(formData.start_date);
+      const endDate = createLocalDate(formData.end_date);
+      
+      if (endDate < startDate) {
+        newErrors.end_date = "End date cannot be before start date";
+      }
     }
-    if (
-      formData.start_time &&
-      formData.end_time &&
-      new Date(`1970-01-01T${formData.start_time}`) >=
-        new Date(`1970-01-01T${formData.end_time}`)
-    ) {
-      newErrors.end_time = "End time must be after start time";
+
+    if (formData.start_time && formData.end_time) {
+      const startTime = new Date(`1970-01-01T${formData.start_time}`);
+      const endTime = new Date(`1970-01-01T${formData.end_time}`);
+      
+      if (endTime <= startTime) {
+        newErrors.end_time = "End time must be after start time";
+      }
     }
 
     setErrors(newErrors);
@@ -167,14 +195,17 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
           start_time: formData.start_time,
           end_time: formData.end_time,
           start_date: formData.start_date,
-          end_date: formData.end_date,
+          end_date: formData.end_date || undefined,
           day_of_week: selectedDays[0],
         };
         onUpdate(selectedAvailability.id, updateAvailability);
       } else if (mode === "create" && onCreate) {
         selectedDays.forEach((day) => {
           const newAvailability: CreateAvailabilityRequest = {
-            ...formData,
+            start_time: formData.start_time,
+            end_time: formData.end_time,
+            start_date: formData.start_date,
+            end_date: formData.end_date || undefined,
             day_of_week: day,
           };
           onCreate(newAvailability);
@@ -187,6 +218,19 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
       onDelete(availabilityId);
     }
   };
+  
+  const formateTimeString = (timeString: any) => {
+    if (!timeString) return "Invalid Time";
+
+    const tempDate = new Date(`1970-01-01T${timeString}`);
+
+    if (isNaN(tempDate.getTime())) return "Invalid Time";
+
+    return tempDate.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
   return (
     <Modal
       visible={visible}
@@ -203,18 +247,8 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
               </Text>
               <Text style={styles.modalText}>
                 {daysOfWeek[selectedAvailability.day_of_week].label}{" "}
-                {new Date(selectedAvailability.start_time).toLocaleTimeString(
-                  [],
-                  {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }
-                )}{" "}
-                -{" "}
-                {new Date(selectedAvailability.end_time).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {formateTimeString(selectedAvailability.start_time)} -{" "}
+                {formateTimeString(selectedAvailability.end_time)}
               </Text>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity style={styles.modalButton} onPress={onClose}>
@@ -258,35 +292,22 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                     >
                       <Text style={styles.modalText}>
                         {daysOfWeek[availability.day_of_week].label}:{" "}
-                        {new Date(availability.start_time).toLocaleTimeString(
-                          [],
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )}{" "}
-                        -
-                        {new Date(availability.end_time).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        ({new Date(availability.start_date).toLocaleDateString()}
-                        {availability.end_date
-                          ? ` - ${new Date(
-                              availability.end_date
-                            ).toLocaleDateString()}`
-                          : ""}
-                        )
+                        {formatTimeString(availability.start_time)} -{" "}
+                        {formatTimeString(availability.end_time)} {" "}
+                        {formatDateRange(availability.start_date, availability.end_date)}
                       </Text>
                     </View>
                   ))
                 )}
               </View>
-              <Text style={styles.modalText}>Select Days of Week</Text>
+              {mode === "create" && (
+                <Text style={styles.modalText}>Select Days of Week</Text>
+              )}
               {mode === "edit" && selectedAvailability ? (
-                <View style={styles.modalDayContainer}>
+                <View style={styles.modalUpdateContainer}>
                   <View
-                    style={[styles.modalDayButtonSelected, { opacity: 0.7 }]}
+                    style={[styles.modalDayButtonSelected, 
+                      { width: "10%", alignItems: "center" }]}
                   >
                     <Text style={styles.modalDayTextSelected}>
                       {daysOfWeek[selectedAvailability.day_of_week].label}
@@ -297,7 +318,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                   </Text>
                 </View>
               ) : (
-                <View style={styles.modalDayContainer}>
+                <View style={styles.modalCreateContainer}>
                   {daysOfWeek.map((day) => (
                     <TouchableOpacity
                       key={day.value}
@@ -335,7 +356,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 >
                   <Text style={styles.modalButtonText}>
                     {formData.start_date
-                      ? new Date(formData.start_date).toLocaleDateString()
+                      ? formatDateString(formData.start_date)
                       : "Select Start Date"}
                   </Text>
                 </TouchableOpacity>
@@ -343,7 +364,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                   <DateTimePicker
                     value={
                       formData.start_date
-                        ? new Date(formData.start_date)
+                        ? createLocalDate(formData.start_date)
                         : new Date()
                     }
                     mode="date"
@@ -351,7 +372,8 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                     onChange={(_, date) => {
                       setShowStartDatePicker(false);
                       if (date) {
-                        handleChange("start_date", date.toLocaleTimeString());
+                        const dateString = formatDateToLocalString(date);
+                        handleChange("start_date", dateString);
                       }
                     }}
                   />
@@ -365,21 +387,24 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 >
                   <Text style={styles.modalButtonText}>
                     {formData.end_date
-                      ? new Date(formData.end_date).toLocaleDateString()
+                      ? formatDateString(formData.end_date)
                       : "Select End Date (Optional)"}
                   </Text>
                 </TouchableOpacity>
                 {showEndDatePicker && (
                   <DateTimePicker
                     value={
-                      formData.end_date ? new Date(formData.end_date) : new Date()
+                      formData.end_date
+                        ? createLocalDate(formData.end_date)
+                        : new Date()
                     }
                     mode="date"
                     display={Platform.OS === "ios" ? "spinner" : "default"}
                     onChange={(_, date) => {
                       setShowEndDatePicker(false);
                       if (date) {
-                        handleChange("end_date", date.toISOString());
+                        const dateString = formatDateToLocalString(date);
+                        handleChange("end_date", dateString);
                       }
                     }}
                   />
@@ -396,12 +421,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 >
                   <Text style={styles.modalButtonText}>
                     {formData.start_time
-                      ? new Date(
-                          `1970-01-01T${formData.start_time}`
-                        ).toLocaleString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                      ? formatTimeString(formData.start_time)
                       : "Select Start Time"}
                   </Text>
                 </TouchableOpacity>
@@ -417,10 +437,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                     onChange={(_, time) => {
                       setShowStartTimePicker(false);
                       if (time) {
-                        const timeString = time
-                          .toTimeString()
-                          .split(" ")[0]
-                          .slice(0, 5);
+                        const timeString = formatTimeToString(time);
                         handleChange("start_time", timeString);
                       }
                     }}
@@ -435,12 +452,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 >
                   <Text style={styles.modalButtonText}>
                     {formData.end_time
-                      ? new Date(
-                          `1970-01-01T${formData.end_time}`
-                        ).toLocaleString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                      ? formatTimeString(formData.end_time)
                       : "Select End Time"}
                   </Text>
                 </TouchableOpacity>
@@ -456,10 +468,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                     onChange={(_, time) => {
                       setShowEndTimePicker(false);
                       if (time) {
-                        const timeString = time
-                          .toTimeString()
-                          .split(" ")[0]
-                          .slice(0, 5);
+                        const timeString = formatTimeToString(time);
                         handleChange("end_time", timeString);
                       }
                     }}
@@ -470,11 +479,8 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 )}
               </View>
               <View style={styles.modalButtonContainer}>
-                <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={onClose}
-                >
-                    <Text style={styles.modalButtonText}>Cancel</Text>
+                <TouchableOpacity style={styles.modalButton} onPress={onClose}>
+                  <Text style={styles.modalButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalButton}
@@ -485,7 +491,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                     <ActivityIndicator size="small" color={themes.vegasGold} />
                   ) : (
                     <Text style={styles.modalButtonText}>
-                        {mode === "edit" ? "Update" : "Create"}
+                      {mode === "edit" ? "Update" : "Create"}
                     </Text>
                   )}
                 </TouchableOpacity>
