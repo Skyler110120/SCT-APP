@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { themes } from "@/src/context/themes";
 import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
-import { User, UserRole } from "@/src/types/auth.types";
+import { User } from "@/src/types/auth.types";
 
 interface UserTableProps {
   users: User[];

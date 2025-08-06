@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, func
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 from app.database.database import Base
 
@@ -11,13 +10,12 @@ class CourseVideo(Base):
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     video_url = Column(String(500), nullable=False)
-    druation_seconds = Column(Integer, nullable=True)
     order_index = Column(Integer, nullable=False)
-    is_preview = Column(Boolean, default=False)
+    week_number = Column(Integer, nullable=True)
     course_id = Column(Integer, ForeignKey('courses.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
     
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     # Relationships
     course = relationship("Course", back_populates="videos")
     

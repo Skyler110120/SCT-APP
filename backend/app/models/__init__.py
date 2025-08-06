@@ -5,3 +5,6 @@ from .company import Company
 from .invite_code import CompanyInviteCode
 from .events import Event
 from .instructor_availability import InstructorAvailability
+from .course import Course
+from .course_video import CourseVideo
+from .student_enrollment import StudentEnrollment

@@ -8,7 +8,8 @@ from app.routers import (
     company, 
     invite_code,
     events,
-    instructor_availability
+    instructor_availability,
+    course
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -31,6 +32,7 @@ app.include_router(invite_code.router)
 app.include_router(onboarding.router)
 app.include_router(events.router)
 app.include_router(instructor_availability.router)
+app.include_router(course.router)
 
 
 app.add_middleware(

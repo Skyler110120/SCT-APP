@@ -15,6 +15,10 @@ const navIcons = {
     studentsIcon: require("@/src/assets/images/students-page.png"),
     studentsIconActive: require("@/src/assets/images/students-page-active.png"),
   },
+  courses: {
+    courseIcon: require("@/src/assets/images/courses-page.png"),
+    courseIconActive: require("@/src/assets/images/courses-page-active.png"),
+  }
 };
 
 const logo = {

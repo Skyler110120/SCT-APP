@@ -1,11 +1,10 @@
-import React, { act } from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { usePathname, useRouter, Link } from "expo-router";
-import { useAuth } from "@/src/context/AuthContext";
-import { UserRole } from "@/src/types/auth.types";
 import Images from "@/src/assets/images";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
+import { UserRole } from "@/src/types/auth.types";
+import { Link, usePathname, useRouter } from "expo-router";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AppRouterType = Parameters<typeof Link>[0]["href"];
 
@@ -25,6 +24,12 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           route: "/screens/app/MasterAdminDashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
+        },
+        {
+          name: "Courses",
+          route: "/screens/app/MasterAdminCourseManagement",
+          icon: Images.navIcons.courses.courseIcon,
+          activeIcon: Images.navIcons.courses.courseIconActive,
         },
         {
           name: "Profile",
@@ -54,6 +59,12 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           activeIcon: Images.navIcons.profile.profileIconActive,
         },
         {
+          name: "Courses",
+          route: "",
+          icon: Images.navIcons.courses.courseIcon,
+          activeIcon: Images.navIcons.courses.courseIconActive,
+        },
+        {
           name: "Profile",
           route: "/screens/app/InstructorProfile",
           icon: Images.navIcons.profile.profileIcon,
@@ -81,6 +92,12 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           activeIcon: Images.navIcons.students.studentsIconActive,
         },
         {
+          name: "Courses",
+          route: "",
+          icon: Images.navIcons.courses.courseIcon,
+          activeIcon: Images.navIcons.courses.courseIconActive,
+        },
+        {
           name: "Profile",
           route: "/screens/app/InstructorProfile",
           icon: Images.navIcons.profile.profileIcon,
@@ -102,10 +119,10 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
         {
-          name: "Students",
-          route: "/screens/app/InstructorStudents",
-          icon: Images.navIcons.students.studentsIcon,
-          activeIcon: Images.navIcons.students.studentsIconActive,
+          name: "Courses",
+          route: "",
+          icon: Images.navIcons.courses.courseIcon,
+          activeIcon: Images.navIcons.courses.courseIconActive,
         },
         {
           name: "Profile",
@@ -113,7 +130,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },
-    ]; // Default return for other roles
+    ];
   };
 
   const navItems = getNavItemsForRole();

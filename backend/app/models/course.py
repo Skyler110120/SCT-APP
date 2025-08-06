@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, func
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 from app.database.database import Base
 
@@ -11,17 +10,18 @@ class Course(Base):
     title = Column(String(200), nullable=False, index=True)
     description = Column(Text, nullable=True)
     required_gun_type = Column(String(100), nullable=False)
-    duration = Column(Integer, nullable=True)
+    difficulty_level = Column(String(50), nullable=False)
     pdf_url = Column(String(500), nullable=True)
     instructor_script_url = Column(String(500), nullable=True)
+    total_weeks = Column(Integer, default=24)
     is_active = Column(Boolean, default=True)
     order_index = Column(Integer, nullable=False)
-    
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    videos = relationship("Video", back_populates="course", cascade="all, delete-orphan")
+    videos = relationship("CourseVideo", back_populates="course", cascade="all, delete-orphan")
     enrollments = relationship("StudentEnrollment", back_populates="course")
     
     def __repr__(self):
