@@ -299,43 +299,43 @@ def delete_course(db: Session, course_id: int, admin: User) -> None:
     db.delete(course)
     db.commit()
 
-def get_all_courses_instructor(db: Session, instructor: User) -> List[CourseInstructorRead]:
+def get_all_courses_instructor_and_admin(db: Session, user: User) -> List[CourseInstructorRead]:
     """
     Get all courses with full details for instructor view
     
     Args:
         db: Database session
-        instructor: instructor teaching the courses
+        user: User requesting the courses
         
     Returns:
         List[CourseRead]: List of courses with full details
     """
     
-    if instructor.role != UserRole.INSTRUCTOR:
+    if user.role not in [UserRole.INSTRUCTOR, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only instructors can access full course details"
+            detail="Only instructors and administrators can access full course details"
         )
     
     return db.query(Course).filter(Course.is_active == True).order_by(Course.order_index).all()
 
-def update_student_weekly_progress(db: Session, instructor: User, progress_data: WeeklyProgressUpdate) -> EnrollmentRead:
+def update_student_weekly_progress(db: Session, user: User, progress_data: WeeklyProgressUpdate) -> EnrollmentRead:
     """
     Update weekly progress for a student in a course
     
     Args:
         db: Database session
-        instructor: Instructor updating the progress
+        user: Instructor updating the progress
         progress_data: Data containing student ID, course ID, and progress percentage
         
     Returns:
         Updated enrollment details with progress
     """
     
-    if instructor.role != UserRole.INSTRUCTOR:
+    if user.role not in [UserRole.INSTRUCTOR, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only instructors can update student progress"
+            detail="Only instructors and administrators can update student progress"
         )
     
     enrollment = db.query(StudentEnrollment).filter(
@@ -364,18 +364,18 @@ def update_student_weekly_progress(db: Session, instructor: User, progress_data:
     db.refresh(enrollment)
     return enrollment
 
-def get_instructor_students(db: Session, instructor: User) -> List[StudentWeeklyProgress]:
+def get_students_progress_by_role(db: Session, user: User) -> List[StudentWeeklyProgress]:
     """
     Show instructors students with their progress
     
     Args:
         db: Database session
-        instructor: Instructor requesting student progress
+        user: User requesting the student progress
     Returns:
         List of students with their weekly progress
     """
     
-    if instructor.role != UserRole.INSTRUCTOR:
+    if user.role not in [UserRole.INSTRUCTOR, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only instructors can access student progress"

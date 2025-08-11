@@ -43,6 +43,24 @@ export interface StudentWeeklyProgress {
     days_since_enrollment: number;
 }
 
+export interface StudentStats {
+    type: 'student';
+    courseTitle: string;
+    totalWeeks: number;
+    videosAvailable: number;
+    currentWeek: number;
+    progressPercentage: number;
+}
+
+export interface InstructorStats {
+    type: 'instructor';
+    totalCourses: number;
+    totalStudents: number;
+    studentsInProgress: number;
+}
+
+export type Stats = StudentStats | InstructorStats;
+
 export interface EnrollmentCreateRequest {
     course_id: number;
 }

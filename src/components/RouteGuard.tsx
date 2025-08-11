@@ -34,9 +34,9 @@ export function RouteGuard({ children }: RouterGuardProps) {
       return;
     } else if (isAuthenticated && isAuthRoute) {
       if (user) {
-        navigateByRole(user.role, user.hasCompletedOnboarding);
+        navigateByRole(user.role, user.has_completed_onboarding);
       } else {
-        router.replace("/screens/auth/Dashboard")
+        router.replace("/screens/auth/Dashboard");
       }
       return
     }
@@ -46,13 +46,13 @@ export function RouteGuard({ children }: RouterGuardProps) {
 
         if (path.includes("masterAdminDashboard") && !hasRole(UserRole.MASTER_ADMIN)) {
             console.log("Access denied: Master Admin role required.");
-            navigateByRole(user?.role || UserRole.STUDENT, user?.hasCompletedOnboarding ?? false)
+            navigateByRole(user?.role || UserRole.STUDENT, user?.has_completed_onboarding ?? false)
             return;
         }
 
         if (path.includes("adminDashboard") && !hasRole([UserRole.MASTER_ADMIN, UserRole.ADMIN])) {
         console.log("Access denied: Admin or Master Admin role required.");
-        navigateByRole(user?.role || UserRole.STUDENT, user?.hasCompletedOnboarding ?? false);
+        navigateByRole(user?.role || UserRole.STUDENT, user?.has_completed_onboarding ?? false);
         return;
       }
     }

@@ -89,22 +89,3 @@ export function isValidEmail(email: string): boolean {
 export function isValidPassword(password: string): boolean {
   return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }
-
-export function userFormDataToSignupData(
-  formData: UserFormData,
-  companyId: number,
-  role: UserRole,
-  inviteCode: string,
-  instructorId?: number | null
-): EnhancedSignupData {
-  return {
-    email: formData.email,
-    password: formData.password,
-    first_name: formData.first_name,
-    last_name: formData.last_name,
-    company_id: companyId,
-    role,
-    invite_code: inviteCode,
-    instructor_id: instructorId ?? undefined
-  };
-}

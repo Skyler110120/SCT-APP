@@ -12,7 +12,6 @@ import {
   getInstructorDisplayName,
 } from "@/src/types/instructor.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
-import { UserRole } from "@/src/types/auth.types";
 import { onboardingService } from "@/src/services/onboardingService";
 import { themes } from "@/src/context/themes";
 import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";

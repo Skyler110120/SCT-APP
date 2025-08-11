@@ -15,9 +15,9 @@ from app.services.course_service import (
     enroll_student,
     get_student_course,
     drop_student_from_course,
-    get_all_courses_instructor,
+    get_all_courses_instructor_and_admin,
     update_student_weekly_progress,
-    get_instructor_students,
+    get_students_progress_by_role,
     get_all_courses_admin,
     create_course,
     update_course,
@@ -119,11 +119,11 @@ def list_courses_for_instructor(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get all courses for instructor
+    Get all courses for instructor and administrators
     """
     
     try:
-        courses = get_all_courses_instructor(db, current_user)
+        courses = get_all_courses_instructor_and_admin(db, current_user)
         return courses
     except HTTPException:
         raise
@@ -134,7 +134,7 @@ def list_courses_for_instructor(
         )
 
 @router.get("/instructor/students", response_model=List[StudentWeeklyProgress])
-def get_my_students_progress(
+def get_students_progress_overview(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -143,7 +143,7 @@ def get_my_students_progress(
     """
     
     try:
-        students = get_instructor_students(db, current_user)
+        students = get_students_progress_by_role(db, current_user)
         return students
     except HTTPException:
         raise

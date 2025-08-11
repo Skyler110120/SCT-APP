@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from datetime import datetime
 import logging
 
 from app.dependencies.database import get_db
@@ -25,6 +26,8 @@ from app.services.invite_code_service import (
     consume_invite_code,
 )
 from app.models.user import User, UserRole
+from app.models.course import Course
+from app.models.student_enrollment import StudentEnrollment, EnrollmentStatus
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +49,7 @@ def _calculate_onboarding_status(user: User) -> tuple[bool, bool]:
         Tuple of (needs_onboarding, has_completed_onboarding)
     """
     try:
-        if user.role == UserRole.MasterAdmin:
+        if user.role == UserRole.MASTERADMIN:
             logger.debug(f"User {user.id} is MasterAdmin - skipping all onboarding")
             return False, True
         
@@ -195,6 +198,7 @@ def enhanced_signup(
                 detail="Company is not active"
             )
         
+        instructor = None
         if user_data.instructor_id:
             if user_data.role != UserRole.STUDENT:
                 raise HTTPException(
@@ -223,6 +227,25 @@ def enhanced_signup(
             
             logger.info(f"Student {user_data.email} will be assigned to instructor {instructor.email}")
             
+        course = None
+        if user_data.role == UserRole.STUDENT: 
+            if not user_data.course_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Course selection is required for student registration"
+                )
+            
+            course = db.query(Course).filter(
+                Course.id == user_data.course_id,
+                Course.is_active == True
+            ).first()
+            
+            if not course:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Selected course is not available"
+                )
+                
         if user_data.invite_code:
             code_consumed = consume_invite_code(db, user_data.invite_code)
             if not code_consumed:
@@ -233,35 +256,46 @@ def enhanced_signup(
                 )
             logger.info(f"Invite code consumed for {user_data.email}")
         
+        company_user_count = db.query(User).filter(
+            User.company_id == user_data.company_id,
+            User.is_active == True
+        ).count()
+        
+        will_be_first_user = company_user_count == 0
+        
+        final_role = UserRole.ADMIN if will_be_first_user else UserRole.STUDENT
+        
         user_create_data = UserCreate(
             email=user_data.email,
             password=user_data.password,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            role=UserRole.STUDENT,
+            role=final_role,
             company_id=user_data.company_id,
             instructor_id=user_data.instructor_id,
-            has_completed_onboarding=True  # Registration completes onboarding
+            has_completed_onboarding=True  
         )
-        
         new_user = create_user(db, user_create_data)
         
-        company_user_count = db.query(User).filter(
-            User.company_id == user_data.company_id,
-            User.is_active == True
-        ).count()
-
-        is_first_user = company_user_count == 1
-        if is_first_user:
-            new_user.role = UserRole.ADMIN
-            db.commit()
-            db.refresh(new_user)
-        else:
-            logger.info(f"Subsequent user: {new_user.email} remains Student")
-        logger.info(f"Signup successful for {new_user.email} (first user: {is_first_user})")
-        if new_user.instructor_id:
-            logger.info(f"Student {new_user.id} assigned to instructor {new_user.instructor_id}")
+        enrollment = None
+        if new_user.role == UserRole.STUDENT and user_data.course_id:
+            enrollment = StudentEnrollment(
+                student_id=new_user.id,
+                course_id=user_data.course_id,
+                status=EnrollmentStatus.ACTIVE,
+                current_week=1,
+                enrolled_at=datetime.now()
+            )
+            
+            db.add(enrollment)
+            logger.info(f"Student {new_user.email} enrolled in course ID {user_data.course_id}")
         
+        db.commit()
+        
+        db.refresh(new_user)
+        if enrollment:
+            db.refresh(enrollment)
+            
         return UserInfo(
             user_id=new_user.id,
             email=new_user.email,

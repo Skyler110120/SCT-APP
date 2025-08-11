@@ -30,6 +30,12 @@ export interface UserFormData {
 }
 export type PartialUserFormData = Partial<UserFormData>;
 
+export interface UserFormDataWithRegistration extends UserFormData{
+  companyInfo?: CompanyInfo;
+  instructor_id?: number;
+  course_id?: number;
+}
+
 export interface EnhancedSignupData {
   email: string;
   password: string;
@@ -37,7 +43,8 @@ export interface EnhancedSignupData {
   last_name: string;
   company_id?: number;
   role?: UserRole;
-  instructor_id?: number;
+  instructor_id?: number | null;
+  course_id?: number | null;
   invite_code?: string;
 }
 

@@ -25,6 +25,7 @@ class RegisterRequest(BaseModel):
     role: Optional[UserRole] = UserRole.STUDENT
     company_id: Optional[int] = None
     instructor_id: Optional[int] = None
+    course_id: Optional[int] = None
     invite_code: str
     
     class Config:

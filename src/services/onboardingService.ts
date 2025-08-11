@@ -9,11 +9,12 @@ import {
   EnhancedSignupData,
   EnhancedSignupResponse,
   UserFormData,
+  UserFormDataWithRegistration,
 } from "@/src/types/onboarding.types";
+import { CourseSummary } from "@/src/types/course.types";
 import { UserRole, UserResponse } from "../types/auth.types";
 import {
   isValidEnhancedSignupData,
-  userFormDataToSignupData,
 } from "../utils/onboardingValidationUtils";
 
 let API_URL: string;
@@ -33,6 +34,7 @@ const ONBOARDING_STORAGE_KEYS = {
   COMPANY_INFO: "onboarding_company_info",
   SELECTED_ROLE: "onboarding_selected_role",
   SELECTED_INSTRUCTOR: "onboarding_selected_instructor",
+  SELECTED_COURSE: "onboarding_selected_course",
   FORM_DATA: "onboarding_form_data",
   CURRENT_STEP: "onboarding_current_step",
 };
@@ -191,17 +193,18 @@ export const onboardingService = {
   },
 
   async createSignupDataFromOnboarding(
-    formData: UserFormData
+    registrationData: UserFormDataWithRegistration
   ): Promise<EnhancedSignupData | null> {
     try {
       console.log("Assembling signup data from onboarding flow");
 
-      const [inviteCode, companyInfo, intendedRole, selectedInstructor] =
+      const [inviteCode, companyInfo, intendedRole, selectedInstructor, selectedCourse] =
         await Promise.all([
           this.getStoredInviteCode(),
           this.getStoredCompanyInfo(),
           this.getStoredSelectedRole(),
           this.getStoredSelectedInstructor(),
+          this.getStoredSelectedCourse()
         ]);
 
       if (!inviteCode || !companyInfo || !intendedRole) {
@@ -210,19 +213,30 @@ export const onboardingService = {
       }
 
       const needsInstructor = intendedRole === UserRole.STUDENT;
+      const needsCourse = intendedRole === UserRole.STUDENT;
 
       if (needsInstructor && !selectedInstructor) {
         console.error("Student role requires instructor selection");
         return null;
       }
 
-      const signupData = userFormDataToSignupData(
-        formData,
-        companyInfo.company_id,
-        UserRole.STUDENT,
-        inviteCode,
-        needsInstructor ? selectedInstructor?.id || null : null
-      );
+      if (needsCourse && !selectedCourse) {
+        console.error("Student role requires course selection");
+        return null;
+      }
+
+      const courseId = selectedCourse?.id || registrationData.course_id || null;
+      const signupData: EnhancedSignupData = {
+        email: registrationData.email,
+        password: registrationData.password,
+        first_name: registrationData.first_name,
+        last_name: registrationData.last_name,
+        role: UserRole.STUDENT,
+        company_id: companyInfo.company_id,
+        instructor_id: needsInstructor ? selectedInstructor?.id || null : null,
+        course_id: courseId,
+        invite_code: inviteCode,
+    };
 
       console.log("✅ Signup data assembled successfully");
       return signupData;
@@ -324,6 +338,7 @@ export const onboardingService = {
         "onboarding_company_info",
         "onboarding_selected_role",
         "onboarding_selected_instructor",
+        "onboarding_selected_course",
         "onboarding_form_data",
       ];
 
@@ -350,6 +365,10 @@ export const onboardingService = {
     return this.getOnboardingData('selectedInstructor');
   },
 
+  async getStoredSelectedCourse(): Promise<CourseSummary | null> {
+    return this.getOnboardingData('selectedCourse');
+  },
+
   async getStoredFormData(): Promise<UserFormData | null> {
     return this.getOnboardingData('formData');
   },
@@ -368,6 +387,10 @@ export const onboardingService = {
 
   async saveSelectedInstructor(instructor: InstructorOption): Promise<void> {
     return this.saveOnboardingData('selectedInstructor', instructor);
+  },
+
+  async saveSelectedCourse(course: CourseSummary): Promise<void> {
+    return this.saveOnboardingData('selectedCourse', course);
   },
 
   async saveFormData(data: UserFormData): Promise<void> {

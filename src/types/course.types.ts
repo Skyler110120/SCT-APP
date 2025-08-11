@@ -32,9 +32,12 @@ export interface CourseSummary {
     order_index: number;
 }
 
+export type CourseView = CourseStudentView | CourseInstructorView;
+
 export interface CourseStudentView {
     id: number;
     title: string;
+    viewType: 'student';
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
@@ -46,6 +49,7 @@ export interface CourseStudentView {
 export interface CourseInstructorView {
     id: number;
     title: string;
+    viewType: 'instructor';
     description?: string;
     required_gun_type: string;
     difficulty_level: string;

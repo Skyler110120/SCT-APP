@@ -60,7 +60,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Courses",
-          route: "",
+          route: "/screens/app/Courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
@@ -93,7 +93,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Courses",
-          route: "",
+          route: "/screens/app/Courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
@@ -120,7 +120,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Courses",
-          route: "",
+          route: "/screens/app/Courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },

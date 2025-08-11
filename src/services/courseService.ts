@@ -18,7 +18,7 @@ import {
   VideoResponse,
 } from "../types/course.types";
 
-import { EnrollmentResponse } from "../types/enrollment.types";
+import { EnrollmentResponse, EnrollmentWithCourseResponse } from "../types/enrollment.types";
 
 let API_URL: string;
 
@@ -136,7 +136,7 @@ export const courseService = {
    * Get student's enrolled course with materials
    * @returns Promise with enrolled course data or error
    */
-  async getMyEnrolledCourse(): Promise<CourseStudentResponse> {
+  async getMyEnrolledCourse(): Promise<EnrollmentWithCourseResponse> {
     try {
       console.log("FETCHING MY ENROLLED COURSE");
 
@@ -149,7 +149,7 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/course/my-course`, {
+      const response = await fetch(`${API_URL}/courses/my-course`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

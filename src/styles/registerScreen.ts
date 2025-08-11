@@ -19,11 +19,18 @@ export const registerScreenStyles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     alignItems: "center",
-    gap: 50,
+    gap: 35,
+    paddingHorizontal: 20,
+    minHeight: "100%"
   },
   image: {
-    width: 300,
-    height: 300,
+    width: "40%",
+    height: "22%",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingVertical: 20,
   },
   nameInputBoxContainer: {
     flexDirection: "row",
@@ -39,11 +46,10 @@ export const registerScreenStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
     backgroundColor: themes.black,
     color: themes.vegasGold,
-    fontSize: 36,
+    fontSize: 30,
     fontFamily: "Chakra-Italic",
   },
   textInputBox: {
-    height: 90,
     width: "75%",
     paddingHorizontal: 10,
     borderRadius: 5,
@@ -51,11 +57,10 @@ export const registerScreenStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
     backgroundColor: themes.black,
     color: themes.vegasGold,
-    fontSize: 36,
+    fontSize: 30,
     fontFamily: "Chakra-Italic",
   },
   signUpButton: {
-    height: 80,
     width: "60%",
     backgroundColor: themes.vegasGold,
     borderRadius: 15,
@@ -94,17 +99,15 @@ export const registerScreenStyles = StyleSheet.create({
   },
   welcomeText: {
     textAlign: "center",
-    lineHeight: 28,
     marginBottom: 8,
     letterSpacing: 0.5,
-    fontSize: 22,
+    fontSize: 32,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   welcomeSubtext: {
     textAlign: "center",
-    lineHeight: 22,
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
@@ -234,4 +237,182 @@ export const registerScreenStyles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 16,
   },
+
+  //Course Selection Modal styles
+  courseSelectionModal: {
+    width: '90%',
+    maxWidth: 500,
+    minHeight: '40%',
+    maxHeight: '85%'
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: themes.vegasGold,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: themes.vegasGold,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  courseListContainer: {
+    flex: 1,
+  },
+  courseListTitle: {
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    textAlign: "center",
+    marginBottom: 8,
+    color: themes.vegasGold,
+  },
+  courseListDescription: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    textAlign: "center",
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    color: themes.white,
+  },
+  courseScrollView: {
+    flex: 1,
+    marginBottom: 15,
+  },
+  courseCard: {
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: themes.vegasGold + '40',
+    backgroundColor: themes.black,
+  },
+  selectedCourseCard: {
+    backgroundColor: themes.vegasGold,
+    borderColor: themes.vegasGold
+  },
+  courseCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  courseIconContainer: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: themes.vegasGold + '20',
+  },
+  courseTitleContainer: {
+    flex: 1,
+  },
+  courseTitle: {
+    fontSize: 18,
+    marginBottom: 6,
+    fontFamily: "Chakra-Bold",
+    color: themes.white
+  },
+  selectedCourseTitle: {
+    color: themes.black,
+  },
+  courseMetaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  difficultyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: themes.black + '30',
+  },
+  difficultyText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Bold",
+  },
+  gunTypeText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  selectedGunTypeText: {
+    color: themes.black,
+  },
+  courseDescription: {
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    marginBottom: 12,
+  },
+  selectedCourseDescription: {
+    color: themes.black,
+  },
+  courseFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  courseOrder: {
+    fontSize: 12,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+  },
+  selectedCourseOrder: {
+    color: themes.black,
+  },
+  savingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  savingText: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontFamily: "Chakra-Bold",
+    marginTop: 16,
+    marginBottom: 8,
+    color: themes.vegasGold,
+  },
+  emptyStateDescription: {
+    fontSize: 14,
+    textAlign: "center",
+    fontFamily: "Chakra-Regular",
+    marginBottom: 24,
+    paddingHorizontal: 20,
+    color: themes.white,
+  },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: themes.vegasGold,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
+  }
 });
