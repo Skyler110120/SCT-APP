@@ -28,6 +28,8 @@ if (__DEV__) {
   } else {
     API_URL = "http://localhost:8000";
   }
+} else {
+  API_URL = "https://your-production-api.com";
 }
 
 export const courseService = {

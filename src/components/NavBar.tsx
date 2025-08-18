@@ -31,12 +31,6 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
-        {
-          name: "Profile",
-          route: "/screens/app/InstructorProfile",
-          icon: Images.navIcons.profile.profileIcon,
-          activeIcon: Images.navIcons.profile.profileIconActive,
-        },
       ];
     } else if (user?.role === UserRole.ADMIN) {
       return [
@@ -63,12 +57,6 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           route: "/screens/app/Courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
-        },
-        {
-          name: "Profile",
-          route: "/screens/app/InstructorProfile",
-          icon: Images.navIcons.profile.profileIcon,
-          activeIcon: Images.navIcons.profile.profileIconActive,
         },
       ];
     } else if (user?.role === UserRole.INSTRUCTOR) {
@@ -99,7 +87,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Profile",
-          route: "/screens/app/InstructorProfile",
+          route: "/screens/app/UserProfile",
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },
@@ -126,7 +114,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
         },
         {
           name: "Profile",
-          route: "/screens/app/InstructorProfile",
+          route: "/screens/app/UserProfile",
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },

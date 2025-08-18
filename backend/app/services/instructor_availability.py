@@ -21,7 +21,7 @@ def create_availability_service(
     
     Args:
         db: Database Session
-        current_user: User creating the availability
+        instructor: User creating the availability
         availability_create: InstructorAvailabilityCreate schema containing availability details
         
     Returns:

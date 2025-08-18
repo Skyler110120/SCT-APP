@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { router } from "expo-router";
 import { useRef } from "react";
 import {
   View,
@@ -15,6 +16,8 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
 import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability";
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
+import SessionBookingModal from "@/src/components/SessionBookingModal";
+import SessionDetailsModal from "@/src/components/SessionDetailsModal";
 
 import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
 import { themes } from "@/src/context/themes";
@@ -22,12 +25,15 @@ import { useAuth } from "@/src/context/AuthContext";
 
 import { eventService } from "@/src/services/eventService";
 import { instructorAvailabilityService } from "@/src/services/instructorAvailabilityService";
+import { sessionService } from "@/src/services/sessionService";
 
 import {
   CreateAvailabilityRequest,
   AvailabilityUpdate,
   Availability,
 } from "@/src/types/availability.types";
+import { Event, CreateEventRequest } from "@/src/types/event.types";
+import { SessionDetailed, SessionStatus } from "@/src/types/sessions.types";
 
 import {
   formatTimeString,
@@ -37,8 +43,6 @@ import {
   formatISOTime,
   getDayName,
 } from "@/src/utils/dateTimeUtils";
-import { Event, CreateEventRequest } from "@/src/types/event.types";
-import { format } from "date-fns";
 
 interface Session {
   id: number;
@@ -70,6 +74,8 @@ export default function CalendarScreen() {
   const [isSubmittingEvent, setIsSubmittingEvent] = useState<boolean>(false);
   const [isSubmittingAvailability, setIsSubmittingAvailability] =
     useState<boolean>(false);
+  const [sessions, setSessions] = useState<SessionDetailed[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState<boolean>(false);
 
   const [showCreateEventModal, setShowCreateEventModal] =
     useState<boolean>(false);
@@ -78,6 +84,16 @@ export default function CalendarScreen() {
   const [availabilityModalMode, setAvailabilityModalMode] = useState<
     "create" | "edit" | "delete"
   >("create");
+  const [showSessionBookingModal, setShowSessionBookingModal] =
+    useState<boolean>(false);
+  const [selectedAvailabilityForBooking, setSelectedAvailabilityForBooking] =
+    useState<Availability | null>(null);
+  const [showSessionDetailsModal, setShowSessionDetailsModal] =
+    useState<boolean>(false);
+  const [selectedSessionForDetails, setSelectedSessionForDetails] =
+    useState<SessionDetailed | null>(null);
+  const [isCancellingSession, setIsCancellingSession] =
+    useState<boolean>(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +105,7 @@ export default function CalendarScreen() {
 
       if (user?.company_id) {
         promises.push(loadEventsForDateRange());
+        promises.push(loadSessionsForMonth());
       }
 
       if (user?.role === "instructor") {
@@ -142,6 +159,42 @@ export default function CalendarScreen() {
       console.error("Error loading events:", error);
     } finally {
       setIsLoadingEvents(false);
+    }
+  };
+
+  const loadSessionsForMonth = async () => {
+    if (!user) return;
+    setIsLoadingSessions(true);
+
+    try {
+      const selectedDateObject = new Date(selectedDate);
+      const startOfMonth = new Date(
+        selectedDateObject.getFullYear(),
+        selectedDateObject.getMonth(),
+        1
+      );
+      const endOfMonth = new Date(
+        selectedDateObject.getFullYear(),
+        selectedDateObject.getMonth() + 1,
+        0
+      );
+
+      const response = await sessionService.getMyCalendarSessions({
+        start_date: formatDateForAPI(startOfMonth),
+        end_date: formatDateForAPI(endOfMonth),
+      });
+
+      console.log(response)
+      if (response.success && response.data) {
+        setSessions(response.data);
+        console.log("Loaded", response.data.length, "Calendar sessions");
+      } else {
+        console.error("Failed to load sessions:", response.error);
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+    } finally {
+      setIsLoadingSessions(false);
     }
   };
 
@@ -412,8 +465,79 @@ export default function CalendarScreen() {
   useEffect(() => {
     if (user && user.company_id) {
       loadEventsForDateRange();
+      loadSessionsForMonth();
     }
   }, [selectedDate, user]);
+
+  const handleAvailabilityPress = (availability: Availability) => {
+  console.log('handleAvailabilityPress called');
+  console.log('User role:', user?.role);
+  console.log('Availability:', availability);
+  
+  if (user?.role === "student") {
+    console.log('✅ Setting availability for booking');
+    setSelectedAvailabilityForBooking(availability);
+    setShowSessionBookingModal(true);
+    console.log('Modal should be showing now');
+  } else {
+    console.log('User is not a student');
+  }
+};
+
+  const handleSessionPress = (session: SessionDetailed) => {
+    setSelectedSessionForDetails(session);
+    setShowSessionDetailsModal(true);
+  };
+
+  const handleBookingSuccess = (session: SessionDetailed) => {
+    setSessions((prevSessions) => [...prevSessions, session]);
+    setShowSessionBookingModal(false);
+    Alert.alert("Successs", "Training session booked successfully");
+  };
+
+  const handleSessionCancel = async (sessionId: number) => {
+    setIsCancellingSession(true);
+    try {
+      const response = await sessionService.cancelSession(sessionId);
+
+      if (response.success) {
+        setSessions((prevSessions) =>
+          prevSessions.filter((session) => session.id !== sessionId)
+        );
+        setShowSessionDetailsModal(false);
+        Alert.alert("Success", "Session cancelled successfully");
+
+        if (user?.role === "instructor") {
+          await loadMyAvailabilities();
+        } else if (user?.instructor_id) {
+          await loadInstructorAvailabilities(user.instructor_id);
+        }
+      } else {
+        Alert.alert("Error", response.error || "Failed to cancel session");
+      }
+    } catch (error) {
+      console.error("Error cancelling session:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setIsCancellingSession(false);
+    }
+  };
+
+  const handleReviewMaterials = () => {
+    console.log("Navigate to course materials");
+    router.push({
+      pathname: "/screens/app/Courses",
+      params: {
+        courseId: selectedSessionForDetails?.course_id,
+      },
+    });
+    setShowSessionDetailsModal(false);
+  };
+
+  const handleBeginSession = (sessionId: number) => {
+    // For future performance form implementation
+    Alert.alert("Coming Soon", "Performance tracking will be available soon");
+  };
 
   const markedDates = {
     [selectedDate]: {
@@ -421,6 +545,16 @@ export default function CalendarScreen() {
       selectedColor: themes.vegasGold,
     },
   };
+
+  const sessionsForSelectedDate = sessions.filter((session) => {
+    const sessionDate = new Date(session.start_time);
+    const selectedDateObj = new Date(selectedDate + "T00:00:00");
+
+    const sessionDateString = sessionDate.toISOString().split("T")[0];
+    const selectedDateString = selectedDateObj.toISOString().split("T")[0];
+
+    return sessionDateString === selectedDateString;
+  });
 
   const renderActionButtons = () => {
     const buttons = [];
@@ -581,41 +715,6 @@ export default function CalendarScreen() {
     );
   };
 
-  const sessions: Session[] = [
-    {
-      id: 1,
-      time: "12:00 - 1:00 PM",
-      student: "Alan Honor",
-      instructor: "John Doe",
-      date: "2025-06-24",
-    },
-    {
-      id: 2,
-      time: "3:00 - 4:00 PM",
-      student: "Jeff Watts",
-      instructor: "John Doe",
-      date: "2025-06-24",
-    },
-    {
-      id: 3,
-      time: "4:00 - 5:00 PM",
-      student: "Tim Hardy",
-      instructor: "John Doe",
-      date: "2025-06-24",
-    },
-    {
-      id: 4,
-      time: "5:00 - 6:00 PM",
-      student: "Jim Hardy",
-      instructor: "John Doe",
-      date: "2025-06-24",
-    },
-  ];
-
-  const sessionsForSelectedDate = sessions.filter(
-    (sessions) => sessions.date === selectedDate
-  );
-
   if (error) {
     return (
       <View style={styles.container}>
@@ -719,15 +818,8 @@ export default function CalendarScreen() {
                         <View key={event.id} style={styles.sessionCard}>
                           <Text style={[styles.sessionText]}>
                             {event.title}: {""}
-                            {new Date(event.start_time).toLocaleString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}{" "}
-                            -{" "}
-                            {new Date(event.end_time).toLocaleString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            {formatTimeString(event.start_time)} -{" "}
+                            {formatTimeString(event.end_time)}
                           </Text>
                         </View>
                       ))}
@@ -735,24 +827,63 @@ export default function CalendarScreen() {
                   )}
                   {sessionsForSelectedDate.length > 0 && (
                     <>
-                      <Text style={styles.sectionSubtitle}>Sessions</Text>
+                      <Text style={styles.sectionSubtitle}>
+                        Training Sessions
+                      </Text>
                       {sessionsForSelectedDate.map((session) => (
-                        <View key={session.id} style={styles.sessionCard}>
-                          <Text style={styles.sessionText}>
+                        <TouchableOpacity
+                          key={session.id}
+                          style={styles.sessionCard}
+                          onPress={() => handleSessionPress(session)}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[
+                                styles.sessionText,
+                                { fontSize: 28, fontFamily: "Chakra-Bold" },
+                              ]}
+                            >
+                              {session.course_title || session.title} From {formatTimeString(session.start_time)} -{" "}{formatTimeString(session.end_time)}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.sessionText,
+                                { fontSize: 28 }
+                              ]}
+                            >
+                              Progress: {session.enrollment_progress_display}
+                            </Text>
                             {user?.role === "instructor" ? (
-                              <Text>
-                                {session.time} with {session.student}
+                              <Text
+                                style={[
+                                  styles.sessionText,
+                                  { fontSize: 28 },
+                                ]}
+                              >
+                                Student: {session.student_name} 
                               </Text>
                             ) : (
-                              <Text>
-                                {session.time} with {session.instructor}
+                              <Text
+                                style={[
+                                  styles.sessionText,
+                                  { fontSize: 28 },
+                                ]}
+                              >
+                                Instructor: {session.instructor_name}
                               </Text>
                             )}
-                          </Text>
+                          </View>
                           <TouchableOpacity>
-                            <Text style={styles.actionButtonText}>VIEW</Text>
+                            <Text
+                              style={[
+                                styles.actionButtonText,
+                                { fontSize: 28 },
+                              ]}
+                            >
+                              VIEW
+                            </Text>
                           </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                       ))}
                     </>
                   )}
@@ -787,16 +918,52 @@ export default function CalendarScreen() {
                       </Text>
                       {availabilitiesForSelectedDate.length > 0 ? (
                         availabilitiesForSelectedDate.map((availability) => (
-                          <View
+                          <TouchableOpacity
                             key={availability.id}
-                            style={styles.sessionCard}
+                            style={[
+                              styles.sessionCard,
+                            ]}
+                            onPress={() =>
+                              user?.role === "student" &&
+                              handleAvailabilityPress(availability)
+                            }
+                            disabled={user?.role !== "student"}
                           >
-                            <Text style={styles.sessionText}>
-                              Available:{" "}
-                              {formatTimeString(availability.start_time)} -{" "}
-                              {formatTimeString(availability.end_time)}
-                            </Text>
-                          </View>
+                            <View >
+                              <Text style={styles.sessionText}>
+                                Available:{" "}
+                                {formatTimeString(availability.start_time)} -{" "}
+                                {formatTimeString(availability.end_time)}
+                              </Text>
+                              {user?.role === "student" && (
+                                <Text
+                                  style={[
+                                    styles.sessionText,
+                                    { fontSize: 20 },
+                                  ]}
+                                >
+                                  Tap to book a session
+                                </Text>
+                              )}
+                            </View>
+                            {user?.role === "student" && (
+                              <View
+                                style={{
+                                  justifyContent: "center",
+                                  paddingRight: 10,
+                                }}
+                              >
+                                <Text
+                                  style={[
+                                    styles.actionButtonText,
+                                    { fontSize: 20 },
+                                  ]}
+                                >
+                                  BOOK
+                                </Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
                         ))
                       ) : (
                         <Text style={styles.noAvailabilityText}>
@@ -852,6 +1019,34 @@ export default function CalendarScreen() {
             onDelete={handleDeleteAvailabilityConfirm}
           />
         )}
+
+        {user?.role === "student" && (
+          <SessionBookingModal
+            visible={showSessionBookingModal}
+            availability={selectedAvailabilityForBooking}
+            selectedDate={selectedDate}
+            onClose={() => {
+              setShowSessionBookingModal(false);
+              setSelectedAvailabilityForBooking(null);
+            }}
+            onBookingSuccess={handleBookingSuccess}
+          />
+        )}
+
+        <SessionDetailsModal
+          visible={showSessionDetailsModal}
+          session={selectedSessionForDetails}
+          onClose={() => {
+            setShowSessionDetailsModal(false);
+            setSelectedSessionForDetails(null);
+          }}
+          onCancel={handleSessionCancel}
+          onReviewMaterials={handleReviewMaterials}
+          onBeginSession={
+            user?.role === "instructor" ? handleBeginSession : undefined
+          }
+          isCancelling={isCancellingSession}
+        />
         <BottomNavBar />
       </BackgroundGradient>
     </View>

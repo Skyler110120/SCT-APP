@@ -17,11 +17,12 @@ import { Company, InviteCode } from "@/src/types/company.types";
 import InviteCodeList from "@/src/components/admin/InviteCodeList";
 import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const [company, setCompany] = useState<Company | null>(null);
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLoadingCodes, setIsLoadingCodes] = useState<boolean>(false);
   const [isSubmittingCode, setIsSubmittingCode] = useState<boolean>(false);
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
@@ -107,6 +108,18 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+      setIsLoggingOut(true);
+      try {
+        await logout();
+      } catch (error) {
+        console.error("Logout failed:", error);
+        Alert.alert("Error", "Failed to log out. Please try again.");
+      } finally {
+        setIsLoggingOut(false);
+      }
+    };
+
   const copyToClipboard = async (code: string) => {
     await Clipboard.setStringAsync(code);
     Alert.alert("Copied", "Invite code copied to clipboard");
@@ -118,11 +131,13 @@ export default function AdminDashboard() {
         <SafeAreaView style={adminDashboardStyles.safeArea}>
           <View style={adminDashboardStyles.content}>
             {company && (
-                <Text style={adminDashboardStyles.pageTitle}>{company.name} Dashboard</Text>
+              <Text style={adminDashboardStyles.pageTitle}>
+                {company.name} Dashboard
+              </Text>
             )}
             {/* Debugging indicator */}
             {isLoading && (
-              <Text style={{color: 'white', textAlign: 'center'}}>
+              <Text style={{ color: "white", textAlign: "center" }}>
                 Loading company data...
               </Text>
             )}
@@ -147,6 +162,13 @@ export default function AdminDashboard() {
                 </Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={adminDashboardStyles.actionButton}
+              onPress={handleLogout}
+              disabled={isLoggingOut}
+            >
+              <Text style={adminDashboardStyles.buttonText}>Log Out</Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
         {company && (

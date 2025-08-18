@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { Modal, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 
 export const calendarScreenStyles = StyleSheet.create({
   container: {
@@ -35,22 +35,26 @@ export const calendarScreenStyles = StyleSheet.create({
     textAlign: 'center',
     color: themes.white,
   },
+  sessionText: {
+    fontSize: 28,
+    fontFamily: "Chakra-Regular",
+    color: themes.white
+  },
   sessionCard: {
     flexDirection: "row",
     borderRadius: 15,
     padding: 16,  
-    marginBottom: 8,
-
+    marginBottom: 16,
     borderWidth: 1,
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: themes.black,
     borderColor: themes.vegasGold,
   },
-  sessionText: {
-    fontSize: 28,
-    fontFamily: "Chakra-Regular",
-    color: themes.white
+  sessionCardSelected: {
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -113,7 +117,6 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   availabilityTimeText: {
     marginBottom: 8,
-    
     fontSize: 24,
     fontFamily: "Chakra-Regular",
     color: themes.white,
@@ -224,9 +227,28 @@ export const calendarScreenStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0,7)"
+  },
+  modalHeader: {
+    alignItems: "center",
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: themes.vegasGold + '30', 
+    marginBottom: 16,
+  },
+  modalSubtitle: {
+    marginBottom: 16,
+    fontSize: 18,
+    textAlign: 'center',
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  modalScrollView: {
+    flex: 1,
+    marginVertical: 16,
   },
   modalContent: {
-    width: "80%",
+    width: "90%",
     padding: 20,
     borderWidth: 2,
     borderRadius: 20,
@@ -236,15 +258,22 @@ export const calendarScreenStyles = StyleSheet.create({
   modalTitle: {
     marginBottom: 20,
     fontSize: 28,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Chakra-BoldItalic",
     textAlign: "center",
     color: themes.vegasGold,
   },
   modalText: {
-    fontSize: 20,
+    fontSize: 16,
+    marginBottom: 8,
     fontFamily: "Chakra-Regular",
     textAlign: "center",
     color: themes.white,
+  },
+  modalTextBold: {
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+    marginBottom: 8,
   },
   modalTextInputContainer: {
     flexDirection: "row",
@@ -334,5 +363,177 @@ export const calendarScreenStyles = StyleSheet.create({
   scrollContentContainer: {
     paddingBottom: 120,
     flexGrow: 1,
-  }
+  },
+
+  //SessionModal styles
+  sessionModalContent: {
+    width: "95%",
+    minHeight: 300,
+    maxHeight: "85%",
+    flexDirection: "column",
+    padding: 24,
+    borderWidth: 2,
+    borderRadius: 20,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
+  },
+  sessionModalBody: {
+    marginBottom: 16,
+  },
+  sessionModalTitle: {
+    fontSize: 36,
+    fontFamily: "Chakra-BoldItalic",
+    textAlign: "center",
+    marginBottom: 8,
+    color: themes.vegasGold,
+  },
+  sessionModalSubtitle: {
+    fontSize: 28,
+    fontFamily: "Chakra-Bold",
+    textAlign: "center",
+    marginBottom: 16,
+    color: themes.white,
+  },
+  infoCard: {
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
+  },
+  infoCardSecondary: {
+    padding: 20,
+    backgroundColor: themes.black,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+  },
+  infoCardTertiary: {
+    padding: 20,
+    backgroundColor: themes.black,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+  },
+  infoLabel: {
+    marginBottom: 4,
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  infoValuePrimary: {
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  infoValueSecondary: {
+    marginBottom: 4,
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  infoValueTertiary: {
+    fontSize: 24,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  infoValueSubtle: {
+    fontSize: 24,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  statusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusBadgeText: {
+    textAlign: 'center',
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  sessionButtonPrimary: {
+    backgroundColor: themes.vegasGold,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 56
+  },
+  sessionButtonSecondary: {
+    backgroundColor: themes.black,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 56
+  },
+  sessionButtonDestructive: {
+    backgroundColor: "#FF4444",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+    flex: 1
+  },
+  sessionButtonClose: {
+    backgroundColor: themes.black,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+    flex: 1
+  },
+  sessionButtonTextPrimary: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white
+  },
+  sessionButtonTextSecondary: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold", 
+    color: themes.vegasGold
+  },
+  sessionButtonTextDestructive: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white
+  },
+  rowLayout: {
+    flexDirection: "row",
+    gap: 16
+  },
+  columnLayout: {
+    flexDirection: "column",
+    gap: 12
+  },
+  flexEqual: {
+    flex: 1
+  },
+  flexDouble: {
+    flex: 2
+  },
+  spacingSmall: {
+    marginBottom: 8
+  },
+  spacingMedium: {
+    marginBottom: 16
+  },
+  spacingLarge: {
+    marginBottom: 24
+  },
 });

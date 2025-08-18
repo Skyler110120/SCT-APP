@@ -1,20 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from datetime import datetime, date
 
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User, UserRole
 from app.models.session import SessionStatus
 from app.schemas.session import (
-    SessionOut, SessionUpdate, AvailabilityCreate,
-    BookingCreate
+    SessionOutDetailed, SessionUpdate, AvailabilityCheckResponse, DirectBookingCreate
 )
 from app.services.session_service import(
-    get_session, get_user_sessions, get_available_sessions,
-    create_availability, book_session, update_session,
+    get_session, get_user_sessions, update_session,
     cancel_session, complete_session, get_admin_sessions,
-    get_master_admin_sessions
+    check_instructor_availability, book_direct_session,
+    get_sessions_for_calendar
 )
 
 router = APIRouter(
@@ -22,36 +22,32 @@ router = APIRouter(
     tags=["sessions"]
 )
 
-@router.post("/availability", response_model=SessionOut)
-def create_availablity(
-    availability_data: AvailabilityCreate,
+@router.get("/calendar", response_model=List[SessionOutDetailed])
+def get_my_calendar_sessions(
+    start_date: date = Query(..., description="Start date for calendar"),
+    end_date: date = Query(..., description="End date for calendar"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
-    Create an available time slot for firearms training
+    Get sessions for calendar
     """
-    if current_user.role == UserRole.MASTERADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Master admins have read-only access"
-        )
-
-    if current_user.role != UserRole.INSTRUCTOR and current_user.role != UserRole.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only instructors can create availability"
-        )
-    
-    result = create_availability(db, availability_data, current_user.company_id)
-    if not result:
+    if end_date < start_date:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not create availability, time conflict exists"
+            detail="End date must be after start date"
         )
-    return result
+    
+    sessions = get_sessions_for_calendar(
+        db=db,
+        current_user=current_user,
+        start_date=start_date,
+        end_date=end_date
+    )
+    
+    return sessions
 
-@router.post("/{session_id}/complete", response_model=SessionOut)
+@router.post("/{session_id}/complete", response_model=SessionOutDetailed)
 def mark_session_complete(
     session_id: int,
     db: Session = Depends(get_db),
@@ -66,7 +62,7 @@ def mark_session_complete(
            detail="Master admins have read-only access"
        )
 
-   if current_user.role != UserRole.INSTRUCTOR and current_user.role != UserRole.ADMIN:
+   if current_user.role not in [UserRole.INSTRUCTOR, UserRole.ADMIN]:
        raise HTTPException(
            status_code=status.HTTP_403_FORBIDDEN,
            detail="Only instructors can mark sessions as complete"
@@ -80,61 +76,7 @@ def mark_session_complete(
        )
    return result
 
-@router.get("/available", response_model=List[SessionOut])
-def get_available_training_slots(
-    instructor_id: Optional[int] = None,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Get available time slots for firearms training
-    """
-    if instructor_id is not None and current_user.role != UserRole.MASTERADMIN:
-        instructor = db.query(User).filter(
-            User.id == instructor_id,
-            User.company_id == current_user.company_id
-        ).first()
-    
-        if not instructor:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instructor not found in your company"
-            )
-    if current_user.role == UserRole.MASTERADMIN:
-        return get_available_sessions(db, current_user.company_id, instructor_id)
-    
-    return get_available_sessions(db, current_user.company_id, instructor_id)
-
-@router.post("/book", response_model=SessionOut)
-def book_training_session(
-    booking_data: BookingCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Book an available firearms training session
-    """
-    if current_user.role == UserRole.MASTERADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Master admins have read-only access"
-        )
-
-    if current_user.role != UserRole.ADMIN and booking_data.student_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admins can book sessions for other users"
-        )
-    result = book_session(db, booking_data, current_user.company_id)
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Session not available for booking"
-        )
-        
-    return result
-
-@router.get("", response_model=List[SessionOut])
+@router.get("", response_model=List[SessionOutDetailed])
 def get_my_sessions(
     as_student: bool = True,
     as_instructor: bool = True,
@@ -145,18 +87,15 @@ def get_my_sessions(
     """
     Get all sessions for the current user
     """
-    if current_user.role == UserRole.MASTERADMIN:
-        return get_master_admin_sessions(db, status=status[0] if status else None)
-    
     if current_user.role == UserRole.ADMIN:
-        return get_admin_sessions(db, current_user.company_id, status=status[0] if status else None)
-
-    if current_user.role != UserRole.ADMIN and current_user.role != UserRole.INSTRUCTOR:
+        return get_admin_sessions(db, current_user.company_id, status=status[0] if status and len(status) > 0 else None)
+        
+    if (current_user.role != UserRole.INSTRUCTOR):
         as_instructor = False
         
     return get_user_sessions(db, current_user.id, current_user.company_id, as_student, as_instructor, status)
 
-@router.get("/{session_id}", response_model=SessionOut)
+@router.get("/{session_id}", response_model=SessionOutDetailed)
 def get_session_by_id(
     session_id: int,
     db: Session = Depends(get_db),
@@ -175,8 +114,9 @@ def get_session_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Session not found in your company"
         )
-    if current_user.role != UserRole.MASTERADMIN and current_user.role != UserRole.ADMIN:
-        if db_session.status != SessionStatus.AVAILABLE and db_session.student_id != current_user.id and db_session.instructor_id != current_user.id:
+    if current_user.role not in [UserRole.MASTERADMIN, UserRole.ADMIN]:
+        if (db_session.student_id != current_user.id and
+            db_session.instructor_id != current_user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to access this session"
@@ -184,8 +124,8 @@ def get_session_by_id(
         
     return db_session
 
-@router.put("/{session_id}", response_model=SessionOut)
-def updated_session_by_id(
+@router.put("/{session_id}", response_model=SessionOutDetailed)
+def update_session_by_id(
     session_id: int,
     session_data: SessionUpdate,
     db: Session = Depends(get_db),
@@ -209,7 +149,7 @@ def updated_session_by_id(
         
     return result
 
-@router.post("/{session_id}/cancel", response_model=SessionOut)
+@router.post("/{session_id}/cancel", response_model=SessionOutDetailed)
 def cancel_session_by_id(
     session_id: int,
     db: Session = Depends(get_db),
@@ -232,3 +172,53 @@ def cancel_session_by_id(
         )
         
     return result
+
+@router.post("/check-availability", response_model=AvailabilityCheckResponse)
+def check_instructor_availability_endpoint(
+    instructor_id: int,
+    start_time: datetime,
+    end_time: datetime,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Check if an instructor is available for a time slot
+    """
+    availability = check_instructor_availability(
+        db=db,
+        instructor_id=instructor_id,
+        company_id=current_user.company_id,
+        start_time=start_time,
+        end_time=end_time
+    )
+    return availability
+
+@router.post("/direct-book", response_model=SessionOutDetailed)
+def book_direct_session_endpoint(
+    booking_data: DirectBookingCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Directly book a training session
+    """
+    
+    if current_user.role == UserRole.STUDENT:
+        student_id = current_user.id
+    else:
+        if booking_data.student_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        student_id = booking_data.student_id
+    return book_direct_session(
+        db=db,
+        instructor_id=booking_data.instructor_id,
+        student_id=student_id,
+        start_time=booking_data.start_time,
+        end_time=booking_data.end_time,
+        title=booking_data.title,
+        description=booking_data.description,
+        company_id=current_user.company_id
+    )
+    

@@ -23,6 +23,8 @@ class Course(Base):
     # Relationships
     videos = relationship("CourseVideo", back_populates="course", cascade="all, delete-orphan")
     enrollments = relationship("StudentEnrollment", back_populates="course")
+    sessions = relationship("Session", back_populates="course")
+    profiles = relationship("Profile", back_populates="course")
     
     def __repr__(self):
         return f"<Course {self.id}: {self.title} ({self.required_gun_type})"

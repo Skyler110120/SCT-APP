@@ -1,12 +1,9 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  EnrollmentCreateRequest,
   WeeklyProgressUpdateRequest,
   EnrollmentResponse,
-  EnrollmentWithCourseResponse,
   StudentProgressListResponse,
-  ProgressionDecision,
 } from "../types/enrollment.types";
 
 let API_URL: string;

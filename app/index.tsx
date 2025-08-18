@@ -12,7 +12,7 @@ export default function Index() {
     if (!isLoading && isAuthenticated && user){
       navigateByRole(
         user.role, 
-        user.hasCompletedOnboarding ?? false
+        user.has_completed_onboarding ?? false
       );
     }
   }, [isLoading, isAuthenticated])

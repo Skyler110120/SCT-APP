@@ -34,6 +34,7 @@ class StudentEnrollment(Base):
     
     student = relationship("User", foreign_keys=[student_id])
     course = relationship("Course", back_populates="enrollments")
+    sessions = relationship("Session", back_populates="enrollment")
     
     def __repr__(self):
         return f"<StudentEnrollment {self.id}: Student {self.student_id} Week {self.current_week}/24>"

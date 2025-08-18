@@ -19,6 +19,7 @@ from app.services.user_service import (
     get_user_by_email, 
     get_user_by_id,
 )
+from app.services.profile_service import create_profile, create_registration_profile_data
 from app.services.auth_service import authenticate_user, create_user_token
 from app.services.company_service import get_company_by_id
 from app.services.invite_code_service import (
@@ -277,6 +278,11 @@ def enhanced_signup(
         )
         new_user = create_user(db, user_create_data)
         
+        profile_data = create_registration_profile_data(
+            user=new_user,
+            course_id=user_data.course_id if new_user.role == UserRole.STUDENT else None
+        )
+        create_profile(db, new_user.id, profile_data)
         enrollment = None
         if new_user.role == UserRole.STUDENT and user_data.course_id:
             enrollment = StudentEnrollment(
