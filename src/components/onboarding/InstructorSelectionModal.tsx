@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { themes } from "@/src/context/themes";
+import { onboardingService } from "@/src/services/onboardingService";
+import { adminManageUsersStyles as styles } from "@/src/styles/manageUsers";
 import {
   Instructor,
   getInstructorDisplayName,
 } from "@/src/types/instructor.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
-import { onboardingService } from "@/src/services/onboardingService";
-import { themes } from "@/src/context/themes";
-import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
+import { Picker } from "@react-native-picker/picker";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface InstructorSelectionModalProps {
   isVisible: boolean;

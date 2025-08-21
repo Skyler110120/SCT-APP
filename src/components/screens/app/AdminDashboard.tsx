@@ -16,6 +16,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { Company, InviteCode } from "@/src/types/company.types";
 import InviteCodeList from "@/src/components/admin/InviteCodeList";
 import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
+
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
 

@@ -63,7 +63,7 @@ export default function LoginScreen() {
       <BackgroundGradient>
         <SafeAreaView style={loginScreenStyles.container}>
           <View style={loginScreenStyles.backButtonContainer}>
-            <TouchableOpacity onPress={() => router.push("/")}>
+            <TouchableOpacity onPress={() => router.back()}>
               <Image source={Images.buttons.backButton} />
             </TouchableOpacity>
           </View>

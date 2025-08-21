@@ -1,9 +1,9 @@
-import React from "react";
-import { Modal, View, Text, TouchableOpacity } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { themes } from "@/src/context/themes";
+import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
 import { User, UserRole } from "@/src/types/auth.types";
-import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
+import { Picker } from "@react-native-picker/picker";
+import React from "react";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 interface UserActionModalProps {
   visible: boolean;

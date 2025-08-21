@@ -1,33 +1,32 @@
-import { themes } from "@/src/context/themes";
-import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
-import { UserRole } from "@/src/types/auth.types";
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import { Text, TextInput, View } from "react-native";
+import { View, TextInput, Text } from "react-native";
+import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
+import { Picker } from "@react-native-picker/picker";
+import { themes } from "@/src/context/themes";
 
-interface UserFiltersProps {
+interface InstructorStudentFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  roleFilter: string;
-  setRoleFilter: (role: string) => void;
+  statusFilter: string;
+  setStatusFilter: (status: string) => void;
 }
 
-const UserFilters: React.FC<UserFiltersProps> = ({
+const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
   searchQuery,
   setSearchQuery,
-  roleFilter,
-  setRoleFilter,
+  statusFilter,
+  setStatusFilter,
 }) => {
   return (
     <View style={styles.filterContainer}>
-      <Text style={styles.filterSectionTitle}>Filters</Text>
+      <Text style={styles.filterSectionTitle}>Find Students</Text>
 
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>Search</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name or email"
+            placeholder="Search by student name or email"
             placeholderTextColor={themes.white}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -37,18 +36,17 @@ const UserFilters: React.FC<UserFiltersProps> = ({
 
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
-          <Text style={styles.filterLabel}>Role</Text>
+          <Text style={styles.filterLabel}>Status</Text>
           <View style={styles.filterPickerContainer}>
             <Picker
-              selectedValue={roleFilter}
-              onValueChange={(value) => setRoleFilter(value)}
+              selectedValue={statusFilter}
+              onValueChange={(value) => setStatusFilter(value)}
               style={styles.filterPicker}
               dropdownIconColor={themes.vegasGold}
             >
-              <Picker.Item label="All Roles" value="all" />
-              <Picker.Item label="Student" value={UserRole.STUDENT} />
-              <Picker.Item label="Instructor" value={UserRole.INSTRUCTOR} />
-              <Picker.Item label="Admin" value={UserRole.ADMIN} />
+              <Picker.Item label="All Students" value="all" />
+              <Picker.Item label="Active Students" value="active" />
+              <Picker.Item label="Inactive Students" value="inactive" />
             </Picker>
           </View>
         </View>
@@ -57,4 +55,4 @@ const UserFilters: React.FC<UserFiltersProps> = ({
   );
 };
 
-export default UserFilters;
+export default InstructorStudentFilters;

@@ -47,6 +47,7 @@ class UserOut(UserBase):
     role: UserRole
     first_name: str = Field(..., max_length=100)
     last_name: str = Field(..., max_length=100)
+    is_active: bool
     company_id: Optional[int] = None
     instructor_id: Optional[int] = None
     created_at: Optional[datetime] = None
@@ -107,5 +108,3 @@ class StudentInstructorAssignment(BaseModel):
                 "instructor_id": 2
             }
         }
-        
-

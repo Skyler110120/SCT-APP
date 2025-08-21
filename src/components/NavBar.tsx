@@ -21,13 +21,13 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       return [
         {
           name: "Home",
-          route: "/screens/app/MasterAdminDashboard",
+          route: "/system/dashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
         },
         {
           name: "Courses",
-          route: "/screens/app/MasterAdminCourseManagement",
+          route: "/system/courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
@@ -36,25 +36,25 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       return [
         {
           name: "Home",
-          route: "/screens/app/AdminDashboard",
+          route: "/company/management/dashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
         },
         {
           name: "Calendar",
-          route: "/screens/app/Calendar",
+          route: "/company/calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
         {
           name: "Users",
-          route: "/screens/app/AdminManageUsers",
+          route: "/company/management/users",
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },
         {
           name: "Courses",
-          route: "/screens/app/Courses",
+          route: "/company/courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
@@ -63,31 +63,31 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       return [
         {
           name: "Home",
-          route: "/screens/app/InstructorDashboard",
+          route: "/learning/dashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
         },
         {
           name: "Calendar",
-          route: "/screens/app/Calendar",
+          route: "/company/calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
         {
           name: "Students",
-          route: "/screens/app/InstructorStudents",
+          route: "/learning/students",
           icon: Images.navIcons.students.studentsIcon,
           activeIcon: Images.navIcons.students.studentsIconActive,
         },
         {
           name: "Courses",
-          route: "/screens/app/Courses",
+          route: "/company/courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
         {
           name: "Profile",
-          route: "/screens/app/UserProfile",
+          route: "/learning/profile",
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },
@@ -96,25 +96,25 @@ export default function BottomNavBar({}: BottomNavBarProps) {
     return [
       {
           name: "Home",
-          route: "/screens/app/InstructorDashboard",
+          route: "/learning/dashboard",
           icon: Images.navIcons.home.homeIcon,
           activeIcon: Images.navIcons.home.homeIconActive,
         },
         {
           name: "Calendar",
-          route: "/screens/app/Calendar",
+          route: "/company/calendar",
           icon: Images.navIcons.calendar.calendarIcon,
           activeIcon: Images.navIcons.calendar.calendarIconActive,
         },
         {
           name: "Courses",
-          route: "/screens/app/Courses",
+          route: "/company/courses",
           icon: Images.navIcons.courses.courseIcon,
           activeIcon: Images.navIcons.courses.courseIconActive,
         },
         {
           name: "Profile",
-          route: "/screens/app/UserProfile",
+          route: "/learning/profile",
           icon: Images.navIcons.profile.profileIcon,
           activeIcon: Images.navIcons.profile.profileIconActive,
         },

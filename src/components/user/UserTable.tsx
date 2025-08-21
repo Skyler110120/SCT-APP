@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 import { themes } from "@/src/context/themes";
-import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
+import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
 import { User } from "@/src/types/auth.types";
+import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface UserTableProps {
   users: User[];
@@ -39,7 +39,7 @@ const UserTable: React.FC<UserTableProps> = ({
           style={styles.actionButton}
           onPress={() => onRoleAction(item)}
         >
-          <FontAwesome name="user" size={16} color={themes.vegasGold} />
+          <FontAwesome name="user" size={20} color={themes.vegasGold} />
           <Text style={styles.actionText}>Change Role</Text>
         </TouchableOpacity>
 
@@ -49,7 +49,7 @@ const UserTable: React.FC<UserTableProps> = ({
         >
           <FontAwesome
             name="user-times"
-            size={16}
+            size={20}
             color={item.is_active ? "#FF4444" : themes.vegasGold}
           />
           <Text

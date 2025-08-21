@@ -165,3 +165,9 @@ export interface UserDisplayInfo {
     display_name: string;
     initials: string;
 }
+
+export interface InstructorStudentsResponse {
+    success: boolean;
+    data?: User[];
+    error?: string;
+}

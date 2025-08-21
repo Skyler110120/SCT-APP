@@ -3,36 +3,36 @@ import { Redirect } from 'expo-router';
 import { Text, View, ActivityIndicator } from "react-native";
 import { useAuth } from '@/src/context/AuthContext';
 import { themes } from '@/src/context/themes';
-import { navigateByRole } from '@/src/utils/navigationUtil';
 
-export default function Index() {
+export default function RootIndex() {
   const { isLoading, isAuthenticated, user } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user){
-      navigateByRole(
-        user.role, 
-        user.has_completed_onboarding ?? false
-      );
-    }
-  }, [isLoading, isAuthenticated])
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themes.white }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themes.black }}>
         <ActivityIndicator size="large" color={themes.vegasGold} />
+        <Text style={{
+            marginTop: 16,
+            color: themes.white,
+            fontSize: 16,
+            fontFamily: 'Chakra-Regular'
+        }}>
+            Loading...
+        </Text>
       </View>
     );
   }
   
-  if (!isAuthenticated) {
-    return <Redirect href="/screens/auth/Dashboard" />;
+  if (!isAuthenticated || !user) {
+    console.log("Not authenticated, redirecting to welcom page")
+    return <Redirect href="/welcome" />;
   }
 
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themes.white }}>
-      <ActivityIndicator size="large" color={themes.vegasGold} />
-      <Text style={{ marginTop: 10 }}>Preparing your dashboard...</Text>
-    </View>
-  )
+  if (!user.has_completed_onboarding) {
+    console.log("User exists but has not completed onboarding - this should not happen")
+    return <Redirect href="/dashboard" />;
+  }
+
+  console.log("User authenticated and onboarded, redirection to dashboard")
+    return <Redirect href="/dashboard" />;
 }

@@ -87,7 +87,7 @@ export default function InstructorProfile() {
   const handleModalClose = () => {
     console.log("Edit modal closed");
     setShowEditModal(false);
-  }
+  };
 
   const getDisplayName = (): string => {
     if (!profile) return "Loading...";
@@ -226,44 +226,46 @@ export default function InstructorProfile() {
   }
 
   if (error) {
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <BackgroundGradient>
-          <View
-            style={[
-              styles.profileContentContainer,
-              { justifyContent: "center" },
-            ]}
-          >
-            <Text
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <BackgroundGradient>
+            <View
               style={[
-                styles.profileBioText,
-                { textAlign: "center", marginBottom: 10 },
+                styles.profileContentContainer,
+                { justifyContent: "center" },
               ]}
             >
-              Unable to load profile
-            </Text>
-            <Text
-              style={[
-                styles.profileBioText,
-                {
-                  fontSize: 16,
-                  textAlign: "center",
-                  marginBottom: 30,
-                  color: "#FF4444",
-                },
-              ]}
-            >
-              {error}
-            </Text>
-            <TouchableOpacity style={styles.button} onPress={loadProfile}>
-              <Text style={styles.buttonText}>Try Again</Text>
-            </TouchableOpacity>
-          </View>
-        </BackgroundGradient>
-      </SafeAreaView>
-      <BottomNavBar />
-    </View>;
+              <Text
+                style={[
+                  styles.profileBioText,
+                  { textAlign: "center", marginBottom: 10 },
+                ]}
+              >
+                Unable to load profile
+              </Text>
+              <Text
+                style={[
+                  styles.profileBioText,
+                  {
+                    fontSize: 16,
+                    textAlign: "center",
+                    marginBottom: 30,
+                    color: "#FF4444",
+                  },
+                ]}
+              >
+                {error}
+              </Text>
+              <TouchableOpacity style={styles.button} onPress={loadProfile}>
+                <Text style={styles.buttonText}>Try Again</Text>
+              </TouchableOpacity>
+            </View>
+          </BackgroundGradient>
+        </SafeAreaView>
+        <BottomNavBar />
+      </View>
+    );
   }
   return (
     <View style={styles.container}>
@@ -273,22 +275,22 @@ export default function InstructorProfile() {
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.profileName}>
-              {getDisplayName()}
-            </Text>
+            <Text style={styles.profileName}>{getDisplayName()}</Text>
 
             <View style={styles.profileContentContainer}>
               <View style={styles.profilePictureContainer}>
-                <Text style={[
-                  styles.profileBioTextBottom,
-                  {
-                    textAlign: 'center',
-                    paddingRight: 20,
-                    fontSize: 48,
-                    fontFamily: "Chakra-BoldItalic",
-                    color: themes.vegasGold,
-                  }
-                ]}>
+                <Text
+                  style={[
+                    styles.profileBioTextBottom,
+                    {
+                      textAlign: "center",
+                      paddingRight: 20,
+                      fontSize: 48,
+                      fontFamily: "Chakra-BoldItalic",
+                      color: themes.vegasGold,
+                    },
+                  ]}
+                >
                   {getUserIntials()}
                 </Text>
               </View>
@@ -303,9 +305,7 @@ export default function InstructorProfile() {
                 <Text style={styles.profileBioText}>
                   Contact Info: {getContactInfo()}
                 </Text>
-                <Text style={styles.profileBioTextBottom}>
-                  Bio: {getBio()}
-                </Text>
+                <Text style={styles.profileBioTextBottom}>Bio: {getBio()}</Text>
               </View>
 
               <View style={styles.buttonContainer}>
@@ -325,10 +325,7 @@ export default function InstructorProfile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[
-                    styles.button,
-                    isLoggingOut && { opacity: 0.7 },
-                  ]}
+                  style={[styles.button, isLoggingOut && { opacity: 0.7 }]}
                   onPress={handleLogout}
                   disabled={isLoggingOut || isSubmittingProfile}
                 >

@@ -3,7 +3,7 @@ import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
-import { RouteGuard } from '@/src/components/RouteGuard';
+import { themes } from '@/src/context/themes';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -17,16 +17,14 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={themes.vegasGold} />
       </View>
     );
   }
 
   return (
     <AuthProvider>
-      <RouteGuard>
         <Slot />
-      </RouteGuard>
     </AuthProvider>
   );
 }

@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
 
-export const adminManageUsersStyles = StyleSheet.create({
+export const manageUsersStyles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
@@ -197,7 +197,7 @@ export const adminManageUsersStyles = StyleSheet.create({
   },
   actionText: {
     marginLeft: 6,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Chakra-BoldItalic",
     color: themes.vegasGold,
   },

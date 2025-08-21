@@ -18,7 +18,6 @@ import {
   TokenResponse,
 } from "../types/auth.types";
 import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
-import { navigateByRole } from "../utils/navigationUtil";
 
 // ✅ LEARNING: Interface defines the "contract" of what our context provides
 interface AuthContextType {
@@ -64,7 +63,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         ...state,
         is_loading: false,
         is_authenticated: true,
-        user: action.payload.user as any, // Temporary cast - see note below
+        user: action.payload.user as any,
         token: action.payload.token,
         error: null,
       };
@@ -110,7 +109,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 // This converts API response format to our internal User format
 const convertUserInfoToUser = (userInfo: UserInfo): User => {
   return {
-    user_id: userInfo.user_id,
+    id: userInfo.id,
     email: userInfo.email,
     first_name: userInfo.first_name,
     last_name: userInfo.last_name,
@@ -128,7 +127,7 @@ const convertUserInfoToUser = (userInfo: UserInfo): User => {
 // ✅ LEARNING: Convert signup response to User format
 const convertSignupUserToUser = (signupUser: EnhancedSignupUser): User => {
   return {
-    user_id: signupUser.user_id,
+    id: signupUser.user_id,
     email: signupUser.email,
     first_name: signupUser.first_name,
     last_name: signupUser.last_name,
@@ -199,11 +198,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log("🔐 Starting login process for:", credentials.email);
       
-      // Step 1: Authenticate and get token
       const loginResult = await authService.login(credentials);
 
       if (!loginResult.success || !loginResult.data) {
-        console.log("❌ Login failed:", loginResult.error);
+        console.log("Login failed:", loginResult.error);
         dispatch({
           type: "AUTH_ERROR",
           payload: loginResult.error || "Invalid credentials",
@@ -213,11 +211,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log("✅ Login successful, fetching user profile...");
       
-      // Step 2: Get detailed user information
       const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 
       if (!userResult.success || !userResult.data) {
-        console.log("❌ Failed to fetch user data:", userResult.error);
+        console.log("Failed to fetch user data:", userResult.error);
         dispatch({
           type: "AUTH_ERROR",
           payload: userResult.error || "Failed to fetch user data",
@@ -227,7 +224,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log("✅ User profile fetched successfully");
       
-      // Convert API response to our internal format
       const user = convertUserInfoToUser(userResult.data);
       
       dispatch({
@@ -237,12 +233,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           token: loginResult.data.access_token 
         },
       });
-
-      // Navigate user to appropriate screen
-      navigateByRole(
-        user.role,
-        user.has_completed_onboarding ?? false
-      );
       
       return true;
 
@@ -256,14 +246,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // ✅ LEARNING: Registration using your enhanced onboarding flow
   const register = async (userData: EnhancedSignupData): Promise<AuthResponse> => {
   dispatch({ type: "AUTH_LOADING" });
   
   try {
-    console.log("📝 Starting enhanced signup for:", userData.email);
+    console.log("Starting enhanced signup for:", userData.email);
     
-    // Step 1: Create the account
     const signupResult = await onboardingService.completeEnhancedSignup(userData);
     
     if (!signupResult.success || !signupResult.data) {
@@ -278,10 +266,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
     }
 
-    console.log("✅ Account created successfully");
-    
-    // Step 2: Auto-login the new user
-    console.log("🔐 Logging in new user...");
+    console.log("Account created successfully");
+    console.log("Logging in new user...");
     
     const loginResult = await authService.login({
       email: userData.email,
@@ -289,7 +275,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     if (!loginResult.success || !loginResult.data) {
-      // Account was created but login failed
       dispatch({
         type: "AUTH_ERROR",
         payload: "Account created but automatic login failed. Please login manually."
@@ -301,7 +286,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
     }
 
-    // Step 3: Get user data (like in login flow)
     const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 
     if (!userResult.success || !userResult.data) {
@@ -326,11 +310,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       },
     });
 
-    navigateByRole(
-      user.role,
-      user.has_completed_onboarding
-    );
-    
     return {
       success: true,
       data: user

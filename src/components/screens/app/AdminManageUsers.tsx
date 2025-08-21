@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { adminManageUsersStyles as styles } from "@/src/styles/adminManageUsers";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import UserTable from "@/src/components/user/UserTable";
-import UserFilters from "@/src/components/user/UserFilters";
 import UserActionModal from "@/src/components/user/UserActionModal";
+import UserFilters from "@/src/components/user/UserFilters";
+import UserTable from "@/src/components/user/UserTable";
 import { useAuth } from "@/src/context/AuthContext";
-import { userService } from "@/src/services/userService";
-import { User, UserRole } from "@/src/types/auth.types";
 import { themes } from "@/src/context/themes";
+import { userService } from "@/src/services/userService";
+import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
+import { User, UserRole } from "@/src/types/auth.types";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function AdminManageUsers() {
   const { user } = useAuth();

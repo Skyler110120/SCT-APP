@@ -333,6 +333,26 @@ def get_instructors_by_company(db: Session, company_id: int) -> List[User]:
         User.role == UserRole.INSTRUCTOR,
         User.is_active == True
     ).all()
+
+def get_students_by_instructor(db: Session, instructor_id: int) -> List[User]:
+    """
+    Get all students assigned to an instructor
+    
+    Args:
+        db: Database session
+        instructor_id: ID of the instructor
+    Returns:
+        List of students assigned to the instructor
+    """
+    try:
+        students = db.query(User).filter(
+            User.instructor_id == instructor_id,
+            User.role == UserRole.STUDENT,
+            User.is_active == True
+        ).all()
+        return students
+    except Exception as e:
+        return []
     
 def get_user_with_instructor(db: Session, user_id: int) -> Optional[UserOut]:
     """
