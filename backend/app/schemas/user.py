@@ -59,25 +59,25 @@ class UserOut(UserBase):
         return f"{self.first_name} {self.last_name}"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class UserWithStudents(UserOut):
     students: List[UserOut] = []
     
     class Config: 
-        orm_mode = True
+        from_attributes = True
 
 class UserWithInstructor(UserOut):
     instructor: Optional[UserOut] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class UserWithCompany(UserOut):
     company: Optional["CompanyOut"] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class UserComplete(UserOut):
     company: Optional["CompanyOut"] = None
@@ -85,7 +85,7 @@ class UserComplete(UserOut):
     students: List[UserOut] = []
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserPromoteSchema(BaseModel):
     role: UserRole = Field(..., description="New role for the user")
@@ -102,7 +102,7 @@ class StudentInstructorAssignment(BaseModel):
     instructor_id: int = Field(..., description="ID of the instructor")
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "student_id": 1,
                 "instructor_id": 2

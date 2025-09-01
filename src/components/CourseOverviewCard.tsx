@@ -22,7 +22,6 @@ const CourseOverviewCard: React.FC<CourseOverviewCardProps> = ({
   showStudentCount,
 }) => {
 
-  console.log("=== CourseOverviewCard DEBUG ===");
   console.log("📋 Full course object:", JSON.stringify(course, null, 2));
   console.log("🔢 Student count:", studentCount);
   console.log("✅ Is selected:", isSelected);
@@ -30,7 +29,7 @@ const CourseOverviewCard: React.FC<CourseOverviewCardProps> = ({
   console.log("🎥 Video count:", course?.videos?.length);
   console.log("📝 Course title:", course?.title);
   console.log("📖 Course description:", course?.description);
-  console.log("===============================");
+
   
   const videoCount = course.videos?.length || 0;
 

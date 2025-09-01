@@ -30,7 +30,7 @@ class CourseStudentRead(BaseModel):
     description: Optional[str]
     required_gun_type: str
     difficulty_level: str
-    pdf_url: Optional[str] = None
+    has_pdf_material: bool 
     total_weeks: int
     videos: List[VideoRead] = []
     
@@ -43,8 +43,8 @@ class CourseInstructorRead(BaseModel):
     description: Optional[str]
     required_gun_type: str
     difficulty_level: str
-    pdf_url: Optional[str] = None
-    instructor_script_url: Optional[str]
+    has_pdf_material: bool
+    has_instructor_script: bool
     total_weeks: int
     videos: List[VideoRead] = []
     
@@ -57,8 +57,8 @@ class CourseAdminRead(BaseModel):
     description: Optional[str]
     required_gun_type: str
     difficulty_level: str
-    pdf_url: Optional[str] = None
-    instructor_script_url: Optional[str]
+    has_pdf_material: bool
+    has_instructor_script: bool
     total_weeks: int
     is_active: bool
     order_index: int
@@ -88,8 +88,8 @@ class CourseCreate(BaseModel):
     description: Optional[str] = None
     required_gun_type: str = Field(..., min_length=1, max_length=100)
     difficulty_level: str = Field(..., min_length=1, max_length=50)
-    pdf_url: Optional[str] = Field(None, max_length=500)
-    instructor_script_url: Optional[str] = Field(None, max_length=500)
+    pdf_s3_key: Optional[str] = Field(None, max_length=500)
+    script_s3_key: Optional[str] = Field(None, max_length=500)
     order_index: int = Field(..., ge=1)
     
 class CourseUpdate(BaseModel):
@@ -97,8 +97,8 @@ class CourseUpdate(BaseModel):
     description: Optional[str] = None
     required_gun_type: Optional[str] = Field(None, min_length=1, max_length=100)
     difficulty_level: Optional[str] = Field(None, min_length=1, max_length=50)
-    pdf_url: Optional[str] = Field(None, max_length=500)
-    instructor_script_url: Optional[str] = Field(None, max_length=500)
+    pdf_s3_key: Optional[str] = Field(None, max_length=500)
+    script_s3_key: Optional[str] = Field(None, max_length=500)
     order_index: Optional[int] = Field(None, ge=1)
     is_active: Optional[bool] = None 
     

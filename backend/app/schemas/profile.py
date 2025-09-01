@@ -45,7 +45,7 @@ class CourseOut(BaseModel):
     description: Optional[str] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserOut(BaseModel):
     id: int
@@ -54,7 +54,7 @@ class UserOut(BaseModel):
     email: str
     
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class ProfileOut(ProfileBase):
     id: int
@@ -64,7 +64,7 @@ class ProfileOut(ProfileBase):
     user: UserOut
     
     class Config:
-        orm_mode = True
+        from_attributes = True
         json_encoders = {
             date: lambda v: v.isoformat() if v else None
         }

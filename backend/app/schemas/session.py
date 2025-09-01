@@ -76,7 +76,7 @@ class SessionOut(SessionBase):
     updated_at: datetime
         
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SessionOutDetailed(SessionOut):
     # Course info
@@ -107,7 +107,7 @@ class SessionOutDetailed(SessionOut):
     enrollment_instructor_notes: Optional[str] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
         
 class DirectBookingCreate(SessionBase):
     instructor_id: int

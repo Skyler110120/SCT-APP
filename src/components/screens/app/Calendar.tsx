@@ -526,7 +526,7 @@ export default function CalendarScreen() {
   const handleReviewMaterials = () => {
     console.log("Navigate to course materials");
     router.push({
-      pathname: "/screens/app/Courses",
+      pathname: "/company/courses",
       params: {
         courseId: selectedSessionForDetails?.course_id,
       },

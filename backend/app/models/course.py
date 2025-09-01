@@ -11,8 +11,8 @@ class Course(Base):
     description = Column(Text, nullable=True)
     required_gun_type = Column(String(100), nullable=False)
     difficulty_level = Column(String(50), nullable=False)
-    pdf_url = Column(String(500), nullable=True)
-    instructor_script_url = Column(String(500), nullable=True)
+    pdf_s3_key = Column(String(500), nullable=True)
+    instructor_script_s3_key = Column(String(500), nullable=True)
     total_weeks = Column(Integer, default=24)
     is_active = Column(Boolean, default=True)
     order_index = Column(Integer, nullable=False)
@@ -28,3 +28,20 @@ class Course(Base):
     
     def __repr__(self):
         return f"<Course {self.id}: {self.title} ({self.required_gun_type})"
+    
+    def has_pdf(self) -> bool: 
+        return bool(self.pdf_s3_key and self.pdf_s3_key.strip())
+    
+    def has_script(self) -> bool: 
+        return bool(self.instructor_script_s3_key and self.instructor_script_s3_key.strip())
+
+    def get_pdf_s3_key(self) -> str:
+        if self.pdf_s3_key:
+            return self.pdf_s3_key
+        return f"coursematerials/pdfs/course-{self.id}.pdf"
+    
+    def get_script_s3_key(self) -> str:
+        if self.instructor_script_s3_key:
+            return self.instructor_script_s3_key
+        return f"coursematerials/scripts/course-script.pdf"
+        

@@ -32,10 +32,10 @@ class CompanyOut(CompanyBase):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CompanyWithUserCount(CompanyOut):
     user_count: int = Field(default=0)
     
     class Config: 
-        orm_mode = True    
+        from_attributes = True    
