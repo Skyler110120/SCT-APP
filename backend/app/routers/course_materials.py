@@ -7,7 +7,7 @@ from app.schemas.course_materials import (
     MaterialInfoResponse,
     MaterialErrorResponse,
 )
-from app.services.s3_service import generate_course_pdf_url, generate_instructor_script_url
+from app.services.s3_service import s3_service
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.course import Course
@@ -78,7 +78,7 @@ async def get_course_pdf_access(
                 detail="Course PDF not available"
             )
         
-        url_data = generate_course_pdf_url(course)
+        url_data = s3_service.generate_course_pdf_url(course)
         
         return MaterialAccessResponse(
             success=True,
@@ -117,7 +117,7 @@ async def get_instructor_script_access(
                 status_code=403,
                 detail="Instructor access required"
             )
-        url_data = generate_instructor_script_url()
+        url_data = s3_service.generate_instructor_script_url()
         
         return MaterialAccessResponse(
             success=True,
