@@ -18,7 +18,7 @@ router = APIRouter(
     tags=["Course Materials"]
 )
 
-@router.get("/course/{course_id}/info", response_model=MaterialInfoResponse)
+@router.get("/courses/{course_id}/info", response_model=MaterialInfoResponse)
 async def get_course_material_info(
     course_id: int = Path(..., ge=1),
     current_user: User = Depends(get_current_user),
@@ -40,8 +40,8 @@ async def get_course_material_info(
         return MaterialInfoResponse(
             course_id=course.id,
             course_title=course.title,
-            has_pdf=course.had_pdf(),
-            has_script=True,
+            has_pdf=course.has_pdf(),
+            has_script=course.has_script(),
             can_access_script=can_access_script
         )
     except HTTPException:
@@ -78,7 +78,7 @@ async def get_course_pdf_access(
                 detail="Course PDF not available"
             )
         
-        url_data = generate_course_pdf_url(course_id)
+        url_data = generate_course_pdf_url(course)
         
         return MaterialAccessResponse(
             success=True,

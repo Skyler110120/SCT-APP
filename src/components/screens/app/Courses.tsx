@@ -22,6 +22,7 @@ import VideoListModal from "@/src/components/VideoListModal";
 
 import { courseService } from "@/src/services/courseService";
 import { enrollmentService } from "@/src/services/enrollmentService";
+import { materialService } from "@/src/services/materialService";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 
@@ -38,7 +39,6 @@ import {
   EnrollmentWithCourseResponse,
 } from "@/src/types/enrollment.types";
 import { UserRole } from "@/src/types/auth.types";
-import { set } from "date-fns";
 
 export default function Courses() {
   const { user } = useAuth();
@@ -55,6 +55,23 @@ export default function Courses() {
   const shouldShowCourseMaterials = true;
   const shouldShowVideos = true;
 
+  const [courses, setCourses] = useState<CourseView[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<CourseView | null>(null);
+  const [studentProgress, setStudentProgress] = useState<
+    StudentWeeklyProgress[]
+  >([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true);
+  const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [studentProgressVisible, setStudentProgressVisible] =
+    useState<boolean>(false);
+  const [videoListVisible, setVideoListVisible] = useState<boolean>(false);
+  const [accessingMaterial, setAccessingMaterial] = useState<{
+    type: "pdf" | "script" | null;
+    loading: boolean;
+  }>({ type: null, loading: false });
+
   const getPageTitle = () => {
     if (isAdmin) return "Course Overview";
     if (isInstructor) return "Teaching Dashboard";
@@ -68,19 +85,6 @@ export default function Courses() {
     if (isStudent) return "My Course";
     return "Available Courses";
   };
-  const [courses, setCourses] = useState<CourseView[]>([]);
-  const [selectedCourse, setSelectedCourse] = useState<CourseView | null>(null);
-  const [studentProgress, setStudentProgress] = useState<
-    StudentWeeklyProgress[]
-  >([]);
-  const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true);
-  const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [studentProgressVisible, setStudentProgressVisible] =
-    useState<boolean>(false);
-  const [videoListVisible, setVideoListVisible] = useState<boolean>(false);
 
   const isInstructorCourse = (
     course: CourseView
@@ -178,9 +182,9 @@ export default function Courses() {
         await fetchInstructorCourses();
       }
     } finally {
-      setIsLoadingCourses(false)
+      setIsLoadingCourses(false);
     }
-  }
+  };
 
   const fetchStudentProgress = async () => {
     if (!canViewStudentProgress) return;
@@ -232,18 +236,44 @@ export default function Courses() {
     }
   };
 
-  const handleOpenPDF = (course: CourseView) => {
-    if (!course.pdf_url) {
+  const handleOpenPDF = async (course: CourseView) => {
+    const hasPdfMaterial = Boolean(course.pdf_s3_key?.trim());
+
+    if (!hasPdfMaterial) {
       Alert.alert(
         "No Plan Availabile",
         "Student PDF materials have notbeen uploaded for this course yet."
       );
       return;
     }
-    openDocument(course.pdf_url, "Course Plan");
+    setAccessingMaterial({ type: "pdf", loading: true });
+
+    try {
+      console.log("Requesting secure PDF access for course:", course.id);
+      const response = await materialService.getCoursePdfAccess(course.id);
+
+      if (response.success && response.data) {
+        console.log("Got presigned URL, opening PDF...");
+        await openDocument(response.data.access_url, "Course Materials");
+      } else {
+        console.error("Failed to get PDF access:", response.error);
+        Alert.alert(
+          "Access Failed",
+          response.error || "Unable to access course materials at this time"
+        );
+      }
+    } catch (error) {
+      console.error("Error accessing PDF:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while accessing materials. Please try again"
+      );
+    } finally {
+      setAccessingMaterial({ type: null, loading: false });
+    }
   };
 
-  const handleOpenScript = (course: CourseView) => {
+  const handleOpenScript = async (course: CourseView) => {
     if (!isInstructorCourse(course)) {
       Alert.alert(
         "No Script Available",
@@ -251,14 +281,42 @@ export default function Courses() {
       );
       return;
     }
-    if (!course.instructor_script_url) {
+
+    const hasScript = Boolean(course.instructor_script_s3_key?.trim());
+
+    if (!hasScript) {
       Alert.alert(
         "No Script Available",
         "Instructor script has not been uploaded for this course yet."
       );
       return;
     }
-    openDocument(course.instructor_script_url, "Instructor Script");
+    
+    setAccessingMaterial({ type: "script", loading: true });
+
+    try {
+      console.log("Requesting secure script access")
+      const response = await materialService.getInstructorScriptAccess();
+
+      if (response.success && response.data) {
+        console.log("Got presigned URL, opening script...");
+        await openDocument(response.data.access_url, "Instructor Script")
+      } else {
+        console.error("Failed to get script access:", response.error);
+        Alert.alert(
+          "Access Failed",
+          response.error || "Unable to access instructor script at this time"
+        )
+      }
+    } catch (error) {
+      console.error("Error accessing script:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while accessing script. Please try again"
+      )
+    } finally {
+      setAccessingMaterial({ type: null, loading: false });
+    }
   };
 
   const handleViewVideos = (course: CourseView) => {
@@ -424,6 +482,7 @@ export default function Courses() {
           isSelected={selectedCourse?.id === item.id}
           onSelect={() => handleSelectCourse(item)}
           showStudentCount={canViewStudentProgress && isInstructorCourse(item)}
+          showMaterialAccess={false}
         />
       );
     },
@@ -446,6 +505,10 @@ export default function Courses() {
         </View>
       );
     }
+
+    const hasPdfMaterial = Boolean(selectedCourse.pdf_s3_key?.trim());
+    const hasScriptMaterial = Boolean(selectedCourse.instructor_script_s3_key?.trim());
+
     return (
       <View style={styles.selectedCourseSection}>
         <View style={styles.selectedCourseHeader}>
@@ -531,17 +594,18 @@ export default function Courses() {
             <TouchableOpacity
               style={[
                 styles.actionButton,
-                !selectedCourse.pdf_url && styles.actionButtonDisabled,
+                !hasPdfMaterial && styles.actionButtonDisabled,
+                accessingMaterial.type === 'pdf' && { opacity: 0.7 }
               ]}
               onPress={() => handleOpenPDF(selectedCourse)}
-              disabled={!selectedCourse.pdf_url}
+              disabled={!hasPdfMaterial || accessingMaterial.loading}
               activeOpacity={0.7}
             >
               <FontAwesome
-                name="file-pdf-o"
+                name={accessingMaterial.type === 'pdf' ? "spinner" : "file-pdf-o"}
                 size={24}
                 color={
-                  selectedCourse.pdf_url
+                  hasPdfMaterial && !accessingMaterial.loading
                     ? themes.vegasGold
                     : themes.white + "60"
                 }
@@ -549,7 +613,7 @@ export default function Courses() {
               <Text
                 style={[
                   styles.actionButtonTitle,
-                  !selectedCourse.pdf_url && styles.actionButtonTitleDisabled,
+                  !hasPdfMaterial && styles.actionButtonTitleDisabled,
                 ]}
               >
                 {isStudent ? "Course Materials" : "Teaching Materials"}
@@ -557,11 +621,14 @@ export default function Courses() {
               <Text
                 style={[
                   styles.actionButtonSubtitle,
-                  !selectedCourse.pdf_url &&
-                    styles.actionButtonSubtitleDisabled,
+                  !hasPdfMaterial && styles.actionButtonSubtitleDisabled,
                 ]}
               >
-                {selectedCourse.pdf_url ? "View PDF" : "Not available"}
+                {accessingMaterial.type === 'pdf' 
+                  ? "Loading..." 
+                  : hasPdfMaterial 
+                    ? "View PDF"
+                    : "Not available"}
               </Text>
             </TouchableOpacity>
 
@@ -569,18 +636,18 @@ export default function Courses() {
               <TouchableOpacity
                 style={[
                   styles.actionButton,
-                  !selectedCourse.instructor_script_url &&
-                    styles.actionButtonDisabled,
+                  !hasScriptMaterial && styles.actionButtonDisabled,
+                  accessingMaterial.type === 'script' && { opacity: 0.7 }
                 ]}
                 onPress={() => handleOpenScript(selectedCourse)}
-                disabled={!selectedCourse.instructor_script_url}
+                disabled={!hasScriptMaterial || accessingMaterial.loading}
                 activeOpacity={0.7}
               >
                 <FontAwesome
-                  name="file-text-o"
+                  name={accessingMaterial.type === 'script' ? "spinner" : "file-text-o"}
                   size={24}
                   color={
-                    selectedCourse.instructor_script_url
+                    hasScriptMaterial && !accessingMaterial.loading
                       ? themes.vegasGold
                       : themes.white + "60"
                   }
@@ -588,8 +655,7 @@ export default function Courses() {
                 <Text
                   style={[
                     styles.actionButtonTitle,
-                    !selectedCourse.instructor_script_url &&
-                      styles.actionButtonTitleDisabled,
+                    !hasScriptMaterial && styles.actionButtonTitleDisabled,
                   ]}
                 >
                   Teaching Script
@@ -597,13 +663,14 @@ export default function Courses() {
                 <Text
                   style={[
                     styles.actionButtonSubtitle,
-                    !selectedCourse.instructor_script_url &&
-                      styles.actionButtonSubtitleDisabled,
+                    hasScriptMaterial && styles.actionButtonSubtitleDisabled,
                   ]}
                 >
-                  {selectedCourse.instructor_script_url
-                    ? "View Script"
-                    : "Not available"}
+                  {accessingMaterial.type === 'script'
+                    ? "Loading..."
+                    : hasScriptMaterial
+                      ? "View Script"
+                      : "Not available"}
                 </Text>
               </TouchableOpacity>
             )}

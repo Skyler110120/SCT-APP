@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { FontAwesome } from "@expo/vector-icons";
 import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
 import {
   CourseAdminView,
@@ -37,16 +38,16 @@ export default function CourseForm({
   onCreateCourse,
   onUpdateCourse,
 }: CourseFormProps) {
-  const [title, setTitle] = useState("") || undefined;
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [requiredGunType, setRequiredGunType] = useState(GunType.HANDGUN);
   const [difficultyLevel, setDifficultyLevel] = useState(
     CourseDifficulty.BEGINNER
   );
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [instructorScriptUrl, setInstructorScriptUrl] = useState("");
   const [orderIndex, setOrderIndex] = useState("1");
   const [isActive, setIsActive] = useState(true);
+  const [pdfS3Key, setPdfS3Key] = useState("");
+  const [instructorScriptS3Key, setInstructorScriptS3Key] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const isEditMode = course !== null && course !== undefined;
@@ -58,19 +59,19 @@ export default function CourseForm({
         setDescription(course.description || "");
         setRequiredGunType(course.required_gun_type as GunType);
         setDifficultyLevel(course.difficulty_level as CourseDifficulty);
-        setPdfUrl(course.pdf_url || "");
-        setInstructorScriptUrl(course.instructor_script_url || "");
         setOrderIndex(course.order_index.toString());
         setIsActive(course.is_active);
+        setPdfS3Key(course.pdf_s3_key || "");
+        setInstructorScriptS3Key(course.instructor_script_s3_key || "");
       } else {
         setTitle("");
         setDescription("");
         setRequiredGunType(GunType.HANDGUN);
         setDifficultyLevel(CourseDifficulty.BEGINNER);
-        setPdfUrl("");
-        setInstructorScriptUrl("");
         setOrderIndex("1");
         setIsActive(true);
+        setPdfS3Key("");
+        setInstructorScriptS3Key("");
       }
       setErrors({});
     }
@@ -90,24 +91,29 @@ export default function CourseForm({
       newErrors.orderIndex = "Order must be a positive integer";
     }
 
-    if (pdfUrl && !isValidUrl(pdfUrl)) {
-      newErrors.pdfUrl = "Please enter a valid URL";
+    if (pdfS3Key && !isValidS3Key(pdfS3Key.trim())) {
+      newErrors.pdfS3Key = "Invalid S3 key format";
     }
-    if (instructorScriptUrl && !isValidUrl(instructorScriptUrl)) {
-      newErrors.instructorScriptUrl = "Please enter a valid URL";
+
+    if (instructorScriptS3Key && !isValidS3Key(instructorScriptS3Key.trim())) {
+      newErrors.instructorScriptS3Key = "Invalid S3 key format";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
+  const isValidS3Key = (key: string) => {
+    if (!key.trim()) return true;
+
+    if (key.startsWith("/")) return false; // No leading slash
+    if (key.endsWith("/")) return false; // No trailing slash
+    if (key.includes(".")) return false; // Should have file extension
+    if (key.includes("//")) return false; // No double slashes
+    if (key.includes(" ")) return false; // No spaces
+    if (key.length > 500) return false; // length limit
+
+    return true;
   };
 
   const handleSubmit = async () => {
@@ -126,10 +132,10 @@ export default function CourseForm({
           description: description.trim() || undefined,
           required_gun_type: requiredGunType || undefined,
           difficulty_level: difficultyLevel || undefined,
-          pdf_url: pdfUrl.trim() || undefined,
-          instructor_script_url: instructorScriptUrl.trim() || undefined,
           order_index: parseInt(orderIndex) || undefined,
           is_active: isActive,
+          pdf_s3_key: pdfS3Key.trim() || undefined,
+          instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
         };
 
         console.log("📚 Updating course:", updateData);
@@ -140,11 +146,10 @@ export default function CourseForm({
           description: description.trim() || undefined,
           required_gun_type: requiredGunType,
           difficulty_level: difficultyLevel,
-          pdf_url: pdfUrl.trim() || undefined,
-          instructor_script_url: instructorScriptUrl.trim() || undefined,
           order_index: parseInt(orderIndex),
+          pdf_s3_key: pdfS3Key.trim() || undefined,
+          instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
         };
-
         console.log("📚 Creating course:", createData);
         await onCreateCourse(createData);
       }
@@ -153,6 +158,17 @@ export default function CourseForm({
       Alert.alert("Error", "An unexpected error occurred");
     }
   };
+
+  const getMaterialStatus = () => {
+    if (!isEditMode || !course) return null;
+
+    const hasPdf = Boolean(course.pdf_s3_key?.trim());
+    const hasScript = Boolean(course.instructor_script_s3_key?.trim());
+
+    return { hasPdf, hasScript };
+  };
+
+  const materialStatus = getMaterialStatus();
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
@@ -243,53 +259,102 @@ export default function CourseForm({
                 <Text style={styles.warningText}>{errors.orderIndex}</Text>
               )}
               <Text style={styles.inputDescription}>
-                Order in which the videos appear (1-***)
+                Order in which the videos appear (1-99)
               </Text>
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Course PDF URL</Text>
+              <Text style={styles.modalLabel}>Course PDF S3 Key</Text>
               <TextInput
                 style={[
                   styles.searchInput,
-                  errors.pdfUrl && { borderColor: "#FF4444" },
+                  errors.pdfS3Key && { borderColor: "#FF4444" },
                 ]}
-                value={pdfUrl}
-                onChangeText={setPdfUrl}
-                placeholder="https://example.com/course.pdf"
+                value={pdfS3Key}
+                onChangeText={setPdfS3Key}
+                placeholder="coursematerials/pdfs/basic-pistol-training.pdf"
                 placeholderTextColor={themes.white}
-                keyboardType="url"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
-              {errors.pdfUrl && (
-                <Text style={styles.warningText}>{errors.pdfUrl}</Text>
+              {errors.pdfS3Key && (
+                <Text style={styles.warningText}>{errors.pdfS3Key}</Text>
               )}
+              <Text style={styles.inputDescription}>
+                Enter the S3 Course Pdf key here
+              </Text>
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Instructor Script URL</Text>
+              <Text style={styles.modalLabel}>Instructor Script S3 Key</Text>
               <TextInput
                 style={[
                   styles.searchInput,
-                  errors.instructorScriptUrl && { borderColor: "#FF4444" },
+                  errors.instructorScriptS3Key && { borderColor: "#FF4444" },
                 ]}
-                value={instructorScriptUrl}
-                onChangeText={setInstructorScriptUrl}
-                placeholder="https://example.com/instructor-script.pdf"
+                value={instructorScriptS3Key}
+                onChangeText={setInstructorScriptS3Key}
+                placeholder="coursematerials/scripts/script.pdf"
                 placeholderTextColor={themes.white}
-                keyboardType="url"
                 autoCapitalize="none"
+                autoCorrect={false}
               />
-              {errors.instructorScriptUrl && (
+              {errors.instructorScriptS3Key && (
                 <Text style={styles.warningText}>
-                  {errors.instructorScriptUrl}
+                  {errors.instructorScriptS3Key}
                 </Text>
               )}
               <Text style={styles.inputDescription}>
-                Instructor-only teaching materials
+                Enter the S3 Instructor Script key here
               </Text>
             </View>
 
+            {isEditMode && materialStatus && (
+              <View style={styles.createSection}>
+                <Text style={styles.modalLabel}>Current Material Status</Text>
+                <View style={styles.materialStatusContainer}>
+                  <View style={styles.materialStatusRow}>
+                    <FontAwesome
+                      name={materialStatus.hasPdf ? "file-pdf-o" : "file-o"}
+                      size={24}
+                      color={materialStatus.hasPdf ? themes.vegasGold : "#888"}
+                    />
+                    <Text
+                      style={[
+                        styles.materialStatusText,
+                        {
+                          color: materialStatus.hasPdf
+                            ? themes.vegasGold
+                            : "#888",
+                        },
+                      ]}
+                    >
+                      {materialStatus.hasPdf
+                        ? "PDF Available"
+                        : "No PDF Available"}
+                    </Text>
+                  </View>
+                  <View style={styles.materialStatusRow}>
+                    <FontAwesome
+                      name={materialStatus.hasScript ? "file-text-o" : "file-o"}
+                      size={24}
+                      color={
+                        materialStatus.hasScript ? themes.vegasGold : "#888"
+                      }
+                    />
+                    <Text style={[
+                      styles.materialStatusText,
+                      { color: materialStatus.hasScript ? themes.vegasGold : "#888"}
+                    ]}>
+                      {materialStatus.hasScript ? "Script Available" : "No Script Available"}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.inputDescription}>
+                  Students and instructors will be able to access these materials securely.
+                </Text>
+              </View>
+            )}
             {isEditMode && (
               <View style={styles.createSection}>
                 <Text style={styles.modalLabel}>Course Status</Text>

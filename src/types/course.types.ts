@@ -1,3 +1,5 @@
+import { MaterialInfoResponse } from './material.types';
+
 export enum CourseDifficulty {
     BEGINNER = 'Beginner',
     INTERMEDIATE = 'Intermediate',
@@ -9,7 +11,7 @@ export enum GunType {
     RIFLE = 'Rifle',
     SHOTGUN = 'Shotgun',
     CARBINE = 'Carbine',
-    Recolver = 'Revolver'
+    REVOLVER = 'Revolver'
 }
 
 export interface CourseVideo {
@@ -41,9 +43,11 @@ export interface CourseStudentView {
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
-    pdf_url?: string;
+    pdf_s3_key?: string | null;
+    instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
+    material_info?: MaterialInfoResponse;
 }
 
 export interface CourseInstructorView {
@@ -53,26 +57,29 @@ export interface CourseInstructorView {
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
-    pdf_url?: string;
-    instructor_script_url?: string;
+    pdf_s3_key?: string | null;
+    instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
+    material_info?: MaterialInfoResponse;
 }
 
 export interface CourseAdminView {
     id: number;
     title: string;
+    viewType: 'admin';
     description?: string;
     required_gun_type: string;
     difficulty_level: string
-    pdf_url?: string;
-    instructor_script_url?: string;
+    pdf_s3_key?: string | null;
+    instructor_script_s3_key?: string | null;
     total_weeks: number;
     is_active: boolean;
     order_index: number;
     created_at: string;
     updated_at: string;
     videos: CourseVideo[];
+    material_info?: MaterialInfoResponse;
 }
 
 export interface CourseCreateRequest {
@@ -80,8 +87,8 @@ export interface CourseCreateRequest {
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
-    pdf_url?: string;
-    instructor_script_url?: string;
+    pdf_s3_key?: string;
+    instructor_script_s3_key?: string;
     order_index: number;
 }
 
@@ -90,8 +97,8 @@ export interface CourseUpdateRequest {
     description?: string;
     required_gun_type?: string;
     difficulty_level?: string;
-    pdf_url?: string;
-    instructor_script_url?: string;
+    pdf_s3_key?: string;
+    instructor_script_s3_key?: string;
     is_active?: boolean;
     order_index?: number;
 }

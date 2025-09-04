@@ -236,8 +236,22 @@ export const masterAdminManageCourses = StyleSheet.create({
     color: themes.white,
     opacity: 0.5,
   },
-
-  // RoleSelection Modal Styles
+  materialStatusContainer: {
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: themes.black,
+  },
+  materialStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+    gap: 8,
+  },
+  materialStatusText: {
+    fontSize: 20,
+    fontFamily: "Chakra-Regular",
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -350,8 +364,6 @@ export const masterAdminManageCourses = StyleSheet.create({
     fontFamily: "Chakra-BoldItalic",
     color: themes.white,
   },
-
-  // Instructor Selection Modal Styles
   contentContainer: {
     minHeight: 200,
   },
