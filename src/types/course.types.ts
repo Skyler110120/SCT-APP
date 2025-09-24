@@ -87,8 +87,8 @@ export interface CourseCreateRequest {
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
-    pdf_s3_key?: string;
-    instructor_script_s3_key?: string;
+    pdf_s3_key: string;
+    instructor_script_s3_key: string;
     order_index: number;
 }
 

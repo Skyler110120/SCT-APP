@@ -1,7 +1,7 @@
 import boto3
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError, BotoCoreError
 from app.core.config import settings
 from app.models import Course
 
@@ -30,18 +30,19 @@ class S3Service:
         Returns:
             Dictionary with URL and expiration time
         """
-        if not course.has_pdf():
-            raise ValueError("Course {course.course_id} does not have a PDF available")
         
-        object_key = course.get_pdf_s3_key
-        return self._generate_presigned_url(object_key, course.course_id, "course_pdf")
+        if not course.has_pdf():
+            raise ValueError(f"Course {course.course_id} does not have a PDF available")
+        
+        object_key = course.pdf_s3_key
+        return self._generate_presigned_url(object_key, course.id, "course_pdf")
 
-    def generate_instructor_script_url(self, course: Course = None) -> Dict[str, Any]:
+    def generate_instructor_script_url(self, course: Course) -> Dict[str, Any]:
         """
         Generate a temporary URL for viewing instructor script
         """
-        object_key =course.get_script_s3_key
-        return self._generate_presigned_url(object_key, 0, "instructor_script")
+        object_key = course.instructor_script_s3_key
+        return self._generate_presigned_url(object_key, course.id, "instructor_script")
 
     def _generate_presigned_url(self, object_key: str, course_id: int, material_type: str):
         """

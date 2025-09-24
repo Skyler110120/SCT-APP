@@ -88,8 +88,8 @@ class CourseCreate(BaseModel):
     description: Optional[str] = None
     required_gun_type: str = Field(..., min_length=1, max_length=100)
     difficulty_level: str = Field(..., min_length=1, max_length=50)
-    pdf_s3_key: Optional[str] = Field(None, max_length=500)
-    instructor_script_s3_key: Optional[str] = Field(None, max_length=500)
+    pdf_s3_key: str = Field(None, max_length=500)
+    instructor_script_s3_key: str = Field(None, max_length=500)
     order_index: int = Field(..., ge=1)
     
 class CourseUpdate(BaseModel):

@@ -146,8 +146,9 @@ export const materialService = {
   /**
    * Get access URL for instructor script
    * @returns Promise with instructor script access URL or error
+   * @param courseId - ID of the course
    */
-  async getInstructorScriptAccess(): Promise<MaterialAccessServiceResponse> {
+  async getInstructorScriptAccess(courseId: number): Promise<MaterialAccessServiceResponse> {
     try {
       console.log("Requesting instructor script access");
 
@@ -162,7 +163,7 @@ export const materialService = {
 
       const requestBody: MaterialAccessRequest = {};
 
-      const response = await fetch(`${API_URL}/materials/script/access`, {
+      const response = await fetch(`${API_URL}/materials/courses/${courseId}/script/access`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

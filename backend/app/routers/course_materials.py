@@ -56,7 +56,6 @@ async def get_course_material_info(
 async def get_course_pdf_access(
     course_id: int = Path(..., ge=1),
     request: MaterialAccessRequest = MaterialAccessRequest(),
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ): 
     """
@@ -77,6 +76,8 @@ async def get_course_pdf_access(
                 status_code=404,
                 detail="Course PDF not available"
             )
+        
+        
         
         url_data = s3_service.generate_course_pdf_url(course)
         
@@ -102,22 +103,46 @@ async def get_course_pdf_access(
             detail="Failed to generate access URL"
         )
         
-@router.post("/script/access", response_model=MaterialAccessResponse)
+@router.post("/courses/{course_id}/script/access", response_model=MaterialAccessResponse)
 async def get_instructor_script_access(
+    course_id: int = Path(..., ge=1),
     request: MaterialAccessRequest = MaterialAccessRequest(),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Generate access to instructor script
     Only instructors and admins can access
     """
     try:
+        print(f"\n📋 === INSTRUCTOR SCRIPT ACCESS REQUEST ===")
+        print(f"Course ID: {course_id}")
+        print(f"User: {current_user.email} (Role: {current_user.role})")
+        print(f"Request body: {request}")
+        
+        course = db.query(Course).filter(Course.id == course_id).first()
+        if not course:
+            raise HTTPException(
+                status_code=404,
+                detail="Course not found"
+            )
+            
+        if not course.has_script():
+            raise HTTPException(
+                status_code=404,
+                detail="Instructor script not available"
+            )
+        
         if current_user.role not in [UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.MASTERADMIN]:
             raise HTTPException(
                 status_code=403,
                 detail="Instructor access required"
             )
-        url_data = s3_service.generate_instructor_script_url()
+            
+        print(f"✅ Course found: {course.title}")
+        print(f"📊 Course has script: {course.has_script()}")
+        print(f"📂 Script S3 Key: {course.instructor_script_s3_key}")
+        url_data = s3_service.generate_instructor_script_url(course)
         
         return MaterialAccessResponse(
             success=True,

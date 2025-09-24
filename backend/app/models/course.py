@@ -34,14 +34,4 @@ class Course(Base):
     
     def has_script(self) -> bool: 
         return bool(self.instructor_script_s3_key and self.instructor_script_s3_key.strip())
-
-    def get_pdf_s3_key(self) -> str:
-        if self.pdf_s3_key:
-            return self.pdf_s3_key
-        return f"coursematerials/pdfs/course-{self.id}.pdf"
-    
-    def get_script_s3_key(self) -> str:
-        if self.instructor_script_s3_key:
-            return self.instructor_script_s3_key
-        return f"coursematerials/scripts/course-script.pdf"
         

@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
-from datetime import datetime
 from app.database.database import Base
 
 class SessionStatus(str, enum.Enum):

@@ -274,7 +274,7 @@ export default function Courses() {
   };
 
   const handleOpenScript = async (course: CourseView) => {
-    if (!isInstructorCourse(course)) {
+    if (!canViewInstructorScript) {
       Alert.alert(
         "No Script Available",
         "Instructor script has not been uploaded for this course yet."
@@ -296,7 +296,7 @@ export default function Courses() {
 
     try {
       console.log("Requesting secure script access")
-      const response = await materialService.getInstructorScriptAccess();
+      const response = await materialService.getInstructorScriptAccess(course.id);
 
       if (response.success && response.data) {
         console.log("Got presigned URL, opening script...");
@@ -607,7 +607,7 @@ export default function Courses() {
                 color={
                   hasPdfMaterial && !accessingMaterial.loading
                     ? themes.vegasGold
-                    : themes.white + "60"
+                    : themes.white 
                 }
               />
               <Text
@@ -663,7 +663,7 @@ export default function Courses() {
                 <Text
                   style={[
                     styles.actionButtonSubtitle,
-                    hasScriptMaterial && styles.actionButtonSubtitleDisabled,
+                    !hasScriptMaterial && styles.actionButtonSubtitleDisabled,
                   ]}
                 >
                   {accessingMaterial.type === 'script'
