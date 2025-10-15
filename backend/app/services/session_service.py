@@ -88,7 +88,6 @@ def _add_computed_fields(session: SessionModel):
             session.enrollment_progress_display = session.enrollment.week_display
             session.enrollment_progress_percentage = session.enrollment.progress_percentage
             session.enrollment_status = session.enrollment.status
-            session.enrollment_instructor_notes = session.enrollment.instructor_notes
         
         print(f"Standardized session {session.id}: {session.course_title} - {session.student_name}")
         

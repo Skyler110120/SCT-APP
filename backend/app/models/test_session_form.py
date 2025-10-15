@@ -1,26 +1,18 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, Text, Enum
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, Text, Enum, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.database import Base
 import enum
 
-class SleepQuality(str, enum.Enum):
-    POOR = "POOR"
-    AVERAGE = "AVERAGE"
-    GREAT = "GREAT"
+from app.models.session_form import SleepQuality, PreStressLevel, PostStressLevel
 
-class PreStressLevel(str, enum.Enum):
-    LOW = "LOW"
-    MODERATE = "MODERATE"
-    HIGH = "HIGH"
-
-class PostStressLevel(str, enum.Enum):
-    LESS_STRESSED = "LESS_STRESSED"
-    SAME = "SAME"
-    MORE_STRESSED = "MORE_STRESSED"
-
-class SessionForm(Base):
-    __tablename__ = "session_forms"
+class DrillType(str, enum.Enum):
+    TIME = "TIME"
+    SCORE = "SCORE"
+    ACCURACY = "ACCURACY"
+    
+class TestSessionForm(Base):
+    __tablename__ = "test_session_forms"
     
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey('sessions.id', ondelete='CASCADE'), nullable=False, index=True)
@@ -43,7 +35,7 @@ class SessionForm(Base):
     confidence_level = Column(Integer, nullable=True) # 1-10 scale
     highlight = Column(String(255), nullable=True) # most proud of from session
     
-    advance_student = Column(Boolean, nullable=False, default=False) # yes/no decision
+    advance_student = Column(Boolean, nullable=False, default=False)
     instructor_notes = Column(Text, nullable=True)
     
     is_completed = Column(Boolean, default=False)
@@ -51,7 +43,7 @@ class SessionForm(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     #Relationships
-    session = relationship("Session", back_populates="form")
+    session = relationship("Session", back_populates="test_form")
     instructor = relationship("User", foreign_keys=[instructor_id])
     student = relationship("User", foreign_keys=[student_id])
     course = relationship("Course")
@@ -61,5 +53,4 @@ class SessionForm(Base):
         """Get week number from student's enrollment"""
         if self.session and self.session.enrollment:
             return self.session.enrollment.current_week
-        return None
-    
+

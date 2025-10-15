@@ -50,20 +50,22 @@ def create_session_form(db: Session, form_data: SessionFormCreate, instructor_id
         SessionForm.session_id == form_data.session_id
     ).first()
     
+    if existing_form:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A form already exists for this session"
+        )
+    
     if not session.enrollment:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Session must be linked to enrollment"
         )
-    
-    week_number = session.enrollment.current_week
-    
     session_form = SessionForm(
         session_id=session.id,
         instructor_id=instructor_id,
         student_id=session.student_id,
         course_id=session.course_id,
-        week_number=week_number
     )
     
     session.status = SessionStatus.IN_PROGRESS
@@ -175,7 +177,6 @@ def complete_session_form(db: Session, form_id: int, form_data: SessionFormCompl
             enrollment.current_week = 24
             enrollment.status = "COMPLETED"
             enrollment.completed_at = datetime.now(datetime.timezone.utc)
-        enrollment.instructor_decision = "APPROVED"
     
     db.commit()
     db.refresh(session_form)

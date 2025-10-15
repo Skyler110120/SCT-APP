@@ -24,7 +24,6 @@ class StudentEnrollment(Base):
     status = Column(String(20), nullable=False, default=EnrollmentStatus.ACTIVE)
     current_week = Column(Integer, default=1)
     instructor_decision = Column(String(20), nullable=True)
-    instructor_notes = Column(Text, nullable=True)
     enrolled_at = Column(DateTime, default=datetime.now())
     completed_at = Column(DateTime, nullable=True)
     last_accessed_at = Column(DateTime, nullable=True)

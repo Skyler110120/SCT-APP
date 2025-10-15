@@ -25,6 +25,9 @@ class Course(Base):
     enrollments = relationship("StudentEnrollment", back_populates="course")
     sessions = relationship("Session", back_populates="course")
     profiles = relationship("Profile", back_populates="course")
+    session_form = relationship("SessionForm", back_populates="course")
+    test_form = relationship("TestSessionForm", back_populates="course")
+    drills = relationship("CourseDrill", back_populates="course", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Course {self.id}: {self.title} ({self.required_gun_type})"

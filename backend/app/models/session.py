@@ -38,6 +38,8 @@ class Session(Base):
     company = relationship("Company", back_populates="sessions")
     course = relationship("Course", back_populates="sessions")
     enrollment = relationship("StudentEnrollment", back_populates="sessions")
+    session_form = relationship("SessionForm", back_populates="session")
+    test_form = relationship("TestSessionForm", back_populates="session", uselist=False)
 
     def __repr__(self):
         return f"<Session {self.title} ({self.start_time} to {self.end_time})>"
