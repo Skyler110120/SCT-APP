@@ -12,7 +12,9 @@ from app.routers import (
     course,
     instructor,
     course_materials,
-    session_form
+    session_form,
+    test_session_form,
+    course_drill
 )
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -39,6 +41,8 @@ app.include_router(course.router)
 app.include_router(instructor.router)
 app.include_router(course_materials.router)
 app.include_router(session_form.router)
+app.include_router(test_session_form.router)
+app.include_router(course_drill.router)
 
 
 app.add_middleware(

@@ -43,7 +43,8 @@ class User(Base):
     session_form_as_student = relationship("SessionForm", foreign_keys=["SessionForm.student_id"], back_populates="student")
     test_form_as_instructor = relationship("TestSessionForm", foreign_keys=["TestSessionForm.instructor_id"], back_populates="instructor")
     test_form_as_student = relationship("TestSessionForm", foreign_keys=["TestSessionForm.student_id"], back_populates="student")
-    drill_results = relationship("StudentDrillResult", foriegn_keys="[StudentDrillResult.student_id]", back_populates="student")
+    drill_results = relationship("StudentDrillResult", foreign_keys="[StudentDrillResult.student_id]", back_populates="student")
+    enrollments = relationship("StudentEnrollment", foreign_keys="[StudentEnrollment.student_id]", back_populates="student")
 
     def __repr__(self):
         return f"<User {self.email}"
