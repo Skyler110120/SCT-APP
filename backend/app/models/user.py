@@ -39,10 +39,6 @@ class User(Base):
     created_events = relationship("Event", back_populates="created_by_user", foreign_keys="Event.created_by_user_id")
     instructor = relationship("User", remote_side=[id], back_populates="students", post_update=True)
     students = relationship("User", back_populates="instructor", cascade="save-update")
-    session_form_as_instructor = relationship("SessionForm", foreign_keys=["SessionForm.instructor_id"], back_populates="instructor")
-    session_form_as_student = relationship("SessionForm", foreign_keys=["SessionForm.student_id"], back_populates="student")
-    test_form_as_instructor = relationship("TestSessionForm", foreign_keys=["TestSessionForm.instructor_id"], back_populates="instructor")
-    test_form_as_student = relationship("TestSessionForm", foreign_keys=["TestSessionForm.student_id"], back_populates="student")
     drill_results = relationship("StudentDrillResult", foreign_keys="[StudentDrillResult.student_id]", back_populates="student")
     enrollments = relationship("StudentEnrollment", foreign_keys="[StudentEnrollment.student_id]", back_populates="student")
 

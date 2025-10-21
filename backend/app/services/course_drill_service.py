@@ -101,6 +101,55 @@ def get_course_drills(db: Session, course_id: int):
     
     return drills
 
+def delete_course_drill(db: Session, drill_id: int, user_id: int, company_id: int):
+    """
+    Delete a drill from a course (soft delete)
+    
+    Args:
+        db: database session
+        drill_id: ID of the drill to delete
+        user_id: ID of the user deleting the drill
+        company_id: ID of the company for validation
+    
+    Returns:
+        The deactivated CourseDrill object
+    """
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.company_id == company_id,
+        User.role == UserRole.MASTERADMIN
+    ).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Master Admins can delete drills"
+        )
+    
+    drill = db.query(CourseDrill).filter(
+        CourseDrill.id == drill_id,
+        CourseDrill.is_active == True
+    ).first()
+    
+    if not drill:
+        raise HTTPException(
+            CourseDrill.id == drill_id,
+            CourseDrill.is_active == True
+        ).first()
+    
+    student_results_count = db.query(StudentDrillResult).filter(
+        StudentDrillResult.drill_id == drill_id,
+        StudentDrillResult.current_value.isnot(None)
+    ).count()
+    
+    drill.is_active = False
+    drill.updated_at = datetime.now(datetime.timezone.utc)
+    
+    db.commit()
+    db.refresh(drill)
+    
+    return drill
+
 def update_course_drill(db: Session, drill_id: int, drill_data: CourseDrillUpdate, user_id: int, company_id: int):
     """
     Update an existing drill for a course

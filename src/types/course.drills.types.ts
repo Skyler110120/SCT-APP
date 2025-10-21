@@ -55,7 +55,6 @@ export interface StudentDrillResult {
     passed?: boolean;
     result_created_at?: string;
     result_updated_at?: string;
-
     drill_name: string;
     drill_type: DrillType;
     standard_value: number;

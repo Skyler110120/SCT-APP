@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
-  ScrollView,
 } from "react-native";
 import { courseService } from "@/src/services/courseService";
 import { useAuth } from "@/src/context/AuthContext";
@@ -26,6 +25,7 @@ import CourseList from "@/src/components/masterAdmin/CourseList";
 import CourseForm from "@/src/components/masterAdmin/CourseForm";
 import VideoManagementModal from "@/src/components/masterAdmin/VideoManagementModal";
 import VideoForm from "@/src/components/masterAdmin/VideoForm";
+import DrillManagement from "@/src/components/masterAdmin/DrillManagement";
 import { themes } from "@/src/context/themes";
 
 export default function MasterAdminCourseManagement() {
@@ -40,6 +40,7 @@ export default function MasterAdminCourseManagement() {
   const [isSubmittingCourse, setIsSubmittingCourse] = useState<boolean>(false);
   const [isSubmittingVideo, setIsSubmittingVideo] = useState<boolean>(false);
   const [courseModalVisible, setCourseModalVisible] = useState<boolean>(false);
+  const [drillManagementModalVisible, setDrillManagementModalVisible] = useState<boolean>(false);
   const [videoModalVisible, setVideoModalVisible] = useState<boolean>(false);
   const [videoManagementModalVisible, setVideoManagementModalVisible] =
     useState<boolean>(false);
@@ -85,6 +86,15 @@ export default function MasterAdminCourseManagement() {
     console.log("Selected course:", course.title);
     setSelectedCourse(course);
   };
+
+  const handleManageDrillsPress = () => {
+    if (!selectedCourse) {
+      Alert.alert("Error", "Please select a course first");
+      return;
+    }
+    console.log(`Opening drill management for course: ${selectedCourse.title}`)
+    setDrillManagementModalVisible(true);
+  }
 
   const handleCreateCourse = async (data: CourseCreateRequest) => {
     setIsSubmittingCourse(true);
@@ -404,6 +414,14 @@ export default function MasterAdminCourseManagement() {
             >
               <Text style={styles.buttonText}>Manage Videos</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, !selectedCourse && { opacity: 0.5}]}
+              onPress={handleManageDrillsPress}
+              disabled={!selectedCourse}
+            >
+              <Text style={styles.buttonText}>Manage Drills</Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
 
@@ -442,6 +460,14 @@ export default function MasterAdminCourseManagement() {
             }}
             onCreateVideo={editingVideo ? undefined : handleCreateVideo}
             onUpdateVideo={editingVideo ? handleUpdateVideo : undefined}
+          />
+        )}
+
+        {selectedCourse && (
+          <DrillManagement
+            visible={drillManagementModalVisible}
+            course={selectedCourse}
+            onClose={() => setDrillManagementModalVisible(false)}
           />
         )}
         <BottomNavBar />

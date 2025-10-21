@@ -6,10 +6,8 @@ import {
   View,
   Text,
   SafeAreaView,
-  ActivityIndicator,
   TouchableOpacity,
   Alert,
-  ScrollView,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { companyService } from "@/src/services/companyService";

@@ -50,11 +50,48 @@ async def create_course_drill(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while creating the drill"
         )
+
+@router.delete("/{drill_id}")
+async def delete_course_drill(
+    drill_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Soft delete a drill from a course
+    """
+    
+    if current_user.role != UserRole.MASTERADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Master Admins can delete drills"
+        )
+    
+    try:
+        drill= course_drill_service.delete_course_drill(
+            db=db,
+            drill_id=drill_id,
+            user_id=current_user.id,
+            company_id=current_user.company_id
+        )
+        
+        return {
+            "success": True,
+            "message": f"Drill '{drill.drill_name}' has been deleted successfully",
+            "drill_id": drill.id,
+            "drill_name": drill.drill_name
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while deleting the drill"
+        )
     
 @router.get("/course/{course_id}", response_model=List[CourseDrillOut])
 async def get_course_drills(
     course_id: int,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """

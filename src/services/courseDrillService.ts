@@ -76,6 +76,53 @@ export const courseDrillService = {
   },
 
   /**
+   * Delete a drill from a course (soft delete)
+   * @param drillId - ID of the drill to delete
+   * @returns A promise with the deletion response
+   */
+  async deleteCourseDrill(drillId: number): Promise<CourseDrillResponse> {
+    try {
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found"
+        }
+      }
+
+      const response = await fetch(`${API_URL}/course-drills/${drillId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to delete course drill:", errorData);
+        return {
+          success: false,
+          error: errorData.detail || "Failed to delete course drill"
+        }
+      }
+
+      const data = await response.json();
+      return {
+        success: true,
+        message: data.message || "Course drill deleted successfully"
+      }
+    } catch (error) {
+      console.error("Failed to delete course drill:", error);
+      return {
+        success: false,
+        error: "Failed to delete course drill"
+      }
+    }
+  },
+
+  /**
    * Get all drills in a course
    * @param courseId - ID of the course
    * @returns A promise with the list of drills

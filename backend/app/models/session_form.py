@@ -51,7 +51,7 @@ class SessionForm(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     #Relationships
-    session = relationship("Session", back_populates="form")
+    session = relationship("Session", back_populates="session_form")
     instructor = relationship("User", foreign_keys=[instructor_id])
     student = relationship("User", foreign_keys=[student_id])
     course = relationship("Course")

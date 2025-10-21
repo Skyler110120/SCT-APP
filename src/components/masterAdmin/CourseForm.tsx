@@ -147,8 +147,8 @@ export default function CourseForm({
           required_gun_type: requiredGunType,
           difficulty_level: difficultyLevel,
           order_index: parseInt(orderIndex),
-          pdf_s3_key: pdfS3Key.trim() || undefined,
-          instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
+          pdf_s3_key: pdfS3Key.trim(),
+          instructor_script_s3_key: instructorScriptS3Key.trim(),
         };
         console.log("📚 Creating course:", createData);
         await onCreateCourse(createData);
