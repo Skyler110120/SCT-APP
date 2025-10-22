@@ -35,7 +35,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ LEARNING: Union types help us define all possible actions in our reducer
 type AuthAction =
   | { type: "AUTH_LOADING" }
   | { type: "AUTH_SUCCESS"; payload: { user: User; token: string } }
@@ -52,7 +51,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-// ✅ LEARNING: Pure functions make state changes predictable and testable
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case "AUTH_LOADING":
@@ -105,8 +103,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// ✅ LEARNING: Helper functions keep your code DRY (Don't Repeat Yourself)
-// This converts API response format to our internal User format
 const convertUserInfoToUser = (userInfo: UserInfo): User => {
   return {
     id: userInfo.id,
@@ -118,13 +114,11 @@ const convertUserInfoToUser = (userInfo: UserInfo): User => {
     instructor_id: userInfo.instructor_id || null,
     has_completed_onboarding: userInfo.has_completed_onboarding,
     is_active: userInfo.is_active,
-    // ✅ Add the missing fields that User expects
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
 };
 
-// ✅ LEARNING: Convert signup response to User format
 const convertSignupUserToUser = (signupUser: EnhancedSignupUser): User => {
   return {
     id: signupUser.user_id,
@@ -148,7 +142,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // ✅ LEARNING: Computed values derived from state
   const needsOnboarding = Boolean(
     state.user && state.user.company_id === null
   );
@@ -162,7 +155,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return state.user.role === requiredRole;
   };
 
-  // ✅ LEARNING: useEffect runs side effects when component mounts
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -191,7 +183,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []); // Empty dependency array means "run once on mount"
 
-  // ✅ LEARNING: Async functions in React must be handled carefully
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     dispatch({ type: "AUTH_LOADING" });
 
@@ -349,7 +340,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: "UPDATE_USER", payload: userData });
   };
 
-  // ✅ LEARNING: The context value - this is what components will access
   const value: AuthContextType = {
     state,
     login,
@@ -359,14 +349,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     hasRole,
     isLoading: state.is_loading,
     isAuthenticated: state.is_authenticated,
-    user: state.user as User | null, // Cast to match interface
+    user: state.user as User | null, 
     needsOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// ✅ LEARNING: Custom hook pattern - encapsulates context usage
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
