@@ -110,16 +110,16 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-      setIsLoggingOut(true);
-      try {
-        await logout();
-      } catch (error) {
-        console.error("Logout failed:", error);
-        Alert.alert("Error", "Failed to log out. Please try again.");
-      } finally {
-        setIsLoggingOut(false);
-      }
-    };
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const copyToClipboard = async (code: string) => {
     await Clipboard.setStringAsync(code);

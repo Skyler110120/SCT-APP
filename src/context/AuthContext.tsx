@@ -19,7 +19,6 @@ import {
 } from "../types/auth.types";
 import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
 
-// ✅ LEARNING: Interface defines the "contract" of what our context provides
 interface AuthContextType {
   state: AuthState;
   login: (credentials: LoginCredentials) => Promise<boolean>;
@@ -93,7 +92,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
           user: {
             ...state.user,
             ...action.payload
-          } as any, // Temporary cast
+          } as any, 
         };
       }
       return state;
@@ -158,22 +157,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("🔍 Checking authentication status...");
+        console.log("Checking authentication status...");
         const result = await authService.checkAuth();
         
         if (result) {
-          console.log("✅ User is authenticated");
+          console.log("User is authenticated");
           const user = convertUserInfoToUser(result.user);
           dispatch({
             type: "AUTH_SUCCESS",
             payload: { user, token: result.token },
           });
         } else {
-          console.log("❌ No valid authentication found");
+          console.log("No valid authentication found");
           dispatch({ type: "AUTH_LOGOUT" });
         }
       } catch (error) {
-        console.error("💥 Auth check error:", error);
+        console.error(" Auth check error:", error);
         dispatch({
           type: "AUTH_ERROR",
           payload: "Failed to authenticate",
@@ -187,7 +186,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: "AUTH_LOADING" });
 
     try {
-      console.log("🔐 Starting login process for:", credentials.email);
+      console.log("Starting login process for:", credentials.email);
       
       const loginResult = await authService.login(credentials);
 
@@ -200,7 +199,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      console.log("✅ Login successful, fetching user profile...");
+      console.log("Login successful, fetching user profile...");
       
       const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 
@@ -213,7 +212,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      console.log("✅ User profile fetched successfully");
+      console.log("User profile fetched successfully");
       
       const user = convertUserInfoToUser(userResult.data);
       
@@ -228,7 +227,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return true;
 
     } catch (error) {
-      console.error("💥 Login error:", error);
+      console.error("Login error:", error);
       dispatch({
         type: "AUTH_ERROR",
         payload: "Network error occurred during login",
@@ -307,7 +306,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
   } catch (error) {
-    console.error("💥 Registration error:", error);
+    console.error("Registration error:", error);
     
     const errorMessage = error instanceof Error ? error.message : "An error occurred during registration";
     
@@ -325,12 +324,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      console.log("👋 Logging out user...");
+      console.log("Logging out user...");
       await authService.logout();
       dispatch({ type: "AUTH_LOGOUT" });
-      console.log("✅ Logout successful");
+      console.log("Logout successful");
     } catch (error) {
-      console.error("💥 Logout error:", error);
+      console.error("Logout error:", error);
       // Even if logout fails, clear local state
       dispatch({ type: "AUTH_LOGOUT" });
     }
