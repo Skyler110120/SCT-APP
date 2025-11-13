@@ -27,7 +27,7 @@ import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 import AdminStats from "@/src/components/admin/AdminStats";
 
 export default function MasterAdminDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -36,11 +36,11 @@ export default function MasterAdminDashboard() {
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isLoadingCodes, setIsLoadingCodes] = useState<boolean>(false);
   const [isSubmittingCompany, setIsSubmittingCompany] =
     useState<boolean>(false);
-  const [isSubmittingCode, setIsSubmittingCode] = 
-  useState<boolean>(false);
+  const [isSubmittingCode, setIsSubmittingCode] = useState<boolean>(false);
   const [companyModalVisible, setCompanyModalVisible] =
     useState<boolean>(false);
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
@@ -216,6 +216,18 @@ export default function MasterAdminDashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   const copyToClipboard = async (code: string) => {
     await Clipboard.setStringAsync(code);
     Alert.alert("Copied", "Invite code copied to clipboard");
@@ -274,6 +286,17 @@ export default function MasterAdminDashboard() {
               >
                 <Text style={masterAdminDashboardStyles.buttonText}>
                   Create Invite Code
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={masterAdminDashboardStyles.actionButton}
+                onPress={() => {
+                  handleLogout();
+                }}
+                disabled={isLoggingOut}
+              >
+                <Text style={masterAdminDashboardStyles.buttonText}>
+                  Log Out
                 </Text>
               </TouchableOpacity>
             </View>

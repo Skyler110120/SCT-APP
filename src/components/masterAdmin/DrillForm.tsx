@@ -103,7 +103,7 @@ export default function DrillForm({
     if (drillType === DrillType.TIME) {
       return "seconds";
     } else if (drillType === DrillType.SCORE) {
-      return "points";
+      return 
     } else if (drillType === DrillType.ACCURACY) {
       return "percentage";
     } else {
