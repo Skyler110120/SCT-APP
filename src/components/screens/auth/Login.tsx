@@ -34,7 +34,7 @@ export default function LoginScreen() {
   const handleChange = (field: keyof LoginCredentials, value: string) => {
     setCredentials((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: field === "email" ? value.toLowerCase() : value,
     }));
   };
 

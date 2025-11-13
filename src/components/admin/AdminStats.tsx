@@ -7,7 +7,6 @@ interface StatsProps {
         totalUsers: number;
         activeUsers: number;
         pendingInvites: number;
-        sessions: number;
     };
     selectedCompany: {
         name: string;
@@ -29,11 +28,6 @@ const AdminStats = ({ stats, selectedCompany }: StatsProps) => {
                 <View style={adminStats.statCard}>
                     <Text style={adminStats.statValue}>{stats.pendingInvites}</Text>
                     <Text style={adminStats.statLabel}>Pending Invites</Text>
-                </View>
-
-                <View style={adminStats.statCard}>
-                    <Text style={adminStats.statValue}>{stats.sessions}</Text>
-                    <Text style={adminStats.statLabel}>Sessions</Text>
                 </View>
             </View>
         </View>

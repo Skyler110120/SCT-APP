@@ -11,12 +11,14 @@ import {
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { companyService } from "@/src/services/companyService";
+import { userService } from "@/src/services/userService";
 import { useAuth } from "@/src/context/AuthContext";
 import {
   Company,
   InviteCode,
   CreateCompanyRequest,
 } from "@/src/types/company.types";
+import { User } from "@/src/types/auth.types"
 
 import CompanyList from "@/src/components/admin/CompanyList";
 import InviteCodeList from "@/src/components/admin/InviteCodeList";
@@ -30,8 +32,10 @@ export default function MasterAdminDashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
+  const [users, setUsers] = useState<User[]>([])
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
   const [isLoadingCodes, setIsLoadingCodes] = useState<boolean>(false);
   const [isSubmittingCompany, setIsSubmittingCompany] =
     useState<boolean>(false);
@@ -46,7 +50,6 @@ export default function MasterAdminDashboard() {
     totalUsers: 0,
     activeUsers: 0,
     pendingInvites: 0,
-    sessions: 0,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +61,7 @@ export default function MasterAdminDashboard() {
   useEffect(() => {
     if (selectedCompany) {
       fetchInviteCodes(selectedCompany.id);
+      fetchUsers(selectedCompany.id)
     }
   }, [selectedCompany]);
 
@@ -88,6 +92,29 @@ export default function MasterAdminDashboard() {
       setError("An unexpected error occurrred, Please try again");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchUsers = async (companyId: number) => {
+    setIsLoadingUsers(true);
+    
+    try {
+      const response = await userService.getAllUsers(companyId);
+
+      if (response.success && response.data) {
+        setUsers(response.data);
+
+        setStats((prev) => ({
+          ...prev,
+          totalUsers: users.length,
+        }));
+      } else {
+        console.error("Failed to fetch users:");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoadingUsers(false);
     }
   };
 

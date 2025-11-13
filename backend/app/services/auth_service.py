@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime, timezone
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import Optional
 import logging
 
@@ -24,7 +25,7 @@ def authenticate_user(
     Returns:
         The user object if authentication is successful, None otherwise
     """
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(func.lower(User.email) == email.lower()).first()
     if not user or not verify_password(password, user.hashed_password):
         return None
     
