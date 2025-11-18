@@ -103,7 +103,7 @@ export default function DrillForm({
     if (drillType === DrillType.TIME) {
       return "seconds";
     } else if (drillType === DrillType.SCORE) {
-      return 
+      return "percentage";
     } else if (drillType === DrillType.ACCURACY) {
       return "percentage";
     } else {
@@ -176,177 +176,178 @@ export default function DrillForm({
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}></View>
-        <Text style={styles.modalTitle}>
-          {isEditMode ? "Edit Drill" : "Create New Drill"}
-        </Text>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>
+            {isEditMode ? "Edit Drill" : "Create New Drill"}
+          </Text>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Drill Name</Text>
-            <TextInput
-              style={[
-                styles.searchInput,
-                errors.drillName && { borderColor: "#FF4444" },
-              ]}
-              value={drillName}
-              onChangeText={setDrillName}
-              placeholder="e.g., Bull Standard, Bill Drill"
-              placeholderTextColor={themes.white}
-              maxLength={100}
-            />
-            {errors.drillName && (
-              <Text style={styles.warningText}>{errors.drillName}</Text>
-            )}
-          </View>
-
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Drill Type</Text>
-            <View style={styles.modalPickerContainer}>
-              <Picker
-                selectedValue={drillType}
-                onValueChange={(itemValue) => setDrillType(itemValue)}
-                style={styles.modalPicker}
-                dropdownIconColor={themes.vegasGold}
-              >
-                {Object.values(DrillType).map((type) => (
-                  <Picker.Item
-                    key={type}
-                    label={getDrillTypeDisplayName(type)}
-                    value={type}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.inputDescription}>
-              Time: Lower is better * Score: Higher is better * Accuracy: Higher
-              is better
-            </Text>
-          </View>
-
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Standard Value</Text>
-            <TextInput
-              style={[
-                styles.searchInput,
-                errors.standardValue && { borderColor: "#FF4444" },
-              ]}
-              value={standardValue}
-              onChangeText={setStandardValue}
-              placeholder={getValuePlaceHolder()}
-              placeholderTextColor={themes.white}
-              keyboardType="numeric"
-            />
-            {errors.standardValue && (
-              <Text style={styles.warningText}>{errors.standardValue}</Text>
-            )}
-            <Text style={styles.inputDescription}>
-              The benchmark value for this drill.
-            </Text>
-          </View>
-
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Standard Unit</Text>
-            <TextInput
-              style={[
-                styles.searchInput,
-                errors.standardUnit && { borderColor: "#FF4444" },
-              ]}
-              value={standardUnit}
-              onChangeText={setStandardUnit}
-              placeholder={getUnitPlaceHolder()}
-              placeholderTextColor={themes.white}
-              maxLength={20}
-            />
-            {errors.standardUnit && (
-              <Text style={styles.warningText}>{errors.standardUnit}</Text>
-            )}
-          </View>
-
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Display Order</Text>
-            <TextInput
-              style={[
-                styles.searchInput,
-                errors.displayOrder && { borderColor: "#FF4444" },
-              ]}
-              value={displayOrder}
-              onChangeText={setDisplayOrder}
-              placeholder="1"
-              placeholderTextColor={themes.white}
-              keyboardType="numeric"
-              maxLength={2}
-            />
-            {errors.displayOrder && (
-              <Text style={styles.warningText}>{errors.displayOrder}</Text>
-            )}
-            <Text style={styles.inputDescription}>
-              Order in which drills will appear during test session (1-99)
-            </Text>
-          </View>
-
-          <View style={styles.createSection}>
-            <Text style={styles.modalLabel}>Description</Text>
-            <TextInput
-              style={styles.searchInput}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Optional description for the drill."
-              placeholderTextColor={themes.white}
-              multiline
-              numberOfLines={3}
-              maxLength={1000}
-            />
-          </View>
-
-          {isEditMode && (
+          <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Drill Status</Text>
+              <Text style={styles.modalLabel}>Drill Name</Text>
+              <TextInput
+                style={[
+                  styles.searchInput,
+                  errors.drillName && { borderColor: "#FF4444" },
+                ]}
+                value={drillName}
+                onChangeText={setDrillName}
+                placeholder="e.g., Bull Standard, Bill Drill"
+                placeholderTextColor={themes.white}
+                maxLength={100}
+              />
+              {errors.drillName && (
+                <Text style={styles.warningText}>{errors.drillName}</Text>
+              )}
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Drill Type</Text>
               <View style={styles.modalPickerContainer}>
                 <Picker
-                  selectedValue={isActive}
-                  onValueChange={(itemValue) => setIsActive(itemValue)}
+                  selectedValue={drillType}
+                  onValueChange={(itemValue) => setDrillType(itemValue)}
                   style={styles.modalPicker}
                   dropdownIconColor={themes.vegasGold}
                 >
-                  <Picker.Item label="Active" value={true} />
-                  <Picker.Item label="Inactive" value={false} />
+                  {Object.values(DrillType).map((type) => (
+                    <Picker.Item
+                      key={type}
+                      label={getDrillTypeDisplayName(type)}
+                      value={type}
+                    />
+                  ))}
                 </Picker>
               </View>
               <Text style={styles.inputDescription}>
-                Inactive drills are hidden during test sessions
+                Time: Lower is better * Score: Higher is better * Accuracy:
+                Higher is better
               </Text>
             </View>
-          )}
-        </ScrollView>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onClose}
-            disabled={isSubmitting}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Standard Value</Text>
+              <TextInput
+                style={[
+                  styles.searchInput,
+                  errors.standardValue && { borderColor: "#FF4444" },
+                ]}
+                value={standardValue}
+                onChangeText={setStandardValue}
+                placeholder={getValuePlaceHolder()}
+                placeholderTextColor={themes.white}
+                keyboardType="numeric"
+              />
+              {errors.standardValue && (
+                <Text style={styles.warningText}>{errors.standardValue}</Text>
+              )}
+              <Text style={styles.inputDescription}>
+                The benchmark value for this drill.
+              </Text>
+            </View>
 
-          <TouchableOpacity
-            style={[styles.confirmButton, isSubmitting && { opacity: 0.7 }]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <View style={styles.savingContainer}>
-                <ActivityIndicator size="small" color={themes.white} />
-                <Text style={styles.savingText}>
-                  {isEditMode ? "Updating..." : "Creating..."}
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Standard Unit</Text>
+              <TextInput
+                style={[
+                  styles.searchInput,
+                  errors.standardUnit && { borderColor: "#FF4444" },
+                ]}
+                value={standardUnit}
+                onChangeText={setStandardUnit}
+                placeholder={getUnitPlaceHolder()}
+                placeholderTextColor={themes.white}
+                maxLength={20}
+              />
+              {errors.standardUnit && (
+                <Text style={styles.warningText}>{errors.standardUnit}</Text>
+              )}
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Display Order</Text>
+              <TextInput
+                style={[
+                  styles.searchInput,
+                  errors.displayOrder && { borderColor: "#FF4444" },
+                ]}
+                value={displayOrder}
+                onChangeText={setDisplayOrder}
+                placeholder="1"
+                placeholderTextColor={themes.white}
+                keyboardType="numeric"
+                maxLength={2}
+              />
+              {errors.displayOrder && (
+                <Text style={styles.warningText}>{errors.displayOrder}</Text>
+              )}
+              <Text style={styles.inputDescription}>
+                Order in which drills will appear during test session (1-99)
+              </Text>
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Description</Text>
+              <TextInput
+                style={styles.searchInput}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Optional description for the drill."
+                placeholderTextColor={themes.white}
+                multiline
+                numberOfLines={3}
+                maxLength={1000}
+              />
+            </View>
+
+            {isEditMode && (
+              <View style={styles.createSection}>
+                <Text style={styles.modalLabel}>Drill Status</Text>
+                <View style={styles.modalPickerContainer}>
+                  <Picker
+                    selectedValue={isActive}
+                    onValueChange={(itemValue) => setIsActive(itemValue)}
+                    style={styles.modalPicker}
+                    dropdownIconColor={themes.vegasGold}
+                  >
+                    <Picker.Item label="Active" value={true} />
+                    <Picker.Item label="Inactive" value={false} />
+                  </Picker>
+                </View>
+                <Text style={styles.inputDescription}>
+                  Inactive drills are hidden during test sessions
                 </Text>
               </View>
-            ) : (
-              <Text style={styles.buttonText}>
-                {isEditMode ? "Update Drill" : "Create Drill"}
-              </Text>
             )}
-          </TouchableOpacity>
+          </ScrollView>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={onClose}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.confirmButton, isSubmitting && { opacity: 0.7 }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <View style={styles.savingContainer}>
+                  <ActivityIndicator size="small" color={themes.white} />
+                  <Text style={styles.savingText}>
+                    {isEditMode ? "Updating..." : "Creating..."}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.buttonText}>
+                  {isEditMode ? "Update Drill" : "Create Drill"}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from app.models.course_drill import CourseDrill, StudentDrillResult
@@ -143,7 +143,7 @@ def delete_course_drill(db: Session, drill_id: int, user_id: int, company_id: in
     ).count()
     
     drill.is_active = False
-    drill.updated_at = datetime.now(datetime.timezone.utc)
+    drill.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(drill)
@@ -190,7 +190,7 @@ def update_course_drill(db: Session, drill_id: int, drill_data: CourseDrillUpdat
     for key, value in updated_data.items():
         setattr(drill, key, value)
     
-    drill.updated_at = datetime.now(datetime.timezone.utc)
+    drill.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(drill)

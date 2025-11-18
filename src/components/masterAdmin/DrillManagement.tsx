@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
+import { drillManagementStyles as styles } from "@/src/styles/MasterAdminStyles/drillManagement";
 import { themes } from "@/src/context/themes";
 import { CourseAdminView } from "@/src/types/course.types";
 import {
@@ -40,6 +40,7 @@ export default function DrillManagment({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showDrillForm, setShowDrillForm] = useState<boolean>(false);
   const [editingDrill, setEditingDrill] = useState<CourseDrill | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(true);
 
   useEffect(() => {
     if (visible && course) {
@@ -64,14 +65,11 @@ export default function DrillManagment({
 
       if (result.success && result.data) {
         setDrills(result.data);
-        console.log(`Loaded ${result.data.length} drills`);
       } else {
-        console.error("Failed to load drills:", result.error);
         Alert.alert("Error", result.error || "Failed to load drills");
         setDrills([]);
       }
     } catch (error) {
-      console.error("Error loading drills:", error);
       Alert.alert("Error", "Failed to load drills");
       setDrills([]);
     } finally {
@@ -89,13 +87,12 @@ export default function DrillManagment({
         Alert.alert("Success", result.message || "Drill created successfully");
         setShowDrillForm(false);
         setEditingDrill(null);
+        setShowModal(true);
         await loadDrills();
       } else {
-        console.error("Failed to create drill:", result.error);
         Alert.alert("Error", result.error || "Failed to create drill");
       }
     } catch (error) {
-      console.error("Error creating drill:", error);
       Alert.alert("Error", "Failed to create drill");
     } finally {
       setIsSubmitting(false);
@@ -119,13 +116,12 @@ export default function DrillManagment({
         setShowDrillForm(false);
         setEditingDrill(null);
         setSelectedDrill(null);
+        setShowModal(true);
         await loadDrills();
       } else {
-        console.error("Failed to update drill:", result.error);
         Alert.alert("Error", result.error || "Failed to update drill");
       }
     } catch (error) {
-      console.error("Error updating drill:", error);
       Alert.alert("Error", "Failed to update drill");
     } finally {
       setIsSubmitting(false);
@@ -136,8 +132,6 @@ export default function DrillManagment({
     Alert.alert(
       "Delete Drill",
       `Are you sure you want to delete "${drill.drill_name}"?\n\n` +
-        `This will remove the drill from the course. Student performance data ` +
-        `will be preserved for historical records.\n\n` +
         `This action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
@@ -183,10 +177,12 @@ export default function DrillManagment({
     console.log("Adding new drill");
     setEditingDrill(null);
     setShowDrillForm(true);
+    setShowModal(false);
   };
 
   const handleCloseDrillForm = () => {
     setShowDrillForm(false);
+    setShowModal(true);
     setEditingDrill(null);
   };
 
@@ -194,60 +190,59 @@ export default function DrillManagment({
 
   return (
     <>
-      <Modal visible={visible} transparent={true} animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { width: "95%", height: "85%" }]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.modalTitle}>Manage Drills</Text>
-                <Text style={[styles.modalLabel, { textAlign: "center" }]}>
-                  {course.title}
-                </Text>
+      {showModal && (
+        <Modal visible={visible} transparent={true} animationType="slide">
+          <View style={styles.drillModalOverlay}>
+            <View style={styles.drillModalContent}>
+              <View style={styles.drillModalHeader}>
+                <Text style={styles.drillModalTitle}>Manage Drills</Text>
+                <Text style={styles.drillModalLabel}>{course.title}</Text>
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={styles.drillExitButton}
+                >
+                  <FontAwesome
+                    name="times"
+                    size={32}
+                    color={themes.vegasGold}
+                  />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={onClose} style={{ padding: 8 }}>
-                <FontAwesome name="times" size={24} color={themes.vegasGold} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[styles.confirmButton, { marginLeft: 0, flex: 0 }]}
-                onPress={handleAddDrill}
-                activeOpacity={0.7}
-                disabled={isSubmitting}
-              >
-                <FontAwesome name="plus" size={16} color={themes.white} />
-                <Text style={[styles.buttonText]}>Add New Drill</Text>
-              </TouchableOpacity>
-            </View>
-
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={themes.vegasGold} />
-                <Text style={styles.loadingText}>Loading drills...</Text>
+              {isLoading ? (
+                <View style={styles.drillModalLoadingContainer}>
+                  <ActivityIndicator size="large" color={themes.vegasGold} />
+                  <Text style={styles.drillModalLoadingText}>
+                    Loading drills...
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.drillListContainer}>
+                  <DrillList
+                    drills={drills}
+                    selectedDrill={selectedDrill}
+                    onSelectDrill={setSelectedDrill}
+                    onEditDrill={handleEditDrill}
+                    onDeleteDrill={handleDeleteDrill}
+                    isLoading={isSubmitting}
+                  />
+                </View>
+              )}
+              <View style={styles.drillModalButtonContainer}>
+                <TouchableOpacity
+                  style={styles.drillModalAddButton}
+                  onPress={handleAddDrill}
+                  activeOpacity={0.7}
+                  disabled={isSubmitting}
+                >
+                  <Text style={[styles.drillModalButtonText]}>
+                    Add New Drill
+                  </Text>
+                </TouchableOpacity>
               </View>
-            ) : (
-              <View style={{ flex: 1 }}>
-                <DrillList
-                  drills={drills}
-                  selectedDrill={selectedDrill}
-                  onSelectDrill={setSelectedDrill}
-                  onEditDrill={handleEditDrill}
-                  onDeleteDrill={handleDeleteDrill}
-                  isLoading={isSubmitting}
-                />
-              </View>
-            )}
-
-            <View style={styles.footerInfo}>
-              <Text style={styles.footerText}>
-                Drills assit in evaluating student progression and performance
-                as they go through the course.
-              </Text>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
 
       <DrillForm
         visible={showDrillForm}

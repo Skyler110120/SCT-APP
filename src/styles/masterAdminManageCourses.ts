@@ -349,7 +349,9 @@ export const masterAdminManageCourses = StyleSheet.create({
     marginLeft: 12,
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: themes.vegasGold,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
   },
   removalButton: {
     flex: 1,
