@@ -38,7 +38,7 @@ export const authService = {
       console.log("Attempting login for:", credentials.email);
 
       const formData = new FormData();
-      formData.append("username", credentials.email);
+      formData.append("username", credentials.email.toLowerCase());
       formData.append("password", credentials.password);
 
       const response = await fetch(`${API_URL}/auth/login`, {

@@ -76,7 +76,8 @@ def get_invite_codes(db: Session, company_id: Union[int, Company], skip: int = 0
             company_id = company_id.id
             
         return db.query(CompanyInviteCode).filter(
-            CompanyInviteCode.company_id == company_id
+            CompanyInviteCode.company_id == company_id,
+            is_active = True
         ).offset(skip).limit(limit).all()
         
     except Exception as e:

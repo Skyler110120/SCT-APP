@@ -71,9 +71,6 @@ const InviteCodeList = ({
                       <Text style={styles.codeDetails}>
                         Expires: {formatDate(code.expires_at)}
                       </Text>
-                      <Text style={styles.codeDetails}>
-                        Status: {code.is_active ? "Active" : "Inactive"}
-                      </Text>
                     </View>
                   </View>
                 </View>

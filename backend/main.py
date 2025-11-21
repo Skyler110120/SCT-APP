@@ -19,7 +19,7 @@ from app.routers import (
 from fastapi.middleware.cors import CORSMiddleware
 
 
-# Run the environment using source venv/Scripts/Activate.ps1
+# Run the environment using source .venv/Scripts/Activate.ps1
 # Start the server using uvicorn main:app --reload 
 
 app = FastAPI(
