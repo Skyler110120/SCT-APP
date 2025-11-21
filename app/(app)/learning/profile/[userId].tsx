@@ -320,7 +320,6 @@ export default function UserProfilePage() {
           </ScrollView>
         </BackgroundGradient>
       </SafeAreaView>
-      <BottomNavBar />
     </View>
   );
 }
