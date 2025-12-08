@@ -7,6 +7,7 @@ import {
 } from "../types/auth.types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
+import { apiFetch } from "./api";
 
 // Choose the right API URL based on where you're running
 let API_URL: string;
@@ -41,23 +42,13 @@ export const authService = {
       formData.append("username", credentials.email.toLowerCase());
       formData.append("password", credentials.password);
 
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const tokenData = await apiFetch(`/auth/login`, {
         method: "POST",
         body: formData,
         headers: {
-          Accept: "application/json",
-        },
+          Authorization: "",
+        }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.detail || "Login failed",
-        };
-      }
-
-      const tokenData: TokenResponse = await response.json();
 
       await AsyncStorage.setItem(
         STORAGE_KEYS.AUTH_TOKEN,
@@ -100,32 +91,8 @@ export const authService = {
       }
       console.log("Fetching current user profile");
 
-      const response = await fetch(`${API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch user profile, status:", errorData);
+      const userData = await apiFetch("/auth/me");
 
-        if (response.status === 401) {
-          await this.clearAuthData();
-          return {
-            success: false,
-            error: "Authentication expired",
-          };
-        }
-
-        return {
-          success: false,
-          error: "Failed to fetch user profile",
-        };
-      }
-
-      console.log("User profile fetched");
-      const userData: UserInfo = await response.json();
       await AsyncStorage.setItem(
         STORAGE_KEYS.USER_DATA,
         JSON.stringify(userData)
