@@ -57,5 +57,24 @@ export const eventModalStyles = StyleSheet.create({
   modalErrorInput: {
     color: "#FF4444",
     borderWidth: 1
-  }
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: themes.vegasGold,
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
 });

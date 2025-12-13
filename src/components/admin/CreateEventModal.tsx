@@ -1,6 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { eventModalStyles as styles1 } from "@/src/styles/CalendarPageStyles/AdminCalendar/EventModalStyles";
-import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
+import { eventModalStyles as styles } from "@/src/styles/CalendarPageStyles/AdminCalendar/EventModalStyles";
 import { CreateEventRequest } from "@/src/types/event.types";
 import {
   createLocalDate
