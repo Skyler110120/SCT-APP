@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView,
-  SafeAreaView,
-  StatusBar
-} from "react-native";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/src/context/AuthContext";
-import { dashboardStyles } from "@/src/styles/instructorDashboard";
-import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
+import { useAuth } from "@/src/context/AuthContext";
+import { dashboardStyles } from "@/src/styles/DashboardPageStyles/instructorDashboard";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function InstructorDashboard() {
   // Access router for navigation

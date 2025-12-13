@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { themes } from "@/src/context/themes";
+import { masterAdminDashboardStyles as companyForm } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { CreateCompanyRequest } from "@/src/types/company.types";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Modal,
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { masterAdminDashboardStyles as companyForm } from "@/src/styles/masterDashboardScreen";
-import { CreateCompanyRequest } from "@/src/types/company.types";
-import { themes } from "@/src/context/themes";
 
 interface CompanyFormProps {
   visible: boolean;

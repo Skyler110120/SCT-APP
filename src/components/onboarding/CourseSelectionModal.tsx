@@ -1,19 +1,19 @@
+import { themes } from "@/src/context/themes";
+import { onboardingService } from "@/src/services/onboardingService";
+import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+import { CourseSummary } from "@/src/types/course.types";
+import { Instructor } from "@/src/types/instructor.types";
+import { CompanyInfo } from "@/src/types/onboarding.types";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Modal,
-  View,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { CourseSummary } from "@/src/types/course.types";
-import { CompanyInfo } from "@/src/types/onboarding.types";
-import { Instructor } from "@/src/types/instructor.types";
-import { onboardingService } from "@/src/services/onboardingService";
-import { themes } from "@/src/context/themes";
-import { registerScreenStyles as styles } from "@/src/styles/registerScreen";
 
 type ValidIconName = "circle-o" | "dot-circle-o" | "bullseye";
 

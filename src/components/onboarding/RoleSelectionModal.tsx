@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { themes } from "@/src/context/themes";
+import { onboardingService } from "@/src/services/onboardingService";
+import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
 import { UserRole } from "@/src/types/auth.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
-import { onboardingService } from "@/src/services/onboardingService";
-import { registerScreenStyles as styles } from "@/src/styles/registerScreen";
-import { themes } from "@/src/context/themes";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface RoleSelectionModalProps {
   isVisible: boolean;

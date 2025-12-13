@@ -1,6 +1,6 @@
-import React from 'react'
-import { View, Text } from 'react-native'
-import { masterAdminDashboardStyles as adminStats} from '@/src/styles/masterDashboardScreen'
+import { masterAdminDashboardStyles as adminStats } from '@/src/styles/DashboardPageStyles/masterDashboardScreen';
+import React from 'react';
+import { Text, View } from 'react-native';
 
 interface StatsProps {
     stats: {

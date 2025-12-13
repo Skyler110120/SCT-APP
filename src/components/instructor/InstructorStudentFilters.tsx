@@ -1,8 +1,8 @@
-import React from "react";
-import { View, TextInput, Text } from "react-native";
-import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
-import { Picker } from "@react-native-picker/picker";
 import { themes } from "@/src/context/themes";
+import { manageUsersStyles as styles } from "@/src/styles/UserPageStyles/manageUsers";
+import { Picker } from "@react-native-picker/picker";
+import React from "react";
+import { Text, TextInput, View } from "react-native";
 
 interface InstructorStudentFiltersProps {
   searchQuery: string;

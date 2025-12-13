@@ -1,15 +1,15 @@
 import { themes } from "@/src/context/themes";
-import { dashboardStyles as styles } from "@/src/styles/instructorDashboard";
+import { dashboardStyles as styles } from "@/src/styles/DashboardPageStyles/instructorDashboard";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Modal,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { onboardingService } from "../../services/onboardingService";
 

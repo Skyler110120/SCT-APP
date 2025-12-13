@@ -1,47 +1,44 @@
-import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
-import { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  Alert,
-  ActivityIndicator,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 
-import BackgroundGradient from "@/src/components/BackgroundGradient";
-import BottomNavBar from "@/src/components/NavBar";
-import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability";
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
+import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability";
+import BottomNavBar from "@/src/components/NavBar";
 import SessionBookingModal from "@/src/components/SessionBookingModal";
 import SessionDetailsModal from "@/src/components/SessionDetailsModal";
 
-import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
-import { themes } from "@/src/context/themes";
 import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
+import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
 
 import { eventService } from "@/src/services/eventService";
 import { instructorAvailabilityService } from "@/src/services/instructorAvailabilityService";
 import { sessionService } from "@/src/services/sessionService";
 
 import {
-  CreateAvailabilityRequest,
-  AvailabilityUpdate,
   Availability,
+  AvailabilityUpdate,
+  CreateAvailabilityRequest,
 } from "@/src/types/availability.types";
-import { Event, CreateEventRequest } from "@/src/types/event.types";
-import { SessionDetailed, SessionStatus } from "@/src/types/sessions.types";
+import { CreateEventRequest, Event } from "@/src/types/event.types";
+import { SessionDetailed } from "@/src/types/sessions.types";
 
 import {
-  formatTimeString,
-  formatDateString,
-  formatDateRange,
   formatDateForAPI,
-  formatISOTime,
-  getDayName,
+  formatDateRange,
+  formatDateString,
+  formatTimeString
 } from "@/src/utils/dateTimeUtils";
 
 interface Session {

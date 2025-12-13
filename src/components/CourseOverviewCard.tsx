@@ -1,12 +1,10 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { CourseView } from "@/src/types/course.types";
 import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/coursesScreen";
-import { materialService } from "@/src/services/materialService";
+import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/coursesScreen";
+import { CourseView } from "@/src/types/course.types";
+import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
-// ✅ Component Props Interface
 interface CourseOverviewCardProps {
   course: CourseView;
   studentCount: number;

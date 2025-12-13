@@ -1,19 +1,19 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
-import { adminManageUsersStyles as styles } from "@/src/styles/manageUsers";
+import { adminManageUsersStyles as styles } from "@/src/styles/UserPageStyles/manageUsers";
 import {
-  Instructor,
-  getInstructorDisplayName,
+    Instructor,
+    getInstructorDisplayName,
 } from "@/src/types/instructor.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Modal,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Modal,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 interface InstructorSelectionModalProps {

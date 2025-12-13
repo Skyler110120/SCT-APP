@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from "react";
+import { themes } from "@/src/context/themes";
+import { profileService } from "@/src/services/profileService";
+import { ProfileDetailed } from "@/src/types/profile.types";
+import { createLocalDate, formatDateForAPI } from "@/src/utils/dateTimeUtils";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
   Modal,
-  View,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
+  View,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { ProfileDetailed } from "@/src/types/profile.types";
-import { profileService } from "@/src/services/profileService";
-import { profileScreenStyles as styles } from "../styles/profileScreen";
-import { formatDateForAPI, createLocalDate } from "@/src/utils/dateTimeUtils";
-import { themes } from "@/src/context/themes";
+import { profileScreenStyles as styles } from "../styles/ProfilePageStyles/profileScreen";
 
 interface EditProfileModalProps {
   visible: boolean;

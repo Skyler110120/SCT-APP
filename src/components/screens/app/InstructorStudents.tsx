@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import InstructorStudentTable from "@/src/components/instructor/InstructorStudentTable";
 import InstructorStudentFilters from "@/src/components/instructor/InstructorStudentFilters";
+import InstructorStudentTable from "@/src/components/instructor/InstructorStudentTable";
 import { useAuth } from "@/src/context/AuthContext";
-import { instructorService } from "@/src/services/instructorService";
-import { User } from "@/src/types/auth.types";
 import { themes } from "@/src/context/themes";
+import { instructorService } from "@/src/services/instructorService";
+import { manageUsersStyles as styles } from "@/src/styles/UserPageStyles/manageUsers";
+import { User } from "@/src/types/auth.types";
 
 export default function InstructorStudents() {
   const { user } = useAuth();

@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { themes } from "@/src/context/themes";
+import { eventModalStyles as styles1 } from "@/src/styles/CalendarPageStyles/AdminCalendar/EventModalStyles";
+import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
+import { CreateEventRequest } from "@/src/types/event.types";
 import {
-  View,
+  createLocalDate
+} from "@/src/utils/dateTimeUtils";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ActivityIndicator,
-  Platform,
+  View,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { CreateEventRequest } from "@/src/types/event.types";
-import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
-import { themes } from "@/src/context/themes";
-import {
-  formatTimeString,
-  formatDateString,
-  formatDateRange,
-  formatISOTime,
-  getDayName,
-  createLocalDate
-} from "@/src/utils/dateTimeUtils";
 
 type modalProps = {
   visible: boolean;
@@ -225,7 +221,7 @@ const CreateEventModal: React.FC<modalProps> = ({
           <Text style={styles.modalTitle}>Create Event</Text>
           <Text style={styles.modalText}>Fill out event details</Text>
           <View style={styles.modalTextInputContainer}>
-            <View style={styles.eventTitleContainer}>
+            <View style={{width: "40%"}}>
             <TextInput
               value={formData.title}
               onChangeText={(text) => handleChange("title", text)}
@@ -235,17 +231,14 @@ const CreateEventModal: React.FC<modalProps> = ({
               textAlign="center"
               style={[
                 styles.modalTextInput,
-                errors.title && {
-                  borderColor: "#FF4444",
-                  borderWidth: 1,
-                },
+                errors.title && styles.modalErrorInput
               ]}
             />
             </View>
             {errors.title && (
               <Text style={styles.errorText}>{errors.title}</Text>
             )}
-            <View style={styles.eventDescriptionContainer}>
+            <View style={{width: "60%"}}>
             <TextInput
               value={formData.description}
               onChangeText={(text) => handleChange("description", text)}
@@ -257,10 +250,7 @@ const CreateEventModal: React.FC<modalProps> = ({
               numberOfLines={4}
               style={[
                 styles.modalTextInput,
-                errors.description && {
-                  borderColor: "#FF4444",
-                  borderWidth: 1,
-                },
+                errors.description && styles.modalErrorInput
               ]}
             />
             </View>

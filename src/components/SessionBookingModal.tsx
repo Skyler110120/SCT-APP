@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
-import { themes } from "@/src/context/themes";
 import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
 import { sessionService } from "@/src/services/sessionService";
+import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
 import { Availability } from "@/src/types/availability.types";
 import {
-  SessionDetailed,
-  DirectBookingRequest,
+    DirectBookingRequest,
+    SessionDetailed,
 } from "@/src/types/sessions.types";
 import { formatTimeString } from "@/src/utils/dateTimeUtils";
+import React, { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Modal,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 interface SessionBookingModalProps {
   visible: boolean;

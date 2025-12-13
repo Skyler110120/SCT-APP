@@ -1,20 +1,20 @@
 // src/components/courses/VideoListModal.tsx
 
+import { themes } from "@/src/context/themes";
+import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/coursesScreen"; // ✅ Using shared styles
+import { CourseVideo, CourseView } from "@/src/types/course.types";
+import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import {
-  Modal,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  Alert,
-  Linking,
+    Alert,
+    Linking,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { CourseView, CourseVideo } from "@/src/types/course.types";
-import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/coursesScreen"; // ✅ Using shared styles
 
 // ✅ Component Props Interface
 interface VideoListModalProps {

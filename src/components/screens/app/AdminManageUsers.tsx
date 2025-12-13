@@ -6,7 +6,7 @@ import UserTable from "@/src/components/user/UserTable";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { userService } from "@/src/services/userService";
-import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
+import { manageUsersStyles as styles } from "@/src/styles/UserPageStyles/manageUsers";
 import { User, UserRole } from "@/src/types/auth.types";
 import React, { useEffect, useState } from "react";
 import {

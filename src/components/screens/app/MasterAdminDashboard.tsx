@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { masterAdminDashboardStyles } from "@/src/styles/masterDashboardScreen";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import * as Clipboard from "expo-clipboard";
+import { useAuth } from "@/src/context/AuthContext";
 import { companyService } from "@/src/services/companyService";
 import { userService } from "@/src/services/userService";
-import { useAuth } from "@/src/context/AuthContext";
+import { masterAdminDashboardStyles } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { User } from "@/src/types/auth.types";
 import {
   Company,
-  InviteCode,
   CreateCompanyRequest,
+  InviteCode,
 } from "@/src/types/company.types";
-import { User } from "@/src/types/auth.types"
+import * as Clipboard from "expo-clipboard";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import CompanyList from "@/src/components/admin/CompanyList";
-import InviteCodeList from "@/src/components/admin/InviteCodeList";
-import CompanyForm from "@/src/components/admin/CompanyForm";
-import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 import AdminStats from "@/src/components/admin/AdminStats";
+import CompanyForm from "@/src/components/admin/CompanyForm";
+import CompanyList from "@/src/components/admin/CompanyList";
+import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
+import InviteCodeList from "@/src/components/admin/InviteCodeList";
 
 export default function MasterAdminDashboard() {
   const { user, logout } = useAuth();

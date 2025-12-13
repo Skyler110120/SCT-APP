@@ -2,7 +2,7 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { LoginCredentials } from "@/src/types/auth.types";
-import { loginScreenStyles } from "@/src/styles/loginScreen";
+import { loginScreenStyles } from "@/src/styles/LoginPageStyles/loginScreen";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {

@@ -10,7 +10,7 @@ import {
 import * as Clipboard from "expo-clipboard";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import { adminDashboardStyles } from "@/src/styles/adminDashboard";
+import { adminDashboardStyles } from "@/src/styles/DashboardPageStyles/adminDashboard";
 import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Company, InviteCode } from "@/src/types/company.types";
