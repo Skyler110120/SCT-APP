@@ -81,7 +81,7 @@ export default function VideoManagementModal({
             </View>
             <TouchableOpacity
               onPress={onClose}
-              style={{ padding: 8 }}
+              style={{ padding: 8, borderWidth: 1, borderColor: themes.white}}
               activeOpacity={0.7}
             >
               <FontAwesome name="times" size={24} color={themes.vegasGold} />
