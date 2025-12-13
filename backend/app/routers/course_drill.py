@@ -43,9 +43,9 @@ async def create_course_drill(
         )
         
         return drill
-    except HTTPException as e:
+    except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while creating the drill"
@@ -83,7 +83,7 @@ async def delete_course_drill(
         }
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while deleting the drill"
@@ -107,7 +107,7 @@ async def get_course_drills(
         return drills
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving drills for course"
@@ -131,6 +131,7 @@ async def update_course_drill(
         )
     
     try:
+        
         drill = course_drill_service.update_course_drill(
             db=db,
             drill_id=drill_id,
@@ -142,7 +143,7 @@ async def update_course_drill(
         return drill
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while updating the drill"
