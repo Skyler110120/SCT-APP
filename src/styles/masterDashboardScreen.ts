@@ -1,5 +1,8 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export const masterAdminDashboardStyles = StyleSheet.create({
   container: {
@@ -12,7 +15,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    padding: 16,
+    padding: "2%",
   },
   columnsContainer: {
     flex: 1,
@@ -20,11 +23,10 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   leftColumn: {
     flex: 1,
-    marginRight: 8,
+    marginRight: "2%",
   },
   rightColumn: {
     flex: 2,
-    marginLeft: 8,
   },
   sectionContainer: {
     marginBottom: 16,
@@ -39,14 +41,15 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   pageTitle: {
     padding: 8,
-    fontSize: 48,
+    marginTop: "7%",
+    fontSize: width * 0.08,
     fontFamily: "Chakra-Italic",
     textAlign: "center",
     color: themes.vegasGold,
   },
   sectionTitle: {
     padding: 8,
-    fontSize: 28,
+    fontSize: width * 0.05,
     fontFamily: "Chakra-Italic",
     textAlign: "center",
     color: themes.vegasGold,
@@ -66,7 +69,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   companyText: {
-    fontSize: 22,
+    fontSize: width * 0.04,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
@@ -117,7 +120,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: "1%",
   },
   actionButton: {
     flex: 1,
@@ -139,7 +142,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     color: themes.vegasGold,
   },
   buttonText: {
-    fontSize: 22,
+    fontSize: width * 0.03,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
@@ -150,8 +153,9 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   statsTitle: {
-    marginBottom: 16,
-    fontSize: 32,
+    marginBottom: '1%',
+    paddingTop: "20%",
+    fontSize: width * 0.08,
     fontFamily: "Chakra-Italic",
     textAlign: 'center',
     color: themes.vegasGold,
