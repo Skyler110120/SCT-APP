@@ -72,6 +72,8 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     fontSize: width * 0.04,
     fontFamily: "Chakra-Regular",
     color: themes.white,
+    flexShrink: 1,
+    maxWidth: "95%",
   },
   inviteCodeCard: {
     padding: 10,

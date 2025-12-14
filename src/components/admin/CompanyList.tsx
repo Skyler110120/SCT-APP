@@ -42,7 +42,10 @@ const CompanyList = ({
                 ]}
                 onPress={() => onSelectCompany(company)}
               >
-                <Text style={companyList.companyText}>{company.name}</Text>
+                <Text style={companyList.companyText}
+                numberOfLines={2}
+                ellipsizeMode='tail'
+                >{company.name}</Text>
                 {company.website && (
                   <Text
                     style={[
