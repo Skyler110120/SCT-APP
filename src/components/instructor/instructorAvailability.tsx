@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
+import { availabilityModalStyles as styles } from "@/src/styles/CalendarPageStyles/InstructorCalendar/availabilityModalStyles";
 import {
   Availability,
   AvailabilityUpdate,

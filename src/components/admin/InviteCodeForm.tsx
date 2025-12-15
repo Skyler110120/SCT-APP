@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminDashboardStyles as inviteCodeForm } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { inviteCodeFormStyles as inviteCodeForm } from "@/src/styles/DashboardPageStyles/inviteCodeFormStyles";
 import { Company } from "@/src/types/company.types";
 import React from "react";
 import {

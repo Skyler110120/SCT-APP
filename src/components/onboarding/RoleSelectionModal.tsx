@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
-import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+import { roleSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/roleSelectionModalStyles";
 import { UserRole } from "@/src/types/auth.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import React, { useState } from "react";

@@ -3,7 +3,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { profileService } from "@/src/services/profileService";
-import { profileScreenStyles as styles } from "@/src/styles/ProfilePageStyles/profileScreen";
+import { profileScreenStyles as styles } from "@/src/styles/ProfilePageStyles/profileScreenStyles";
 import { UserRole } from "@/src/types/auth.types";
 import { ProfileDetailed } from "@/src/types/profile.types";
 import { formatDateString } from "@/src/utils/dateTimeUtils";

@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
-import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+import { courseSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/courseSelectionModalStyles";
 import { CourseSummary } from "@/src/types/course.types";
 import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";

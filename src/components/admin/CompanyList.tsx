@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminDashboardStyles as companyList } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { companyListStyles as styles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/companyListStyles";
 import { Company } from "@/src/types/company.types";
 import React from 'react';
 import {
@@ -24,29 +24,29 @@ const CompanyList = ({
   onSelectCompany,
 }: CompanyListProps) => {
   return (
-    <View style={companyList.sectionContainer}>
-      <Text style={companyList.sectionTitle}>Companies</Text>
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionTitle}>Companies</Text>
 
       {isLoading ? (
         <ActivityIndicator size="large" color={themes.vegasGold} />
       ) : (
-        <ScrollView style={companyList.listContainer}>
+        <ScrollView style={styles.listContainer}>
           {companies.length > 0 ? (
             companies.map((company) => (
               <TouchableOpacity
                 key={company.id}
                 style={[
-                  companyList.companyCard,
+                  styles.companyCard,
                   selectedCompany?.id === company.id &&
-                    companyList.selectedCompanyCard,
+                    styles.selectedCompanyCard,
                 ]}
                 onPress={() => onSelectCompany(company)}
               >
-                <Text style={companyList.companyText}>{company.name}</Text>
+                <Text style={styles.companyText}>{company.name}</Text>
                 {company.website && (
                   <Text
                     style={[
-                      companyList.companyText,
+                      styles.companyText,
                       { fontSize: 14, opacity: 0.7 },
                     ]}
                   >
@@ -56,7 +56,7 @@ const CompanyList = ({
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={companyList.emptyListText}>No companies found.</Text>
+            <Text style={styles.emptyListText}>No companies found.</Text>
           )}
         </ScrollView>
       )}

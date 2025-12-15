@@ -1,7 +1,7 @@
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { sessionService } from "@/src/services/sessionService";
-import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
+import { bookingModalStyles as styles } from "@/src/styles/CalendarPageStyles/StudentCalendar/bookingModalStyles";
 import { Availability } from "@/src/types/availability.types";
 import {
     DirectBookingRequest,
@@ -50,7 +50,6 @@ export default function SessionBookingModal({
     const startTimeMinutes = startHour * 60 + startMinute;
     const endTimeMinutes = endHour * 60 + endMinute;
 
-    //TODO: Could make configurable based on feedback
     const SLOT_DURATION = 120;
     const SLOT_INTERVAL = 120;
 
@@ -80,7 +79,6 @@ export default function SessionBookingModal({
       .padStart(2, "0")}`;
   };
 
-  //Update to properly handle timezone awarness 
   const isTimeSlotInPast = (dateString: string, timeString: string): boolean => {
     try {
         const [year, month, day] = dateString.split("-").map(Number);
@@ -158,7 +156,7 @@ export default function SessionBookingModal({
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { width: "90%" }]}>
+        <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Book Training Session</Text>
           <Text style={styles.modalText}>
             Available: {formatTimeString(availability?.start_time || "")} - {formatTimeString(availability?.end_time || "")}

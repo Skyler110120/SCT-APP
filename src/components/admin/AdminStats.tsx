@@ -1,4 +1,4 @@
-import { masterAdminDashboardStyles as adminStats } from '@/src/styles/DashboardPageStyles/masterDashboardScreen';
+import { adminStatsStyles as styles } from '@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/adminStatsStyles';
 import React from 'react';
 import { Text, View } from 'react-native';
 
@@ -17,17 +17,17 @@ const AdminStats = ({ stats, selectedCompany }: StatsProps) => {
     if (!selectedCompany) return null;
 
     return (
-        <View style={adminStats.statsContainer}>
-            <Text style={adminStats.statsTitle}>Company Stats</Text>
-            <View style={adminStats.statRow}>
-                <View style={adminStats.statCard}>
-                    <Text style={adminStats.statValue}>{stats.totalUsers}</Text>
-                    <Text style={adminStats.statLabel}>Total Users</Text>
+        <View style={styles.statsContainer}>
+            <Text style={styles.statsTitle}>Company Stats</Text>
+            <View style={styles.statRow}>
+                <View style={styles.statCard}>
+                    <Text style={styles.statValue}>{stats.totalUsers}</Text>
+                    <Text style={styles.statLabel}>Total Users</Text>
                 </View>
 
-                <View style={adminStats.statCard}>
-                    <Text style={adminStats.statValue}>{stats.pendingInvites}</Text>
-                    <Text style={adminStats.statLabel}>Pending Invites</Text>
+                <View style={styles.statCard}>
+                    <Text style={styles.statValue}>{stats.pendingInvites}</Text>
+                    <Text style={styles.statLabel}>Pending Invites</Text>
                 </View>
             </View>
         </View>

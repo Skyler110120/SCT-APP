@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { drillManagementStyles as styles } from "@/src/styles/CoursePageStyles/drillManagement";
+import { drillManagementStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillManagementStyles";
 import { themes } from "@/src/context/themes";
 import { CourseAdminView } from "@/src/types/course.types";
 import {

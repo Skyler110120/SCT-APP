@@ -1,17 +1,21 @@
 import Images from "@/src/assets/images";
+import { themes } from "@/src/context/themes";
+import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
 import { InstructorSelectionModal } from "@/src/components/onboarding/InstructorSelectionModal";
 import { InviteCodeModal } from "@/src/components/onboarding/InviteCodeModal";
 import { RoleSelectionModal } from "@/src/components/onboarding/RoleSelectionModal";
-import { themes } from "@/src/context/themes";
+
 import { courseService } from "@/src/services/courseService";
 import { onboardingService } from "@/src/services/onboardingService";
-import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+
 import { UserRole } from "@/src/types/auth.types";
 import { CourseSummary } from "@/src/types/course.types";
 import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
+
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -263,7 +267,7 @@ export default function RegisterScreen() {
             text: "Continue to Login",
             onPress: () => {
               onboardingService.clearOnboardingData();
-              router.push("/screens/auth/Login");
+              router.push("/login");
             },
           },
         ]);

@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { profileScreenStyles as styles } from "../styles/ProfilePageStyles/profileScreen";
+import { editProfileModalStyles as styles } from "../styles/ProfilePageStyles/editProfileModalStyles";
 
 interface EditProfileModalProps {
   visible: boolean;

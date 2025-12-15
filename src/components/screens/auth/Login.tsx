@@ -2,7 +2,7 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { LoginCredentials } from "@/src/types/auth.types";
-import { loginScreenStyles } from "@/src/styles/LoginPageStyles/loginScreen";
+import { loginScreenStyles as styles } from "@/src/styles/LoginPageStyles/loginScreenStyles";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -17,10 +17,6 @@ import {
 } from "react-native";
 import Images from "@/src/assets/images";
 
-// LoginScreen component
-// This component renders a login screen with a background gradient, logo,
-// text inputs for email and password, a login button, a forgot password link,
-// and an option to sign in with Google.
 export default function LoginScreen() {
   const router = useRouter();
   const { login, state } = useAuth();
@@ -59,25 +55,25 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={loginScreenStyles.container}>
+    <View style={styles.container}>
       <BackgroundGradient>
-        <SafeAreaView style={loginScreenStyles.container}>
-          <View style={loginScreenStyles.backButtonContainer}>
-            <TouchableOpacity onPress={() => router.back()}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.backButtonContainer}>
+            <TouchableOpacity onPress={() => router.push('/welcome')}>
               <Image source={Images.buttons.backButton} />
             </TouchableOpacity>
           </View>
-          <View style={loginScreenStyles.loginScreenContentContainer}>
+          <View style={styles.loginScreenContentContainer}>
             <Image
               source={Images.logo.sctLogo}
-              style={loginScreenStyles.image}
+              style={styles.image}
             />
             <TextInput
               multiline={false}
               scrollEnabled={false}
               placeholder="Email"
               placeholderTextColor={themes.vegasGold}
-              style={loginScreenStyles.textInputBox}
+              style={styles.textInputBox}
               value={credentials.email}
               onChangeText={(text) => handleChange("email", text)}
               keyboardType="email-address"
@@ -88,31 +84,31 @@ export default function LoginScreen() {
               scrollEnabled={false}
               placeholder="Password"
               placeholderTextColor={themes.vegasGold}
-              style={loginScreenStyles.textInputBox}
+              style={styles.textInputBox}
               secureTextEntry={true}
               value={credentials.password}
               onChangeText={(text) => handleChange("password", text)}
             />
             <TouchableOpacity
-              style={loginScreenStyles.logInButton}
+              style={styles.logInButton}
               onPress={handleLogin}
               disabled={isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color={themes.white} />
               ) : (
-                <Text style={loginScreenStyles.logInButtonText}>LOG IN</Text>
+                <Text style={styles.logInButtonText}>LOG IN</Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity>
-              <Text style={loginScreenStyles.forgotPasswordText}>
+              <Text style={styles.forgotPasswordText}>
                 Forgot Password?
               </Text>
             </TouchableOpacity>
-            <View style={loginScreenStyles.orContainer}>
-              <View style={loginScreenStyles.horizontalLine} />
-              <Text style={loginScreenStyles.orText}>OR</Text>
-              <View style={loginScreenStyles.horizontalLine} />
+            <View style={styles.orContainer}>
+              <View style={styles.horizontalLine} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.horizontalLine} />
             </View>
             <TouchableOpacity>
               <Image source={Images.buttons.signInWithGoogle} />

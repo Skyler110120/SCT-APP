@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminDashboardStyles as companyForm } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { companyFormStyles as styles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/companFormStyles";
 import { CreateCompanyRequest } from "@/src/types/company.types";
 import React, { useEffect, useState } from "react";
 import {
@@ -94,14 +94,14 @@ const CompanyForm = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={companyForm.modalOverlay}>
-        <View style={companyForm.modalContent}>
-          <Text style={companyForm.modalTitle}>Create New Company</Text>
-          <View style={companyForm.formGroup}>
-            <Text style={companyForm.inputLabel}>Company Name *</Text>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Create New Company</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.inputLabel}>Company Name *</Text>
             <TextInput
               style={[
-                companyForm.textInput,
+                styles.textInput,
                 errors.name && { borderWidth: 1, borderColor: "#FF4444" },
               ]}
               value={formData.name}
@@ -110,14 +110,14 @@ const CompanyForm = ({
               placeholderTextColor={themes.white}
             />
             {errors.name && (
-              <Text style={companyForm.errorText}>{errors.name}</Text>
+              <Text style={styles.errorText}>{errors.name}</Text>
             )}
           </View>
-          <View style={companyForm.formGroup}>
-            <Text style={companyForm.inputLabel}>Website (Optional)</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.inputLabel}>Website (Optional)</Text>
             <TextInput
               style={[
-                companyForm.textInput,
+                styles.textInput,
                 errors.website && { borderWidth: 1, borderColor: "#FF4444" },
               ]}
               value={formData.website || ""}
@@ -127,20 +127,20 @@ const CompanyForm = ({
               keyboardType="url"
             />
             {errors.website && (
-              <Text style={companyForm.errorText}>{errors.website}</Text>
+              <Text style={styles.errorText}>{errors.website}</Text>
             )}
           </View>
-          <View style={companyForm.buttonContainer}>
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={companyForm.actionButton}
+              style={styles.actionButton}
               onPress={onClose}
               disabled={isSubmitting}
             >
-              <Text style={companyForm.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
-                companyForm.actionButton,
+                styles.actionButton,
                 isSubmitting && { opacity: 0.7 },
               ]}
               onPress={handleSubmit}
@@ -149,7 +149,7 @@ const CompanyForm = ({
               {isSubmitting ? (
                 <ActivityIndicator size="small" color={themes.black} />
               ) : (
-                <Text style={companyForm.buttonText}>Create</Text>
+                <Text style={styles.buttonText}>Create</Text>
               )}
             </TouchableOpacity>
           </View>

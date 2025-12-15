@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/masterAdminManageCourses";
+import { videoFormStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/videoFormStyles";
 import {
   CourseAdminView,
   CourseVideo,

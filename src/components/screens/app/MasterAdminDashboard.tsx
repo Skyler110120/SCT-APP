@@ -3,7 +3,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { companyService } from "@/src/services/companyService";
 import { userService } from "@/src/services/userService";
-import { masterAdminDashboardStyles } from "@/src/styles/DashboardPageStyles/masterDashboardScreen";
+import { masterAdminDashboardStyles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
 import { User } from "@/src/types/auth.types";
 import {
   Company,

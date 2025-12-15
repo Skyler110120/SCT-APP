@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/coursesScreen";
+import { courseOverviewCardStyles as styles } from "@/src/styles/CoursePageStyles/courseOverviewCardStyles";
 import { CourseView } from "@/src/types/course.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";

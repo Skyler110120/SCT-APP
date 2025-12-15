@@ -2,7 +2,7 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { courseService } from "@/src/services/courseService";
-import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/masterAdminManageCourses";
+import { masterAdminCourseManagementStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/masterAdminCourseManagementStyles";
 import {
   CourseAdminView,
   CourseCreateRequest,

@@ -1,0 +1,118 @@
+import { themes } from "@/src/context/themes";
+import { StyleSheet } from "react-native";
+
+export const videoFormStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
+  modalContent: {
+    width: "80%",
+    alignSelf: "center",
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
+  },
+  modalTitle: {
+    marginBottom: 16,
+    textAlign: "center",
+    fontSize: 28,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  description: {
+    marginBottom: 8,
+    fontSize: 18,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    opacity: 0.8,
+  },
+  createSection: {
+    padding: 4,
+  },
+  modalLabel: {
+    marginBottom: 8,
+    fontSize: 20,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  searchInput: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: "transparent",
+    color: themes.white,
+    fontFamily: "Chakra-Regular",
+  },
+  warningText: {
+    marginBottom: 8,
+    fontSize: 20,
+    fontFamily: "Chakra-Regular",
+    color: "#FF4444",
+  },
+  inputDescription: {
+    fontSize: 16,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 20,
+    opacity: 0.9,
+  },
+  modalPickerContainer: {
+    marginBottom: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: "transparent",
+    overflow: "hidden",
+  },
+  modalPicker: {
+    color: themes.white,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 12,
+    marginRight: 8,
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor: themes.vegasGold,
+  },
+  confirmButton: {
+    flex: 1,
+    padding: 12,
+    marginLeft: 12,
+    alignItems: "center",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
+  },
+  buttonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.white,
+  },
+  savingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    gap: 8,
+  },
+  savingText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+});

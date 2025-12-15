@@ -18,7 +18,7 @@ import CourseOverviewCard from "@/src/components/CourseOverviewCard";
 import BottomNavBar from "@/src/components/NavBar";
 import StudentProgressModal from "@/src/components/StudentProgressModal";
 import VideoListModal from "@/src/components/VideoListModal";
-import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/coursesScreen";
+import { courseScreenStyles as styles } from "@/src/styles/CoursePageStyles/courseScreenStyles";
 
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";

@@ -1,6 +1,6 @@
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
-import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
+import { detailModalStyles as styles } from "@/src/styles/CalendarPageStyles/detailModalStyles";
 import { SessionDetailed } from "@/src/types/sessions.types";
 import { formatDateString, formatTimeString } from "@/src/utils/dateTimeUtils";
 import React from "react";

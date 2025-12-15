@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/masterAdminManageCourses";
+import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/masterAdminCourseManagementStyles";
 import { CourseDrill, DrillType } from "@/src/types/course.drills.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";

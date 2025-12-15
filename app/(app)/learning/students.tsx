@@ -1,4 +1,4 @@
-import InstructorStudents from '@/src/components/screens/app/InstructorStudents';
+import InstructorStudents from '@/src/components/screens/app/InstructorManageStudents';
 import React from 'react';
 
 export default function InstructorStudentsPage() {

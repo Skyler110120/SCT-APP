@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/coursesScreen";
+import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/courseScreenStyles";
 import { UserRole } from "@/src/types/auth.types";
 import { StudentWeeklyProgress } from "@/src/types/enrollment.types";
 import { FontAwesome } from "@expo/vector-icons";
