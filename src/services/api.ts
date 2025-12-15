@@ -15,7 +15,7 @@ if (__DEV__) {
     API_URL = "https://your-production-api.com";
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     const token = await AsyncStorage.getItem("auth_token")
 
     const response = await fetch(`${API_URL}${path}`, {
