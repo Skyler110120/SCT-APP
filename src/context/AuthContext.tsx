@@ -183,8 +183,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []); // Empty dependency array means "run once on mount"
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
-    dispatch({ type: "AUTH_LOADING" });
-
     try {
       console.log("Starting login process for:", credentials.email);
       
@@ -192,14 +190,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (!loginResult.success || !loginResult.data) {
         console.log("Login failed:", loginResult.error);
-        dispatch({
-          type: "AUTH_ERROR",
-          payload: loginResult.error || "Invalid credentials",
-        });
         return false;
       }
 
       console.log("Login successful, fetching user profile...");
+
+      dispatch({ type: "AUTH_LOADING" });
       
       const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 

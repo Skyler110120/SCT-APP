@@ -27,11 +27,14 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
         }
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 && path !== "/auth/login") {
         console.log("Token expired. Redirecting to login.");
         await authService.clearAuthData();
         router.replace("/login");
         throw new Error("Unauthorized");
+    } 
+    if (response.status === 401){
+      throw new Error("Invalid credentials");
     }
 
     let data: any = null;
