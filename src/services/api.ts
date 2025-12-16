@@ -15,6 +15,17 @@ if (__DEV__) {
     API_URL = "https://your-production-api.com";
 }
 
+export class ApiError extends Error {
+  status: number;
+  detail?: string;
+
+  constructor(status: number, message: string, detail?: string) {
+    super(message);
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     const token = await AsyncStorage.getItem("auth_token")
 
@@ -28,7 +39,6 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     });
 
     if (response.status === 401 && path !== "/auth/login") {
-        console.log("Token expired. Redirecting to login.");
         await authService.clearAuthData();
         router.replace("/login");
         throw new Error("Unauthorized");
@@ -39,6 +49,10 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
 
     if (response.status === 403) {
         throw new Error("Forbidden access")
+    }
+
+    if (response.status === 409) {
+      throw new ApiError(409, "Request Conflict")
     }
 
     let data: any = null;
