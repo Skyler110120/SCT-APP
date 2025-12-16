@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   User,
   UserRole,
@@ -14,18 +15,6 @@ import {
   UserWithInstructorResponse,
   UserWithStudentsResponse,
 } from "@/src/types/auth.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const userService = {
   /**
@@ -45,26 +34,11 @@ export const userService = {
       }
 
       const url = companyId
-        ? `${API_URL}/users?company_id=${companyId}`
-        : `${API_URL}/users`;
+        ? `/users?company_id=${companyId}`
+        : `/users`;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data = await apiFetch(url);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.error || "Failed to fetch users",
-        };
-      }
-
-      const data = await response.json();
       return {
         success: true,
         data,
@@ -94,23 +68,8 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: User = await apiFetch<User>(`/users/${userId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Error fetching user ${userId}:`, errorData);
-        return {
-          success: false,
-          error: errorData.error || "Failed to fetch user",
-        };
-      }
-      const data: User = await response.json();
       return {
         success: true,
         data,
@@ -144,7 +103,7 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}`, {
+      const data: User = await apiFetch<User>(`/users/${userId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -154,16 +113,6 @@ export const userService = {
         body: JSON.stringify(userData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Failed to update user ${userId}:`, errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update user",
-        };
-      }
-
-      const data: User = await response.json();
       return {
         success: true,
         data,
@@ -197,7 +146,7 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}/password`, {
+      const data = await apiFetch(`/users/${userId}/password`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -207,19 +156,6 @@ export const userService = {
         body: JSON.stringify(passwordData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to update password for user ${userId}:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update password",
-        };
-      }
-
-      const data = await response.json();
       return {
         success: true,
         message: data.message,
@@ -253,8 +189,8 @@ export const userService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/companies/${companyId}/users/${userId}`,
+      const response = await apiFetch(
+        `/companies/${companyId}/users/${userId}`,
         {
           method: "DELETE",
           headers: {
@@ -263,18 +199,6 @@ export const userService = {
           },
         }
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to remove user ${userId} from company ${companyId}:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.error || "Failed to remove user from company",
-        };
-      }
 
       return {
         success: true,
@@ -318,30 +242,8 @@ export const userService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/users/instructors/company/${companyId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data = await apiFetch(`/users/instructors/company/${companyId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to fetch instructors for company ${companyId}:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.error || "Failed to fetch instructors",
-        };
-      }
-
-      const data = await response.json();
       return {
         success: true,
         data,
@@ -376,27 +278,8 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${userId}/instructor`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: UserWithInstructor = await apiFetch<UserWithInstructor>(`/users/${userId}/instructor`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to fetch user ${userId} with instructor:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.error || "Failed to fetch user with instructor",
-        };
-      }
-
-      const data: UserWithInstructor = await response.json();
       return {
         success: true,
         data,
@@ -428,30 +311,8 @@ export const userService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/users/${instructorId}/students`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: UserWithStudents = await apiFetch<UserWithStudents>(`/users/${instructorId}/students`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to fetch instructor ${instructorId} with students:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.error || "Failed to fetch instructor with students",
-        };
-      }
-
-      const data: UserWithStudents = await response.json();
       return {
         success: true,
         data,
@@ -486,7 +347,7 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/assign-instructor`, {
+      const data: User = await apiFetch<User>(`/users/assign-instructor`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -496,16 +357,6 @@ export const userService = {
         body: JSON.stringify(assignment),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Failed to assign student to instructor:`, errorData);
-        return {
-          success: false,
-          error: errorData.error || "Failed to assign instructor",
-        };
-      }
-
-      const data: User = await response.json();
       return {
         success: true,
         data,
@@ -537,7 +388,7 @@ export const userService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/users/${studentId}/instructor`, {
+      const data: User = await apiFetch<User>(`/users/${studentId}/instructor`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -545,19 +396,6 @@ export const userService = {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(
-          `Failed to unassign student ${studentId} from instructor:`,
-          errorData
-        );
-        return {
-          success: false,
-          error: errorData.error || "Failed to unassign instructor",
-        };
-      }
-
-      const data: User = await response.json();
       return {
         success: true,
         data,
