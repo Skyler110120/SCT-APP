@@ -1,18 +1,7 @@
 import { Platform } from 'react-native';
+import { apiFetch } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InstructorStudentsResponse } from '@/src/types/auth.types';
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const instructorService = {
     /**
@@ -32,43 +21,10 @@ export const instructorService = {
 
             console.log("Fetching instructor students...");
 
-            const response = await fetch(`${API_URL}/instructors/students`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: "application/json",
-                }
-            })
+            const students = await apiFetch(`/instructors/students`);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Failed to fetch instructor's students:", errorData);
-
-                if (response.status === 403) {
-                    return {
-                        success: false,
-                        error: "Only instructors can access student information"
-                    };
-                }
-
-                if (response.status === 401) {
-                    return {
-                        success: false,
-                        error: "Authentication expired. Please log in again."
-                    };
-                }
-
-                
-                return {
-                    success: false,
-                    error: errorData.detail || "Failed to fetch students"
-                };
-            }
-
-            const students = await response.json();
-
-            console.log("📡 Raw API Response:", students);
-      console.log("📡 First student raw data:", students[0]);
+            console.log("Raw API Response:", students);
+            console.log("First student raw data:", students[0]);
             return {
                 success: true,
                 data: students,

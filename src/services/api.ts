@@ -37,6 +37,10 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       throw new Error("Invalid credentials");
     }
 
+    if (response.status === 403) {
+        throw new Error("Forbidden access")
+    }
+
     let data: any = null;
     try {
       data = await response.json();
