@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   TestSessionForm,
   CreateTestSessionFormRequest,
@@ -9,18 +10,6 @@ import {
   TestSessionFormListResponse,
   TestSessionFormCompleteResponse,
 } from "../types/test.session.form.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const testSessionFormService = {
   /**
@@ -41,7 +30,7 @@ export const testSessionFormService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/test-session-forms/`, {
+      const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,16 +40,6 @@ export const testSessionFormService = {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create test session form:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create test session form",
-        };
-      }
-
-      const data: TestSessionForm = await response.json();
       return {
         success: true,
         data,
@@ -70,7 +49,7 @@ export const testSessionFormService = {
       console.error("Error creating test session form:", error);
       return {
         success: false,
-        error: "An unexpected error occurred",
+        error: "An error occurred",
       };
     }
   },
@@ -95,7 +74,7 @@ export const testSessionFormService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/test-session-forms/${formId}`, {
+      const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/${formId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -105,16 +84,6 @@ export const testSessionFormService = {
         body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update test session form:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update test session form",
-        };
-      }
-
-      const data: TestSessionForm = await response.json();
       return {
         success: true,
         data,
@@ -124,7 +93,7 @@ export const testSessionFormService = {
       console.error("Error updating test session form:", error);
       return {
         success: false,
-        error: "An unexpected error occurred",
+        error: "An error occurred",
       };
     }
   },
@@ -149,8 +118,8 @@ export const testSessionFormService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/test-session-forms/${formId}/complete`,
+      const data = await apiFetch(
+        `/test-session-forms/${formId}/complete`,
         {
           method: "POST",
           headers: {
@@ -162,16 +131,6 @@ export const testSessionFormService = {
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to complete test session form:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to complete test session form",
-        };
-      }
-
-      const data = await response.json();
       return {
         success: true,
         form_id: data.form_id,
@@ -207,24 +166,8 @@ export const testSessionFormService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/test-session-forms/${formId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/${formId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch test session form:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch test session form",
-        };
-      }
-
-      const data: TestSessionForm = await response.json();
       return {
         success: true,
         data,
@@ -233,7 +176,7 @@ export const testSessionFormService = {
       console.error("Error fetching test session form:", error);
       return {
         success: false,
-        error: "An unexpected error occurred",
+        error: "An error occurred",
       };
     }
   },
@@ -253,24 +196,8 @@ export const testSessionFormService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/test-session-forms/my-forms/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: TestSessionForm[] = await apiFetch<TestSessionForm[]>(`/test-session-forms/my-forms/`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch test session forms:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch test session forms",
-        };
-      }
-
-      const data: TestSessionForm[] = await response.json();
       return {
         success: true,
         data,
