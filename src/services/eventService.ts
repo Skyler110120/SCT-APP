@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   Event,
   UpdateEventRequest,
@@ -7,18 +8,6 @@ import {
   EventListResponse,
   CreateEventRequest,
 } from "../types/event.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const eventService = {
   /**
@@ -37,24 +26,8 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/events/${eventID}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch event:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch event",
-        };
-      }
-
-      const data: Event = await response.json();
+      const data: Event = await apiFetch<Event>(`/events/${eventID}`);
+      
       return {
         success: true,
         data,
@@ -84,24 +57,8 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/events/company/${companyID}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: Event[] = await apiFetch<Event[]>(`/events/company/${companyID}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch events:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch events",
-        };
-      }
-
-      const data: Event[] = await response.json();
       return {
         success: true,
         data,
@@ -137,29 +94,11 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/events/company/${companyId}/time?start_time=${encodeURIComponent(
+      const data: Event[] = await apiFetch<Event[]>(
+        `/events/company/${companyId}/time?start_time=${encodeURIComponent(
           startTime
-        )}&end_time=${encodeURIComponent(endTime)}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+        )}&end_time=${encodeURIComponent(endTime)}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch events by time range: ", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch events by time range",
-        };
-      }
-
-      const data: Event[] = await response.json();
       return {
         success: true,
         data,
@@ -189,7 +128,7 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/events`, {
+      const data:Event = await apiFetch<Event>(`/events`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -199,16 +138,6 @@ export const eventService = {
         body: JSON.stringify(eventData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create event:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create event",
-        };
-      }
-
-      const data: Event = await response.json();
       return {
         success: true,
         data,
@@ -242,7 +171,7 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/events/${eventId}`, {
+      const data: Event = await apiFetch<Event>(`/events/${eventId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -252,16 +181,6 @@ export const eventService = {
         body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update event:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update event",
-        };
-      }
-
-      const data: Event = await response.json();
       return {
         success: true,
         data,
@@ -291,23 +210,13 @@ export const eventService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/events/${eventId}`, {
+      const response = await apiFetch(`/events/${eventId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to delete event:", errorData);
-        return {
-            success: false,
-            error: errorData.detail || "Failed to delete event"
-        }
-      }
-
       
       return {
         success: true,
