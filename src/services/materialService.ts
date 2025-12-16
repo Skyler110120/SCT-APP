@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   MaterialAccessRequest,
   MaterialAccessResponse,
@@ -7,18 +8,6 @@ import {
   MaterialInfoServiceResponse,
   MaterialAccessServiceResponse,
 } from "../types/material.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const materialService = {
   /**
@@ -42,27 +31,8 @@ export const materialService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/materials/courses/${courseId}/info`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: MaterialInfoResponse = await apiFetch<MaterialInfoResponse>(`/materials/courses/${courseId}/info`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch material info:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch material info",
-        };
-      }
-
-      const data: MaterialInfoResponse = await response.json();
       console.log("Successfully fetched material info:", data);
 
       return {
@@ -101,8 +71,8 @@ export const materialService = {
 
       const requestBody: MaterialAccessRequest = {};
 
-      const response = await fetch(
-        `${API_URL}/materials/courses/${courseId}/pdf/access`,
+      const data: MaterialAccessResponse = await apiFetch<MaterialAccessResponse>(
+        `/materials/courses/${courseId}/pdf/access`,
         {
           method: "POST",
           headers: {
@@ -114,16 +84,6 @@ export const materialService = {
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to get PDF access:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to get PDF access",
-        };
-      }
-
-      const data: MaterialAccessResponse = await response.json();
       console.log("Successfully obtained PDF access:", {
         course_id: data.course_id,
         material_type: data.material_type,
@@ -163,26 +123,16 @@ export const materialService = {
 
       const requestBody: MaterialAccessRequest = {};
 
-      const response = await fetch(`${API_URL}/materials/courses/${courseId}/script/access`, {
+      const data: MaterialAccessResponse = await apiFetch<MaterialAccessResponse>(`/materials/courses/${courseId}/script/access`, {
         method: "POST",
+        body: JSON.stringify(requestBody),
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to get instructor script:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to get instructor script access",
-        };
-      }
-
-      const data: MaterialAccessResponse = await response.json();
+      
       console.log("Successfully got instructor script access:", {
         material_type: data.material_type,
         expires_in: data.expires_in_seconds,
