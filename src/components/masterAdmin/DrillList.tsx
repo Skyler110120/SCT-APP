@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 import { themes } from "@/src/context/themes";
-import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
+import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/masterAdminCourseManagementStyles";
 import { CourseDrill, DrillType } from "@/src/types/course.drills.types";
+import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface DrillListProps {
   drills: CourseDrill[];

@@ -1,17 +1,21 @@
 import Images from "@/src/assets/images";
+import { themes } from "@/src/context/themes";
+import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
+
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
+import { InstructorSelectionModal } from "@/src/components/onboarding/InstructorSelectionModal";
 import { InviteCodeModal } from "@/src/components/onboarding/InviteCodeModal";
 import { RoleSelectionModal } from "@/src/components/onboarding/RoleSelectionModal";
-import { InstructorSelectionModal } from "@/src/components/onboarding/InstructorSelectionModal";
-import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
-import { themes } from "@/src/context/themes";
-import { onboardingService } from "@/src/services/onboardingService";
+
 import { courseService } from "@/src/services/courseService";
-import { registerScreenStyles as styles } from "@/src/styles/registerScreen";
-import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
+import { onboardingService } from "@/src/services/onboardingService";
+
 import { UserRole } from "@/src/types/auth.types";
-import { Instructor } from "@/src/types/instructor.types";
 import { CourseSummary } from "@/src/types/course.types";
+import { Instructor } from "@/src/types/instructor.types";
+import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
+
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -19,11 +23,11 @@ import {
   Alert,
   Image,
   SafeAreaView,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
 } from "react-native";
 
 type OnboardingStep =
@@ -263,7 +267,7 @@ export default function RegisterScreen() {
             text: "Continue to Login",
             onPress: () => {
               onboardingService.clearOnboardingData();
-              router.push("/screens/auth/Login");
+              router.push("/login");
             },
           },
         ]);

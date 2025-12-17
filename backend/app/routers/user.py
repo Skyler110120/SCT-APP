@@ -9,14 +9,13 @@ from app.schemas.user import (
     UserOut, UserUpdate, UserWithCompany, UserWithInstructor,
     UserWithStudents, StudentInstructorAssignment
     )
-from app.schemas.auth import PasswordUpdate, CompanyJoin
+from app.schemas.auth import PasswordUpdate
 from app.services.user_service import (
     get_user_by_id,
     get_users,
     update_user,
     update_password,
     promote_user,
-    join_company,
     get_instructors_by_company,
     get_user_with_instructor,
     get_instructor_with_students,

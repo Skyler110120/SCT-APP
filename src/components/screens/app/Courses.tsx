@@ -1,44 +1,43 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { FontAwesome } from "@expo/vector-icons";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  SafeAreaView,
   ActivityIndicator,
-  TouchableOpacity,
   Alert,
   FlatList,
-  RefreshControl,
   Linking,
+  RefreshControl,
+  SafeAreaView,
   ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
 
-import { coursesStyles as styles } from "@/src/styles/coursesScreen";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
-import BottomNavBar from "@/src/components/NavBar";
 import CourseOverviewCard from "@/src/components/CourseOverviewCard";
+import BottomNavBar from "@/src/components/NavBar";
 import StudentProgressModal from "@/src/components/StudentProgressModal";
 import VideoListModal from "@/src/components/VideoListModal";
+import { courseScreenStyles as styles } from "@/src/styles/CoursePageStyles/courseScreenStyles";
 
+import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
 import { courseService } from "@/src/services/courseService";
 import { enrollmentService } from "@/src/services/enrollmentService";
 import { materialService } from "@/src/services/materialService";
-import { useAuth } from "@/src/context/AuthContext";
-import { themes } from "@/src/context/themes";
 
+import { UserRole } from "@/src/types/auth.types";
 import {
   CourseInstructorView,
   CourseStudentView,
   CourseView,
 } from "@/src/types/course.types";
 import {
-  StudentWeeklyProgress,
+  InstructorStats,
   Stats,
   StudentStats,
-  InstructorStats,
-  EnrollmentWithCourseResponse,
+  StudentWeeklyProgress
 } from "@/src/types/enrollment.types";
-import { UserRole } from "@/src/types/auth.types";
 
 export default function Courses() {
   const { user } = useAuth();

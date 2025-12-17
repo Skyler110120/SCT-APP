@@ -1,13 +1,13 @@
-import { StyleSheet } from 'react-native';
-import { themes } from '@/src/context/themes';
+import { StyleSheet } from "react-native";
+import { themes } from "@/src/context/themes";
 
 export const studentScreenStyles = StyleSheet.create({
-    container: {
+  container: {
     flex: 1,
     flexDirection: "column",
   },
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent'
+    backgroundColor: "transparent",
   },
 });

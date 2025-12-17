@@ -1,14 +1,14 @@
+import { themes } from "@/src/context/themes";
+import { inviteCodeFormStyles as inviteCodeForm } from "@/src/styles/DashboardPageStyles/inviteCodeFormStyles";
+import { Company } from "@/src/types/company.types";
 import React from "react";
 import {
-  View,
+  ActivityIndicator,
+  Modal,
   Text,
   TouchableOpacity,
-  Modal,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { masterAdminDashboardStyles as inviteCodeForm } from "@/src/styles/masterDashboardScreen";
-import { Company } from "@/src/types/company.types";
-import { themes } from "@/src/context/themes";
 
 interface InviteCodeFormProps {
   visible: boolean;

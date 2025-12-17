@@ -1,0 +1,85 @@
+import { StyleSheet } from "react-native";
+import { themes } from "@/src/context/themes";
+
+export const profileScreenStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
+  profileContentContainer: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    gap: 30,
+    paddingHorizontal: 20,
+  },
+  profileName: {
+    fontSize: 64,
+    fontFamily: "Chakra-BoldItalic",
+    color:  themes.vegasGold,
+    textAlign: "center",
+    borderWidth: 1,
+    padding: 10,
+  },
+  profilePictureContainer: {
+    width: 300,
+    height: 300,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 150,
+    borderWidth: 1,
+    borderColor: themes. vegasGold,
+  },
+  profileBioContainer:  {
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    width: 700,
+    alignSelf: "center",
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+  },
+  profileBioText: {
+    fontSize:  24,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+    paddingLeft: 20,
+    paddingBottom: 10,
+    paddingTop: 10,
+    borderBottomColor: themes.vegasGold,
+    borderBottomWidth: 1,
+  },
+  profileBioTextBottom: {
+    fontSize: 24,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+    paddingLeft: 20,
+    paddingBottom: 10,
+    paddingTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 20,
+  },
+  button: {
+    padding: 10,
+    borderRadius: 30,
+    width: 300,
+    height: 100,
+    justifyContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
+    backgroundColor: themes.vegasGold,
+  },
+  buttonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.white,
+  },
+});

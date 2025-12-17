@@ -1,28 +1,26 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  ActivityIndicator,
-  Platform,
-} from "react-native";
-import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
 import { themes } from "@/src/context/themes";
+import { availabilityModalStyles as styles } from "@/src/styles/CalendarPageStyles/InstructorCalendar/availabilityModalStyles";
 import {
-  CreateAvailabilityRequest,
   Availability,
   AvailabilityUpdate,
+  CreateAvailabilityRequest,
 } from "@/src/types/availability.types";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import {
-  formatTimeString,
-  formatDateString,
+  createLocalDate,
   formatDateRange,
-  formatISOTime,
-  getDayName,
-  createLocalDate
+  formatDateString,
+  formatTimeString
 } from "@/src/utils/dateTimeUtils";
 
 type AvailabilityModalProps = {

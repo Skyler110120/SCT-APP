@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
-import { adminManageUsersStyles as styles } from "@/src/styles/manageUsers";
+import { instructorSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/instructorSelectionModalStyles";
 import {
   Instructor,
   getInstructorDisplayName,

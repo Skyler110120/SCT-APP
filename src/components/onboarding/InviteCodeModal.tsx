@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { dashboardStyles as styles } from "@/src/styles/instructorDashboard";
+import { inviteCodeModalStyles as styles } from "@/src/styles/RegisterPageStyles/inviteCodeModalStyles";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import React, { useState } from "react";
 import {

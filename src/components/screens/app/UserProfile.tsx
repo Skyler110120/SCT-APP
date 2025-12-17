@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from "react";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
+import EditProfileModal from "@/src/components/EditProfileModal";
+import BottomNavBar from "@/src/components/NavBar";
+import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
+import { profileService } from "@/src/services/profileService";
+import { profileScreenStyles as styles } from "@/src/styles/ProfilePageStyles/profileScreenStyles";
+import { ProfileDetailed } from "@/src/types/profile.types";
+import { formatDateString } from "@/src/utils/dateTimeUtils";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
   ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import BottomNavBar from "@/src/components/NavBar";
-import BackgroundGradient from "@/src/components/BackgroundGradient";
-import { profileScreenStyles as styles } from "@/src/styles/profileScreen";
-import { useAuth } from "@/src/context/AuthContext";
-import { profileService } from "@/src/services/profileService";
-import { ProfileDetailed } from "@/src/types/profile.types";
-import EditProfileModal from "@/src/components/EditProfileModal";
-import { formatDateString } from "@/src/utils/dateTimeUtils";
-import { themes } from "@/src/context/themes";
 
 export default function InstructorProfile() {
   const { logout } = useAuth();

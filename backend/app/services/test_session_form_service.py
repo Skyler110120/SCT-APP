@@ -1,8 +1,6 @@
-"""Test Session Form Service - Service for test sessions, handles drill complexity"""
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from datetime import datetime
-from typing import Optional, List
 
 from app.models.test_session_form import TestSessionForm
 from app.models.session import Session as SessionModel, SessionStatus

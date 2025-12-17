@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, Modal, TouchableOpacity, FlatList } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
-import { CourseAdminView, CourseVideo } from "@/src/types/course.types";
 import { themes } from "@/src/context/themes";
+import { videoManagementModalStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/videoMangementModalStyles";
+import { CourseAdminView, CourseVideo } from "@/src/types/course.types";
+import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
+import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
 
 interface VideoManagementModalProps {
   visible: boolean;

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from datetime import datetime
-from typing import Optional, List
 
 from app.models.session_form import SessionForm
 from app.models.session import Session as SessionModel, SessionStatus

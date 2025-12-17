@@ -1,18 +1,17 @@
+import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
+import { detailModalStyles as styles } from "@/src/styles/CalendarPageStyles/detailModalStyles";
+import { SessionDetailed } from "@/src/types/sessions.types";
+import { formatDateString, formatTimeString } from "@/src/utils/dateTimeUtils";
 import React from "react";
 import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
   ActivityIndicator,
+  Alert,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { calendarScreenStyles as styles } from "@/src/styles/calendarScreen";
-import { themes } from "@/src/context/themes";
-import { useAuth } from "@/src/context/AuthContext";
-import { SessionDetailed } from "@/src/types/sessions.types";
-import { formatTimeString, formatDateString } from "@/src/utils/dateTimeUtils";
 
 interface SessionDetailsModalProps {
   visible: boolean;

@@ -1,42 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView,
-  SafeAreaView,
-  StatusBar
-} from "react-native";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/src/context/AuthContext";
-import { dashboardStyles } from "@/src/styles/instructorDashboard";
-import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
+import { useAuth } from "@/src/context/AuthContext";
+import { instructorDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/InstructorDashboardStyles/instructorDashboardStyles";
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert
+} from "react-native";
 
 export default function InstructorDashboard() {
-  // Access router for navigation
-  const router = useRouter();
-  
-  // Access auth context for user data and authentication functions
   const { state, logout, updateUser, needsOnboarding } = useAuth();
-  const user = state.user;
   
-  // State for onboarding modal visibility
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   
-  // Current date and selected day for the calendar
   const [today] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(today);
   const [weekDays, setWeekDays] = useState<Date[]>([]);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   
-  // Mock data for classes - in a real app, fetch this from your API
   const classesToday = [
     { time: '12:00 PM', instructor: 'Alan Honor', type: 'Ballet' },
     { time: '3:00 PM', instructor: 'Jeff Watts', type: 'Jazz' },
     { time: '5:00 PM', instructor: 'Tim Hardy', type: 'Contemporary' },
   ];
 
-  // Show onboarding modal if user needs onboarding
   useEffect(() => {
     if (needsOnboarding) {
       setShowOnboardingModal(true);
@@ -45,14 +35,13 @@ export default function InstructorDashboard() {
     }
   }, [needsOnboarding]);
 
-  // Generate week days array on component mount
   useEffect(() => {
     const startDay = new Date(today);
-    // Set to beginning of week (Sunday)
+
     startDay.setDate(today.getDate() - today.getDay());
     
     const days = [];
-    // Generate array with 7 days starting from Sunday
+
     for (let i = 0; i < 7; i++) {
       const day = new Date(startDay);
       day.setDate(startDay.getDate() + i);
@@ -61,7 +50,6 @@ export default function InstructorDashboard() {
     setWeekDays(days);
   }, [today]);
 
-  // Format full date as "Month Day Year" (e.g. "June 3rd 2025")
   const formatFullDate = (date: Date) => {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -72,7 +60,6 @@ export default function InstructorDashboard() {
     const month = months[date.getMonth()];
     const year = date.getFullYear();
     
-    // Add appropriate suffix to day number
     let suffix = 'th';
     if (day % 10 === 1 && day !== 11) suffix = 'st';
     if (day % 10 === 2 && day !== 12) suffix = 'nd';
@@ -81,19 +68,16 @@ export default function InstructorDashboard() {
     return `${month} ${day}${suffix} ${year}`;
   };
 
-  // Format day name (e.g. "Mon")
   const formatDayName = (date: Date) => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[date.getDay()];
   };
 
-  // Format day number with leading zero if needed
   const formatDayNumber = (date: Date) => {
     const day = date.getDate();
     return day < 10 ? `0${day}` : `${day}`;
   };
 
-  // Check if two dates are the same day
   const isSameDay = (date1: Date, date2: Date) => {
     return (
       date1.getFullYear() === date2.getFullYear() &&
@@ -102,45 +86,47 @@ export default function InstructorDashboard() {
     );
   };
 
-  // Logout function
   const handleLogout = async () => {
-    await logout();
-    router.replace("/screens/auth/Login");
-  };
+      setIsLoggingOut(true);
+      try {
+        await logout();
+      } catch (error) {
+        console.error("Logout failed:", error);
+        Alert.alert("Error", "Failed to log out. Please try again.");
+      } finally {
+        setIsLoggingOut(false);
+      }
+    };
 
-  // If user needs onboarding, show simplified view with modal
   if (needsOnboarding) {
     return (
-      <View style={dashboardStyles.container}>
-        <View style={dashboardStyles.modalContent}>
-          <Text style={dashboardStyles.modalTitle}>Welcome to Stone Cold Tactical</Text>
-          <Text style={dashboardStyles.labelText}>
+      <View style={styles.container}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Welcome to Stone Cold Tactical</Text>
+          <Text style={styles.labelText}>
             Please enter your company invite code to access all features.
           </Text>
           <TouchableOpacity
-            style={dashboardStyles.submitButton}
+            style={styles.submitButton}
             onPress={handleLogout}
           >
-            <Text style={dashboardStyles.buttonText}>LOG OUT</Text>
+            <Text style={styles.buttonText}>LOG OUT</Text>
           </TouchableOpacity>
         </View>
       </View>
     );
   }
 
-  // Main instructor dashboard view
   return (
-    <SafeAreaView style={dashboardStyles.container}>
+    <SafeAreaView style={styles.container}>
       
-      <ScrollView style={dashboardStyles.scrollContent}>
-        {/* Today's date section */}
-        <View style={dashboardStyles.dateContainer}>
-          <Text style={dashboardStyles.todayText}>Today</Text>
-          <Text style={dashboardStyles.fullDateText}>{formatFullDate(today)}</Text>
+      <ScrollView style={styles.scrollContent}>
+        <View style={styles.dateContainer}>
+          <Text style={styles.todayText}>Today</Text>
+          <Text style={styles.fullDateText}>{formatFullDate(today)}</Text>
         </View>
         
-        {/* Week day selector */}
-        <View style={dashboardStyles.weekContainer}>
+        <View style={styles.weekContainer}>
           {weekDays.map((day, index) => {
             const dayNum = formatDayNumber(day);
             const dayName = formatDayName(day);
@@ -150,20 +136,20 @@ export default function InstructorDashboard() {
               <TouchableOpacity
                 key={index}
                 style={[
-                  dashboardStyles.dayButton, 
-                  isSelected && dashboardStyles.selectedDayButton
+                  styles.dayButton, 
+                  isSelected && styles.selectedDayButton
                 ]}
                 onPress={() => setSelectedDay(day)}
               >
                 <Text style={[
-                  dashboardStyles.dayName, 
-                  isSelected && dashboardStyles.selectedDayText
+                  styles.dayName, 
+                  isSelected && styles.selectedDayText
                 ]}>
                   {dayName}
                 </Text>
                 <Text style={[
-                  dashboardStyles.dayNumber, 
-                  isSelected && dashboardStyles.selectedDayText
+                  styles.dayNumber, 
+                  isSelected && styles.selectedDayText
                 ]}>
                   {dayNum}
                 </Text>
@@ -172,50 +158,45 @@ export default function InstructorDashboard() {
           })}
         </View>
         
-        {/* Videos section */}
-        <View style={dashboardStyles.sectionContainer}>
-          <Text style={dashboardStyles.sectionTitle}>Videos To Watch</Text>
-          <View style={dashboardStyles.videosRow}>
-            <View style={dashboardStyles.videoThumbnail} />
-            <View style={dashboardStyles.videoThumbnail} />
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Videos To Watch</Text>
+          <View style={styles.videosRow}>
+            <View style={styles.videoThumbnail} />
+            <View style={styles.videoThumbnail} />
           </View>
         </View>
         
-        {/* Classes section */}
-        <View style={dashboardStyles.sectionContainer}>
-          <Text style={dashboardStyles.sectionTitle}>Classes Today</Text>
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Classes Today</Text>
           
           {classesToday.map((classItem, index) => (
             <TouchableOpacity 
               key={index} 
-              style={dashboardStyles.classCard}
+              style={styles.classCard}
               onPress={() => {
-                // Navigate to class detail in the future
                 console.log(`Viewing class: ${classItem.instructor}`);
               }}
             >
-              <View style={dashboardStyles.classTypeSection}>
-                <Text style={dashboardStyles.classTypeText}>
+              <View style={styles.classTypeSection}>
+                <Text style={styles.classTypeText}>
                   Profile Pic{"\n"}or{"\n"}Class Type
                 </Text>
               </View>
               
-              <View style={dashboardStyles.classInfoSection}>
-                <Text style={dashboardStyles.classTimeText}>
+              <View style={styles.classInfoSection}>
+                <Text style={styles.classTimeText}>
                   {classItem.time} {classItem.instructor}
                 </Text>
               </View>
               
-              <View style={dashboardStyles.viewButtonSection}>
-                <Text style={dashboardStyles.viewButtonText}>VIEW</Text>
-                <Text style={dashboardStyles.arrowIcon}>➔</Text>
+              <View style={styles.viewButtonSection}>
+                <Text style={styles.viewButtonText}>VIEW</Text>
+                <Text style={styles.arrowIcon}>➔</Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-      
-      {/* Bottom navigation bar */}
       <BottomNavBar />
     </SafeAreaView>
   );

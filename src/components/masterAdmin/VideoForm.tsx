@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-  Alert,
-} from "react-native";
-import { Picker } from "@react-native-picker/picker";
-import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
+import { themes } from "@/src/context/themes";
+import { videoFormStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/videoFormStyles";
 import {
   CourseAdminView,
   CourseVideo,
   VideoCreateRequest,
   VideoUpdateRequest,
 } from "@/src/types/course.types";
-import { themes } from "@/src/context/themes";
-import { set } from "date-fns";
+import { Picker } from "@react-native-picker/picker";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface VideoFormProps {
   visible: boolean;

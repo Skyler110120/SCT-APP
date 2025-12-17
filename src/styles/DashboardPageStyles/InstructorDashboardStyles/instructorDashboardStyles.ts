@@ -1,21 +1,16 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
 
-export const dashboardStyles = StyleSheet.create({
-  // Main container
+export const instructorDashboardStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: themes.black,
   },
-  
-  // Scroll content
   scrollContent: {
     flex: 1,
     paddingHorizontal: 15,
     paddingTop: 20,
   },
-  
-  // Date header section
   dateContainer: {
     marginBottom: 20,
   },
@@ -30,8 +25,6 @@ export const dashboardStyles = StyleSheet.create({
     color: themes.vegasGold,
     marginTop: 5,
   },
-  
-  // Week day selector
   weekContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -64,8 +57,6 @@ export const dashboardStyles = StyleSheet.create({
   selectedDayText: {
     color: themes.black,
   },
-  
-  // Section containers
   sectionContainer: {
     marginBottom: 25,
   },
@@ -79,8 +70,6 @@ export const dashboardStyles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 15,
   },
-  
-  // Videos section
   videosRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -93,8 +82,6 @@ export const dashboardStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
     borderRadius: 10,
   },
-  
-  // Class cards
   classCard: {
     flexDirection: "row",
     borderWidth: 1,
@@ -211,8 +198,6 @@ export const dashboardStyles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 10,
   },
-  
-  // Navigation bar styles
   navContainer: {
     flexDirection: "row",
     height: 60,

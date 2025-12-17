@@ -73,7 +73,6 @@ def create_user(db: Session, user_data: UserCreate):
             )
     
     hashed_password = hash_password(user_data.password)
-    role = getattr(user_data, 'role', UserRole.STUDENT)
     
     user_dict = user_data.dict(exclude={"password"})
     user_dict["hashed_password"] = hashed_password
@@ -106,45 +105,36 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User:
         HTTPException: If user not found or email already exists
     """
     
-    # Step 1: Get the user
     db_user = get_user_by_id(db, user_id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Step 2: Convert to dict for processing
     update_data = user_data.dict(exclude_unset=True, exclude_none=True)
-    
-    # Step 3: Validate email uniqueness (if email is being changed)
+
     if update_data.get("email") and update_data.get("email") != db_user.email:
         existing_user = get_user_by_email(db, update_data["email"])
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Step 4: Handle role changes (this is key for promotion!)
     if "role" in update_data:
         new_role = update_data["role"]
         
-        # If promoting from student to instructor/admin, clear instructor assignment
         if new_role != UserRole.STUDENT and db_user.instructor_id is not None:
             update_data["instructor_id"] = None
             logger.info(f"Cleared instructor assignment for user {user_id} due to role promotion to {new_role}")
     
-    # Step 5: Validate instructor assignment (only for students)
     if "instructor_id" in update_data:
         instructor_id = update_data["instructor_id"]
         
-        if instructor_id is not None:  # They want to assign an instructor
-            # Determine what the final role will be after this update
+        if instructor_id is not None:  
             final_role = update_data.get("role", db_user.role)
             
-            # Only students can have instructors
             if final_role != UserRole.STUDENT:
                 raise HTTPException(
                     status_code=400,
                     detail="Only students can be assigned to an instructor"
                 )
             
-            # Validate the instructor exists and is valid
             instructor = get_user_by_id(db, instructor_id)
             if not instructor: 
                 raise HTTPException(
@@ -158,7 +148,6 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User:
                     detail="Selected user is not an instructor"
                 )
             
-            # Validate instructor is in same company
             final_company_id = update_data.get("company_id", db_user.company_id)
             if instructor.company_id != final_company_id:
                 raise HTTPException(
@@ -166,11 +155,9 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate) -> User:
                     detail="Instructor must be in the same company"
                 )
     
-    # Step 6: Apply all updates
     for key, value in update_data.items():
         setattr(db_user, key, value)
         
-    # Step 7: Update timestamp and save
     db_user.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(db_user)

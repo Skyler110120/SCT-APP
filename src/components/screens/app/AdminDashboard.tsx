@@ -8,14 +8,16 @@ import {
   ScrollView,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
+
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import { adminDashboardStyles } from "@/src/styles/adminDashboard";
+import InviteCodeList from "@/src/components/admin/InviteCodeList";
+import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
+
+import { adminDashboardStyles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Company, InviteCode } from "@/src/types/company.types";
-import InviteCodeList from "@/src/components/admin/InviteCodeList";
-import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();

@@ -1,0 +1,205 @@
+import { themes } from "@/src/context/themes";
+import { StyleSheet } from "react-native";
+
+export const calendarScreenStyles = StyleSheet.create({
+  container: {
+    flex:  1,
+    flexDirection: "column",
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent'
+  },
+  calendarContainer: {
+    borderRadius: 20,
+    overflow: "hidden",
+    margin: 16,
+    borderWidth: 2,
+    borderColor: themes. white,
+  },
+  scheduleContainer: {
+    flex: 1,
+    borderTopLeftRadius: 100,
+    borderTopRightRadius: 100,
+    marginTop: 30,
+    paddingRight: 16,
+    paddingLeft: 16,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: themes. vegasGold,
+  },
+  scheduleText: {
+    fontSize: 48,
+    fontFamily: "Chakra-BoldItalic",
+    marginBottom: 16,
+    textAlign: 'center',
+    color: themes.white,
+  },
+  sessionText: {
+    fontSize: 28,
+    fontFamily: "Chakra-Regular",
+    color: themes.white
+  },
+  sessionCard: {
+    flexDirection: "row",
+    borderRadius: 15,
+    padding: 16,  
+    marginBottom: 16,
+    borderWidth: 1,
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: themes.black,
+    borderColor: themes. vegasGold,
+  },
+  buttonContainer: {
+    flexDirection:  "row",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  actionButton: {
+    width: "75%",
+    marginHorizontal: 8,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
+  },
+  actionButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  actionButtonActive: {
+    opacity: 0.7,
+    backgroundColor: themes.black
+  },
+  actionButtonTextActive: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  addButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  addButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    backgroundColor: themes.black,
+    borderColor: themes. vegasGold,
+  },
+  addButtonText: {
+    fontSize: 32,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  availabilityCardSelected: {
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black,
+  },
+  availabilityInfo: {
+    flex: 1,
+    justifyContent: "space-between"
+  },
+  selectionIndicator: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    backgroundColor: themes.vegasGold,
+  },
+  selectionIndicatorText: {
+    fontSize: 20,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
+  },
+  availabilityActionButtons: {
+    flexDirection: "row",
+    justifyContent:  "space-between",
+    marginTop: 16,
+    gap: 12,
+  },
+  updateButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
+  },
+  updateButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  }, 
+  deleteButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    backgroundColor: themes.black,
+    borderColor: themes.vegasGold,
+  },
+  deleteButtonText: {
+    fontSize: 24,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  weeklyScheduleContainer: {
+    marginTop: 16,
+  },
+  dayScheduleContainer: {
+    marginBottom: 20,
+    paddingBottom: 16,
+  },
+  dayTitle: {
+    marginBottom: 8,
+    fontSize: 28,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  noAvailabilityText: {
+    paddingLeft: 12,
+    fontSize: 28,
+    textAlign: "center",
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  sectionSubtitle: {
+    marginBottom: 12,
+    fontSize: 28,
+    textAlign: "center",
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.vegasGold,
+  },
+  hintText: {
+    marginTop: 8,
+    textAlign: "center",
+    fontSize: 24,
+    fontFamily: "Chakra-Italic",
+    color: themes.white,
+  },
+  errorText: {
+    fontSize: 16,
+    marginTop: 8,
+    textAlign: "center",
+    fontFamily: "Chakra-Bold",
+    color: "#FF4444",
+  },
+  scrollContentContainer: {
+    paddingBottom: 120,
+    flexGrow: 1,
+  },
+});

@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { manageUsersStyles as styles } from "@/src/styles/manageUsers";
-import { User } from "@/src/types/auth.types";
 import { themes } from "@/src/context/themes";
+import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { User } from "@/src/types/auth.types";
+import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface InstructorStudentTableProps {
   students: User[];

@@ -1,14 +1,14 @@
+import { themes } from "@/src/context/themes";
+import { inviteCodeListStyles as styles } from "@/src/styles/DashboardPageStyles/inviteCodeListStyles";
+import { Company, InviteCode } from "@/src/types/company.types";
 import React from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { masterAdminDashboardStyles as styles } from "@/src/styles/masterDashboardScreen";
-import { InviteCode, Company } from "@/src/types/company.types";
-import { themes } from "@/src/context/themes";
 
 interface InviteCodeListProps {
   inviteCodes: InviteCode[];

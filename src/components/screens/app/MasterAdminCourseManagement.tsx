@@ -1,17 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { masterAdminManageCourses as styles } from "@/src/styles/masterAdminManageCourses";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ActivityIndicator,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { courseService } from "@/src/services/courseService";
 import { useAuth } from "@/src/context/AuthContext";
+import { courseService } from "@/src/services/courseService";
+import { masterAdminCourseManagementStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/masterAdminCourseManagementStyles";
 import {
   CourseAdminView,
   CourseCreateRequest,
@@ -20,12 +11,21 @@ import {
   VideoCreateRequest,
   VideoUpdateRequest,
 } from "@/src/types/course.types";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import CourseList from "@/src/components/masterAdmin/CourseList";
 import CourseForm from "@/src/components/masterAdmin/CourseForm";
-import VideoManagementModal from "@/src/components/masterAdmin/VideoManagementModal";
-import VideoForm from "@/src/components/masterAdmin/VideoForm";
+import CourseList from "@/src/components/masterAdmin/CourseList";
 import DrillManagement from "@/src/components/masterAdmin/DrillManagement";
+import VideoForm from "@/src/components/masterAdmin/VideoForm";
+import VideoManagementModal from "@/src/components/masterAdmin/VideoManagementModal";
 import { themes } from "@/src/context/themes";
 
 export default function MasterAdminCourseManagement() {

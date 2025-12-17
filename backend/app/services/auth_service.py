@@ -1,11 +1,8 @@
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from typing import Optional
-import logging
 
-
-from app.models.user import User, UserRole
+from app.models.user import User
 from app.models.invite_code import CompanyInviteCode
 from app.models.company import Company
 from app.utils.password import verify_password

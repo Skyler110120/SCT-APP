@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  Alert,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAuth } from "@/src/context/AuthContext";
-import { profileService } from "@/src/services/profileService";
-import { ProfileDetailed } from "@/src/types/profile.types";
-import { UserRole } from "@/src/types/auth.types";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import { profileScreenStyles as styles } from "@/src/styles/profileScreen";
-import { formatDateString } from "@/src/utils/dateTimeUtils";
+import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
+import { profileService } from "@/src/services/profileService";
+import { profileScreenStyles as styles } from "@/src/styles/ProfilePageStyles/profileScreenStyles";
+import { UserRole } from "@/src/types/auth.types";
+import { ProfileDetailed } from "@/src/types/profile.types";
+import { formatDateString } from "@/src/utils/dateTimeUtils";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 export default function UserProfilePage() {
   const { userId } = useLocalSearchParams<{ userId: string }>();

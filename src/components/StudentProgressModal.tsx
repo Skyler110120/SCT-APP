@@ -1,20 +1,19 @@
+import { themes } from "@/src/context/themes";
+import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/courseScreenStyles";
+import { UserRole } from "@/src/types/auth.types";
+import { StudentWeeklyProgress } from "@/src/types/enrollment.types";
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  Modal,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-  Alert,
   ActivityIndicator,
-  StyleSheet,
+  Alert,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { StudentWeeklyProgress } from "@/src/types/enrollment.types";
-import { UserRole } from "@/src/types/auth.types";
-import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/coursesScreen";
 
 type ValidIconName = "check-circle" | "clock-o" | "circle-o";
 
