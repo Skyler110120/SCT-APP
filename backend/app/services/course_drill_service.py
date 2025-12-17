@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from app.models.course_drill import CourseDrill, StudentDrillResult
@@ -133,17 +133,18 @@ def delete_course_drill(db: Session, drill_id: int, user_id: int, company_id: in
     
     if not drill:
         raise HTTPException(
-            CourseDrill.id == drill_id,
-            CourseDrill.is_active == True
-        ).first()
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Drill not found or already deleted"
+        )
     
+    #Unused, not sure if it's needed later
     student_results_count = db.query(StudentDrillResult).filter(
         StudentDrillResult.drill_id == drill_id,
         StudentDrillResult.current_value.isnot(None)
     ).count()
     
     drill.is_active = False
-    drill.updated_at = datetime.now(datetime.timezone.utc)
+    drill.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(drill)
@@ -190,7 +191,7 @@ def update_course_drill(db: Session, drill_id: int, drill_data: CourseDrillUpdat
     for key, value in updated_data.items():
         setattr(drill, key, value)
     
-    drill.updated_at = datetime.now(datetime.timezone.utc)
+    drill.updated_at = datetime.now(timezone.utc)
     
     db.commit()
     db.refresh(drill)
