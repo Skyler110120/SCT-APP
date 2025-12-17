@@ -40,10 +40,6 @@ export const onboardingService = {
     try {
       const data: CompanyInfo = await apiFetch<CompanyInfo>(`/auth/validate-invite`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify({ code }),
       });
 
@@ -93,7 +89,7 @@ export const onboardingService = {
    * @param signupData - user data for enhanced signup
    * @returns Promise with user data or error
    */
-  async completeEnhancedSignup(
+  async signup(
     signupData: EnhancedSignupData
   ): Promise<EnhancedSignupResponse> {
     try {
@@ -109,10 +105,6 @@ export const onboardingService = {
 
       const response = await apiFetch(`/auth/signup`, {
         method: "POST",
-        headers: {
-          "content-type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(signupData),
       });
 
@@ -209,24 +201,9 @@ export const onboardingService = {
    */
   async completeOnboarding(code: string): Promise<UserResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required for onboarding",
-        };
-      }
-
       const data = await apiFetch(`/onboarding/complete`, {
         method: "POST",
         body: JSON.stringify({ code }),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
       
       return {

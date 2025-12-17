@@ -26,15 +26,6 @@ export const sessionService = {
     try {
       console.log("Request:", request);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found ");
-        return {
-          success: false,
-          error: "Authentication required to check availability",
-        };
-      }
-
       const params = new URLSearchParams({
         instructor_id: request.instructor_id.toString(),
         start_time: request.start_time,
@@ -69,22 +60,8 @@ export const sessionService = {
     try {
       console.log("Booking Data:", bookingData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to book session",
-        };
-      }
-
       const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/direct-book`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(bookingData),
       });
 
@@ -126,15 +103,6 @@ export const sessionService = {
         statusFilter
       );
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch sessions",
-        };
-      }
-
       const params = new URLSearchParams({
         as_student: asStudent.toString(),
         as_instructor: asInstructor.toString(),
@@ -170,15 +138,6 @@ export const sessionService = {
     try {
       console.log("Session ID:", sessionId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch session details",
-        };
-      }
-
       const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/${sessionId}`);
 
       console.log("Successfully fetched session details:", data);
@@ -210,22 +169,8 @@ export const sessionService = {
       console.log("Session ID:", sessionId);
       console.log("Update Data:", updateData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to update session",
-        };
-      }
-
       const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/${sessionId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(updateData),
       });
 
@@ -252,21 +197,8 @@ export const sessionService = {
     try {
       console.log("Session ID:", sessionId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to cancel session",
-        };
-      }
-
       const data = await apiFetch(`/sessions/${sessionId}/cancel`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
 
       console.log("Session cancelled successfully:");
@@ -294,22 +226,10 @@ export const sessionService = {
     try {
       console.log("Session ID:", sessionId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to mark session as completed",
-        };
-      }
       const data: SessionDetailed = await apiFetch<SessionDetailed>(
         `/sessions/${sessionId}/complete`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
         }
       );
 
@@ -338,15 +258,6 @@ export const sessionService = {
   ): Promise<SessionListResponse> {
     try {
       console.log("Date Range:", request);
-
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch calendar sessions",
-        };
-      }
 
       const params = new URLSearchParams({
         start_date: request.start_date,

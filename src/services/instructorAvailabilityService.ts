@@ -16,15 +16,6 @@ export const instructorAvailabilityService = {
    */
   async getMyAvailability(): Promise<AvailabilityListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Availability[] = await apiFetch<Availability[]>(`/availability/me`);
 
       return {
@@ -53,15 +44,6 @@ export const instructorAvailabilityService = {
     endDate: string
   ): Promise<AvailabilityListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const queryParams = new URLSearchParams({
         start_date: startDate,
         end_date: endDate,
@@ -91,23 +73,9 @@ export const instructorAvailabilityService = {
     availability: CreateAvailabilityRequest
   ): Promise<AvailabilityResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Availability = await apiFetch<Availability>(`/availability`, {
         method: "POST",
         body: JSON.stringify(availability),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
       });
 
       return {
@@ -134,25 +102,11 @@ export const instructorAvailabilityService = {
     availabilityUpdate: AvailabilityUpdate
   ): Promise<AvailabilityResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Availability = await apiFetch<Availability>(
         `/availability/${availabilityId}`,
         {
           method: "PATCH",
           body: JSON.stringify(availabilityUpdate),
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
 
@@ -178,23 +132,10 @@ export const instructorAvailabilityService = {
     availabilityId: number
   ): Promise<AvailabilityResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const response = await apiFetch(
         `availability/${availabilityId}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
         }
       );
       

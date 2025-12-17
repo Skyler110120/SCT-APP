@@ -24,15 +24,6 @@ export const userService = {
    */
   async getAllUsers(companyId?: number): Promise<UserListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const url = companyId
         ? `/users?company_id=${companyId}`
         : `/users`;
@@ -59,15 +50,6 @@ export const userService = {
    */
   async getUserById(userId: number): Promise<UserResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: User = await apiFetch<User>(`/users/${userId}`);
 
       return {
@@ -94,22 +76,8 @@ export const userService = {
     userData: UserUpdate
   ): Promise<UserResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: User = await apiFetch<User>(`/users/${userId}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(userData),
       });
 
@@ -137,22 +105,8 @@ export const userService = {
     passwordData: PasswordUpdateRequest
   ): Promise<MessageResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data = await apiFetch(`/users/${userId}/password`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(passwordData),
       });
 
@@ -180,23 +134,10 @@ export const userService = {
     userId: number
   ): Promise<MessageResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const response = await apiFetch(
         `/companies/${companyId}/users/${userId}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
         }
       );
 
@@ -233,15 +174,6 @@ export const userService = {
    */
   async getInstructorsByCompany(companyId: number): Promise<UserListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data = await apiFetch(`/users/instructors/company/${companyId}`);
 
       return {
@@ -269,15 +201,6 @@ export const userService = {
     userId: number
   ): Promise<UserWithInstructorResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: UserWithInstructor = await apiFetch<UserWithInstructor>(`/users/${userId}/instructor`);
 
       return {
@@ -302,15 +225,6 @@ export const userService = {
     instructorId: number
   ): Promise<UserWithStudentsResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: UserWithStudents = await apiFetch<UserWithStudents>(`/users/${instructorId}/students`);
 
       return {
@@ -338,22 +252,8 @@ export const userService = {
     assignment: StudentInstructorAssignment
   ): Promise<UserResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: User = await apiFetch<User>(`/users/assign-instructor`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(assignment),
       });
 
@@ -379,21 +279,8 @@ export const userService = {
     studentId: number
   ): Promise<UserResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: User = await apiFetch<User>(`/users/${studentId}/instructor`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
 
       return {

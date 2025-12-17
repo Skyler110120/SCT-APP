@@ -21,22 +21,8 @@ export const testSessionFormService = {
     formData: CreateTestSessionFormRequest
   ): Promise<TestSessionFormResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(formData),
       });
 
@@ -65,22 +51,8 @@ export const testSessionFormService = {
     updateData: UpdateTestSessionFormRequest
   ): Promise<TestSessionFormResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/${formId}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(updateData),
       });
 
@@ -109,24 +81,10 @@ export const testSessionFormService = {
     completeData: CompleteTestSessionFormRequest
   ): Promise<TestSessionFormCompleteResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data = await apiFetch(
         `/test-session-forms/${formId}/complete`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
           body: JSON.stringify(completeData),
         }
       );
@@ -157,15 +115,6 @@ export const testSessionFormService = {
    */
   async getTestSessionForm(formId: number): Promise<TestSessionFormResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: TestSessionForm = await apiFetch<TestSessionForm>(`/test-session-forms/${formId}`);
 
       return {
@@ -187,15 +136,6 @@ export const testSessionFormService = {
    */
   async getTestSessionForms(): Promise<TestSessionFormListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: TestSessionForm[] = await apiFetch<TestSessionForm[]>(`/test-session-forms/my-forms/`);
 
       return {

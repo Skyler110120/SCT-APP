@@ -29,13 +29,16 @@ export class ApiError extends Error {
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     const token = await AsyncStorage.getItem("auth_token")
 
+    const headers = {
+    Accept: "application/json",
+    ...(options.body && { "Content-Type": "application/json" }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
     const response = await fetch(`${API_URL}${path}`, {
         ...options,
-        headers: {
-            Accept: "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-            ...(options.headers || {}),
-        }
+        headers
     });
 
     if (response.status === 401 && path !== "/auth/login") {
@@ -68,7 +71,7 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
         data?.message ||
         `Request failed with status ${response.status}`;
 
-      throw new Error(msg);
+      throw new ApiError(response.status, msg);
     }
 
     return data;

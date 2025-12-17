@@ -20,23 +20,9 @@ export const courseDrillService = {
     drillData: CreateCourseDrillRequest
   ): Promise<CourseDrillResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: CourseDrill = await apiFetch<CourseDrill>(`/course-drills/`, {
         method: "POST",
         body: JSON.stringify(drillData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
       });
 
       return {
@@ -60,21 +46,8 @@ export const courseDrillService = {
    */
   async deleteCourseDrill(drillId: number): Promise<CourseDrillResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found"
-        }
-      }
-
       const data = await apiFetch(`/course-drills/${drillId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json"
-        }
       });
 
       return {
@@ -97,17 +70,7 @@ export const courseDrillService = {
    */
   async getCourseDrills(courseId: number): Promise<CourseDrillListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: CourseDrill[] = await apiFetch<CourseDrill[]>(`/course-drills/course/${courseId}`);
-
       return {
         success: true,
         data,
@@ -132,23 +95,9 @@ export const courseDrillService = {
     drillData: UpdateCourseDrillRequest
   ): Promise<CourseDrillResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: CourseDrill = await apiFetch<CourseDrill>(`/course-drills/${drillId}`, {
         method: "PATCH",
         body: JSON.stringify(drillData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
       });
 
       return {
@@ -176,17 +125,7 @@ export const courseDrillService = {
     studentId: number
   ): Promise<StudentDrillProgressResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: StudentDrillSummary = await apiFetch(`/course-drills/student/${studentId}/course/${courseId}/progress`,);
-
       return {
         success: true,
         data,
@@ -209,17 +148,7 @@ export const courseDrillService = {
     courseId: number
   ): Promise<StudentDrillProgressResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: StudentDrillSummary = await apiFetch<StudentDrillSummary>(`/course-drills/my-progress/course/${courseId}`,);
-
       return {
         success: true,
         data,

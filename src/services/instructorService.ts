@@ -10,15 +10,6 @@ export const instructorService = {
      */
     async getMyStudents(): Promise<InstructorStudentsResponse> {
         try {
-            const token = await AsyncStorage.getItem("auth_token");
-
-            if (!token) {
-                return {
-                    success: false,
-                    error: "Authentication token not found. Please log in again."
-                };
-            }
-
             console.log("Fetching instructor students...");
 
             const students = await apiFetch(`/instructors/students`);

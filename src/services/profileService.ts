@@ -20,15 +20,6 @@ export const profileService = {
     try {
       console.log("Fetching current user's profile");
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch profile",
-        };
-      }
-
       const data: ProfileDetailed = await apiFetch<ProfileDetailed>(`/profiles/me`);
 
       console.log("Profile fetched successfully");
@@ -56,23 +47,9 @@ export const profileService = {
     try {
       console.log("Updating Profile Data:", profileData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to update profile",
-        };
-      }
-
       const response = await apiFetch(`/profiles/me`, {
         method: "PUT",
         body: JSON.stringify(profileData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       });
 
       const data: ProfileDetailed = await response.json();
@@ -102,15 +79,6 @@ export const profileService = {
     try {
       console.log("Fetching profile for user ID:", userId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch user profile",
-        };
-      }
-
       const data: ProfileDetailed = await apiFetch<ProfileDetailed>(`/profiles/${userId}`);
 
       console.log("Successfully fetched user profile");
@@ -139,15 +107,6 @@ export const profileService = {
   ): Promise<ProfileListResponse> {
     try {
         console.log("Fetching instructors with params:", request)
-
-        const token = await AsyncStorage.getItem("auth_token");
-        if (!token) {
-            console.error("No authentication token found");
-            return {
-                success: false,
-                error: "Authentication required to fetch instructors",
-            };
-        }
 
         const params = new URLSearchParams();
         if (request?.skip !== undefined) {

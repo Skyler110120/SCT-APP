@@ -16,15 +16,6 @@ export const enrollmentService = {
     try {
         console.log("FETCHING STUDENT PROGRESS");
 
-        const token = await AsyncStorage.getItem("auth_token");
-        if (!token) {
-            console.error("No authentication token found");
-            return {
-                success: false,
-                error: "User not authenticated"
-            };
-        }
-
         const data = await apiFetch(`/courses/instructor/students`);
 
         console.log("Successfully fetched student progress:", data)
@@ -52,22 +43,8 @@ export const enrollmentService = {
         console.log("UPDATING STUDENT PROGRESS")
         console.log("Progress data:", progressData);
 
-        const token = await AsyncStorage.getItem("auth_token");
-        if (!token) {
-            console.error("No authentication token found");
-            return {
-                success: false,
-                error: "Authentication required to update student"
-            };
-        }
-
         const data = await apiFetch(`/courses/progress`, {
             method: "PATCH",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-            },
             body: JSON.stringify(progressData),
         });
 

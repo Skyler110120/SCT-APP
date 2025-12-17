@@ -17,15 +17,6 @@ export const eventService = {
    */
   async getEvent(eventID: number): Promise<EventResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Event = await apiFetch<Event>(`/events/${eventID}`);
       
       return {
@@ -48,15 +39,6 @@ export const eventService = {
    */
   async getEventsByCompany(companyID: number): Promise<EventListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Event[] = await apiFetch<Event[]>(`/events/company/${companyID}`);
 
       return {
@@ -85,15 +67,6 @@ export const eventService = {
     endTime: string
   ): Promise<EventListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Event[] = await apiFetch<Event[]>(
         `/events/company/${companyId}/time?start_time=${encodeURIComponent(
           startTime
@@ -119,22 +92,8 @@ export const eventService = {
    */
   async createEvent(eventData: CreateEventRequest): Promise<EventResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data:Event = await apiFetch<Event>(`/events`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(eventData),
       });
 
@@ -162,22 +121,8 @@ export const eventService = {
     updateData: UpdateEventRequest
   ): Promise<EventResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: Event = await apiFetch<Event>(`/events/${eventId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify(updateData),
       });
 
@@ -201,21 +146,8 @@ export const eventService = {
    */
   async deleteEvent(eventId: number): Promise<EventResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const response = await apiFetch(`/events/${eventId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
       
       return {

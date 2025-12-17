@@ -22,15 +22,6 @@ export const materialService = {
       console.log("Fetching Material Info");
       console.log("Course ID:", courseId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to check material info",
-        };
-      }
-
       const data: MaterialInfoResponse = await apiFetch<MaterialInfoResponse>(`/materials/courses/${courseId}/info`);
 
       console.log("Successfully fetched material info:", data);
@@ -60,26 +51,12 @@ export const materialService = {
       console.log("Requesting course PDF access");
       console.log("Course ID:", courseId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to access course PDF",
-        };
-      }
-
       const requestBody: MaterialAccessRequest = {};
 
       const data: MaterialAccessResponse = await apiFetch<MaterialAccessResponse>(
         `/materials/courses/${courseId}/pdf/access`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(requestBody),
         }
       );
@@ -112,25 +89,11 @@ export const materialService = {
     try {
       console.log("Requesting instructor script access");
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to access instructor script",
-        };
-      }
-
       const requestBody: MaterialAccessRequest = {};
 
       const data: MaterialAccessResponse = await apiFetch<MaterialAccessResponse>(`/materials/courses/${courseId}/script/access`, {
         method: "POST",
         body: JSON.stringify(requestBody),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       });
       
       console.log("Successfully got instructor script access:", {

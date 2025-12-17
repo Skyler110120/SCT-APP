@@ -60,25 +60,11 @@ export const courseService = {
       console.log("ENROLLING IN COURSE");
       console.log("Course ID:", courseId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required for enrollment",
-        };
-      }
-
       const data = await apiFetch(`/courses/enroll`, {
         method: "POST",
         body: JSON.stringify({
           course_id: courseId,
         }),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       });
       
       console.log("Successfully enrolled in course:");
@@ -103,15 +89,6 @@ export const courseService = {
   async getMyEnrolledCourse(): Promise<EnrollmentWithCourseResponse> {
     try {
       console.log("FETCHING MY ENROLLED COURSE");
-
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch enrolled course",
-        };
-      }
 
       const data = await apiFetch("/courses/my-course");
 
@@ -138,15 +115,6 @@ export const courseService = {
     try {
       console.log("FETCHING COURSES FOR INSTRUCTOR");
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch instructor courses",
-        };
-      }
-
       const data: CourseInstructorView[] = await apiFetch<CourseInstructorView[]>(`/courses/instructor`,);
 
       return {
@@ -169,15 +137,6 @@ export const courseService = {
   async getCoursesForAdmin(): Promise<CourseAdminListResponse> {
     try {
       console.log("FETCHING COURSES FOR ADMIN");
-
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to fetch admin courses",
-        };
-      }
 
       const data: CourseAdminView[] = await apiFetch<CourseAdminView[]>(`/courses/admin`)
 
@@ -204,23 +163,9 @@ export const courseService = {
       console.log("CREATING NEW COURSE");
       console.log("Course Data:", courseData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to create course",
-        };
-      }
-
       const data: CourseAdminView = await apiFetch<CourseAdminView>(`/courses/`, {
         method: "POST",
         body: JSON.stringify(courseData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       });
       console.log("Successfully created course:", data);
       return {
@@ -251,22 +196,8 @@ export const courseService = {
       console.log("Course ID:", courseId);
       console.log("Course Data:", courseData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to update course",
-        };
-      }
-
       const data: CourseAdminView = await apiFetch<CourseAdminView>(`/courses/${courseId}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(courseData),
       });
 
@@ -294,21 +225,8 @@ export const courseService = {
       console.log("DELETING COURSE");
       console.log("Course ID:", courseId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to delete course",
-        };
-      }
-
       const response = await apiFetch(`/courses/${courseId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
 
       console.log("Successfully deleted course");
@@ -340,22 +258,8 @@ export const courseService = {
       console.log("Course ID:", courseId);
       console.log("Video Data:", videoData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to add video to course",
-        };
-      }
-
       const data: CourseVideo = await apiFetch<CourseVideo>(`/courses/${courseId}/videos`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(videoData),
       });
 
@@ -388,23 +292,9 @@ export const courseService = {
       console.log("Video ID:", videoId);
       console.log("Video Data:", videoData);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to update video",
-        };
-      }
-
       const data: CourseVideo = await apiFetch<CourseVideo>(`/courses/videos/${videoId}`, {
         method: "PATCH",
         body: JSON.stringify(videoData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
       });
 
       console.log("Successfully updated video:", data);
@@ -431,21 +321,8 @@ export const courseService = {
       console.log("REMOVING VIDEO");
       console.log("Video ID:", videoId);
 
-      const token = await AsyncStorage.getItem("auth_token");
-      if (!token) {
-        console.error("No authentication token found");
-        return {
-          success: false,
-          error: "Authentication required to remove video",
-        };
-      }
-
       const response = await apiFetch(`/courses/videos/${videoId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
       });
 
       console.log("Successfully removed video");

@@ -21,14 +21,6 @@ export const companyService = {
    */
   async getCompany(companyID: number): Promise<CompanyResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-      
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-      }
-    }
 
     const data: Company = await apiFetch<Company>(`/companies/${companyID}`)
     return {
@@ -49,14 +41,6 @@ export const companyService = {
    */
   async getAllCompanies(): Promise<CompanyListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
        
       const data: Company[] = await apiFetch<Company[]>("/companies");
       return {
@@ -80,23 +64,10 @@ export const companyService = {
     companyData: CreateCompanyRequest
   ): Promise<CompanyResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
 
       const data: Company = await apiFetch<Company>(`/companies`, {
         method: "POST",
         body: JSON.stringify(companyData),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
       });
       
       return {
@@ -119,15 +90,6 @@ export const companyService = {
    */
   async getInviteCodes(companyID: number): Promise<InviteCodeListResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: InviteCode[] = await apiFetch<InviteCode[]>(`/companies/${companyID}/invite-codes`);
       return {
         success: true,
@@ -151,25 +113,11 @@ export const companyService = {
     inviteData: CreateInviteCodeRequest
   ): Promise<InviteCodeResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
-
-      if (!token) {
-        return {
-          success: false,
-          error: "No authentication token found",
-        };
-      }
-
       const data: InviteCode = await apiFetch<InviteCode>(
         `/companies/${inviteData.company_id}/invite-codes`,
         {
           method: "POST",
           body: JSON.stringify({}),
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
         }
       );
       
