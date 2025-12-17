@@ -256,7 +256,7 @@ export const onboardingService = {
       const token = await AsyncStorage.getItem("auth_token");
 
       if (!token) {
-        console.error("❌ No authentication token found");
+        console.error("No authentication token found");
         return {
           success: false,
           error: "Authentication required for onboarding",
@@ -275,7 +275,7 @@ export const onboardingService = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("❌ Legacy onboarding failed:", errorData);
+        console.error("Legacy onboarding failed:", errorData);
         return {
           success: false,
           error: errorData.detail || "Failed to complete onboarding",
@@ -288,7 +288,7 @@ export const onboardingService = {
         data,
       };
     } catch (error) {
-      console.error("💥 Complete legacy onboarding error:", error);
+      console.error("Complete legacy onboarding error:", error);
       return {
         success: false,
         error: "Network error occurred during onboarding",
@@ -305,7 +305,7 @@ export const onboardingService = {
     try {
       const storageKey = `onboarding_${key}`;
       await AsyncStorage.setItem(storageKey, JSON.stringify(data));
-      console.log(`✅ Onboarding data saved saved:`, key);
+      console.log(`Onboarding data saved saved:`, key);
     } catch (error) {
       console.error("Save onboarding data error:", error);
     }
@@ -343,7 +343,7 @@ export const onboardingService = {
       ];
 
       await AsyncStorage.multiRemove(keysToRemove);
-      console.log("✅ All onboarding data cleared");
+      console.log("All onboarding data cleared");
     } catch (error) {
       console.error("Clear onboarding data error:", error);
     }
