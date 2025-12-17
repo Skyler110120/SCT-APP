@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   SessionDetailed,
   DirectBookingRequest,
@@ -12,18 +13,6 @@ import {
   SessionStatus,
   CalendarSessionsRequest,
 } from "@/src/types/sessions.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const sessionService = {
   /**
@@ -52,26 +41,8 @@ export const sessionService = {
         end_time: request.end_time,
       });
 
-      const response = await fetch(
-        `${API_URL}/sessions/check-availability?${params}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to check availability:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to check instructor availability",
-        };
-      }
+      const data = await apiFetch(`/sessions/check-availability?${params}`);
 
-      const data = await response.json();
       console.log("Availability check result:", data);
 
       return {
@@ -82,7 +53,7 @@ export const sessionService = {
       console.error("Error checking instructor availability:", error);
       return {
         success: false,
-        error: "Network error occurred while checking availability",
+        error: "Error occurred while checking availability",
       };
     }
   },
@@ -107,7 +78,7 @@ export const sessionService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/sessions/direct-book`, {
+      const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/direct-book`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -117,16 +88,6 @@ export const sessionService = {
         body: JSON.stringify(bookingData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to book session:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to book session",
-        };
-      }
-
-      const data: SessionDetailed = await response.json();
       console.log("Session booked successfully:", data);
 
       return {
@@ -183,24 +144,8 @@ export const sessionService = {
         statusFilter.forEach((status) => params.append("status", status));
       }
 
-      const response = await fetch(`${API_URL}/sessions?${params}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: SessionDetailed[] = await apiFetch<SessionDetailed[]>(`/sessions?${params}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch sessions:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch sessions",
-        };
-      }
-
-      const data: SessionDetailed[] = await response.json();
       console.log("Successfully fetched", data.length, "training sessions");
 
       return {
@@ -211,7 +156,7 @@ export const sessionService = {
       console.error("Error fetching sessions:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching sessions",
+        error: "Error occurred while fetching sessions",
       };
     }
   },
@@ -234,24 +179,8 @@ export const sessionService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/sessions/${sessionId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/${sessionId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch session:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch session details",
-        };
-      }
-
-      const data: SessionDetailed = await response.json();
       console.log("Successfully fetched session details:", data);
 
       return {
@@ -262,7 +191,7 @@ export const sessionService = {
       console.error("Error fetching session by ID:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching session details",
+        error: "Error occurred while fetching session details",
       };
     }
   },
@@ -290,7 +219,7 @@ export const sessionService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/sessions/${sessionId}`, {
+      const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/${sessionId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -300,16 +229,6 @@ export const sessionService = {
         body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update session:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update session",
-        };
-      }
-
-      const data: SessionDetailed = await response.json();
       console.log("Session updated successfully:", data);
       return {
         success: true,
@@ -342,7 +261,7 @@ export const sessionService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/sessions/${sessionId}/cancel`, {
+      const data = await apiFetch(`/sessions/${sessionId}/cancel`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -350,16 +269,6 @@ export const sessionService = {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to cancel session:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to cancel session",
-        };
-      }
-
-      const data = await response.json();
       console.log("Session cancelled successfully:");
 
       return {
@@ -393,8 +302,8 @@ export const sessionService = {
           error: "Authentication required to mark session as completed",
         };
       }
-      const response = await fetch(
-        `${API_URL}/sessions/${sessionId}/complete`,
+      const data: SessionDetailed = await apiFetch<SessionDetailed>(
+        `/sessions/${sessionId}/complete`,
         {
           method: "POST",
           headers: {
@@ -404,16 +313,6 @@ export const sessionService = {
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to complete session:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to mark session as completed",
-        };
-      }
-
-      const data: SessionDetailed = await response.json();
       console.log("Session marked as completed:", data);
       return {
         success: true,
@@ -454,24 +353,8 @@ export const sessionService = {
         end_date: request.end_date,
       });
 
-      const response = await fetch(`${API_URL}/sessions/calendar?${params}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: SessionDetailed[] = await apiFetch<SessionDetailed[]>(`/sessions/calendar?${params}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch calendar sessions:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch calendar sessions",
-        };
-      }
-
-      const data: SessionDetailed[] = await response.json();
       console.log("Successfully fetched", data.length, "calendar sessions");
       return {
         success: true,

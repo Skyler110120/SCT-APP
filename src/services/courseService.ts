@@ -1,5 +1,5 @@
-import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   CourseSummary,
   CourseStudentView,
@@ -16,21 +16,10 @@ import {
   CourseAdminListResponse,
   CourseResponse,
   VideoResponse,
+  CourseDifficulty,
 } from "../types/course.types";
 
 import { EnrollmentResponse, EnrollmentWithCourseResponse } from "../types/enrollment.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const courseService = {
   /**
@@ -41,24 +30,7 @@ export const courseService = {
     try {
       console.log("FETCHING COURSES FOR SELECTION");
 
-      const response = await fetch(`${API_URL}/courses/`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch courses for selection:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch courses for selection",
-        };
-      }
-
-      const data: CourseSummary[] = await response.json();
+      const data: CourseSummary[] = await apiFetch<CourseSummary[]>("/courses/")
       console.log(
         "Successfully fetched courses for selection:",
         data.length,
@@ -97,28 +69,18 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/enroll`, {
+      const data = await apiFetch(`/courses/enroll`, {
         method: "POST",
+        body: JSON.stringify({
+          course_id: courseId,
+        }),
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          course_id: courseId,
-        }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to enroll in course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to enroll in course",
-        };
-      }
-
-      const data = await response.json();
+      
       console.log("Successfully enrolled in course:");
 
       return {
@@ -151,24 +113,8 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/my-course`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data = await apiFetch("/courses/my-course");
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch enrolled course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch enrolled course",
-        };
-      }
-
-      const data = await response.json();
       console.log("Successfully fetchd enrolled course:", data);
 
       return {
@@ -201,29 +147,7 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/instructor`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch instructor courses:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch instructor courses",
-        };
-      }
-
-      const data: CourseInstructorView[] = await response.json();
-      console.log(
-        "Successfully fetched instructor courses:",
-        data.length,
-        "courses"
-      );
+      const data: CourseInstructorView[] = await apiFetch<CourseInstructorView[]>(`/courses/instructor`,);
 
       return {
         success: true,
@@ -255,24 +179,8 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/admin`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: CourseAdminView[] = await apiFetch<CourseAdminView[]>(`/courses/admin`)
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch admin courses:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch admin courses",
-        };
-      }
-
-      const data: CourseAdminView[] = await response.json();
       return {
         success: true,
         data,
@@ -305,26 +213,15 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/`, {
+      const data: CourseAdminView = await apiFetch<CourseAdminView>(`/courses/`, {
         method: "POST",
+        body: JSON.stringify(courseData),
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(courseData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create course",
-        };
-      }
-
-      const data: CourseAdminView = await response.json();
       console.log("Successfully created course:", data);
       return {
         success: true,
@@ -363,7 +260,7 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/${courseId}`, {
+      const data: CourseAdminView = await apiFetch<CourseAdminView>(`/courses/${courseId}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -373,16 +270,6 @@ export const courseService = {
         body: JSON.stringify(courseData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update course",
-        };
-      }
-
-      const data: CourseAdminView = await response.json();
       console.log("Successfully updated course:", data);
       return {
         success: true,
@@ -398,7 +285,7 @@ export const courseService = {
   },
 
   /**
-   * Delete a coures
+   * Delete a course
    * @param courseId - ID of the course to delete
    * @returns Promise with success status or error
    */
@@ -416,22 +303,13 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/${courseId}`, {
+      const response = await apiFetch(`/courses/${courseId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to delete course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to delete course",
-        };
-      }
 
       console.log("Successfully deleted course");
       return {
@@ -471,7 +349,7 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/${courseId}/videos`, {
+      const data: CourseVideo = await apiFetch<CourseVideo>(`/courses/${courseId}/videos`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -481,16 +359,6 @@ export const courseService = {
         body: JSON.stringify(videoData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to add video to course:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to add video to course",
-        };
-      }
-
-      const data: CourseVideo = await response.json();
       console.log("Successfully added video to course:", data);
       return {
         success: true,
@@ -529,26 +397,16 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/videos/${videoId}`, {
+      const data: CourseVideo = await apiFetch<CourseVideo>(`/courses/videos/${videoId}`, {
         method: "PATCH",
+        body: JSON.stringify(videoData),
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(videoData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update video:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update video",
-        };
-      }
-
-      const data: CourseVideo = await response.json();
       console.log("Successfully updated video:", data);
       return {
         success: true,
@@ -582,22 +440,13 @@ export const courseService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/courses/videos/${videoId}`, {
+      const response = await apiFetch(`/courses/videos/${videoId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to remove video:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to remove video",
-        };
-      }
 
       console.log("Successfully removed video");
       return {

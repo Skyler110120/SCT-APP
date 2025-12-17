@@ -9,19 +9,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import { apiFetch } from "./api";
 
-// Choose the right API URL based on where you're running
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
-
 const STORAGE_KEYS = {
   AUTH_TOKEN: "auth_token",
   TOKEN_DATA: "token_data",
@@ -127,32 +114,8 @@ export const authService = {
 
       console.log("Refreshing user information");
 
-      const response = await fetch(`${API_URL}/auth/refresh`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const tokenData = await apiFetch<TokenResponse>(`/auth/refresh`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to refresh user info:", errorData);
-
-        if (response.status === 401) {
-          await this.clearAuthData();
-          return {
-            success: false,
-            error: "Authentication expired",
-          };
-        }
-
-        return {
-          success: false,
-          error: errorData.detail || "Failed to refresh user info",
-        };
-      }
-
-      const tokenData: TokenResponse = await response.json();
       await AsyncStorage.setItem(
         STORAGE_KEYS.AUTH_TOKEN,
         tokenData.access_token
@@ -203,7 +166,7 @@ export const authService = {
       };
     } catch (error) {
       console.error("Check auth error:", error);
-      await this.checkAuth;
+      this.checkAuth;
       return null;
     }
   },

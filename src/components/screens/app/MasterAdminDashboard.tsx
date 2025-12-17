@@ -284,7 +284,11 @@ export default function MasterAdminDashboard() {
                 }}
                 disabled={!selectedCompany}
               >
-                <Text style={masterAdminDashboardStyles.buttonText}>
+                <Text
+                style={masterAdminDashboardStyles.buttonText}
+                numberOfLines={2}
+                minimumFontScale={0.7}
+                >
                   Create Invite Code
                 </Text>
               </TouchableOpacity>

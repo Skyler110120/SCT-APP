@@ -1,5 +1,5 @@
-import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   CourseDrill,
   CreateCourseDrillRequest,
@@ -9,18 +9,6 @@ import {
   CourseDrillListResponse,
   StudentDrillProgressResponse,
 } from "../types/course.drills.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const courseDrillService = {
   /**
@@ -41,26 +29,16 @@ export const courseDrillService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/course-drills/`, {
+      const data: CourseDrill = await apiFetch<CourseDrill>(`/course-drills/`, {
         method: "POST",
+        body: JSON.stringify(drillData),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(drillData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create course drill:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create course drill",
-        };
-      }
-
-      const data: CourseDrill = await response.json();
       return {
         success: true,
         data,
@@ -91,7 +69,7 @@ export const courseDrillService = {
         }
       }
 
-      const response = await fetch(`${API_URL}/course-drills/${drillId}`, {
+      const data = await apiFetch(`/course-drills/${drillId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -99,16 +77,6 @@ export const courseDrillService = {
         }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to delete course drill:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to delete course drill"
-        }
-      }
-
-      const data = await response.json();
       return {
         success: true,
         message: data.message || "Course drill deleted successfully"
@@ -138,27 +106,8 @@ export const courseDrillService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/course-drills/course/${courseId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: CourseDrill[] = await apiFetch<CourseDrill[]>(`/course-drills/course/${courseId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch course drills:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch course drills",
-        };
-      }
-
-      const data: CourseDrill[] = await response.json();
       return {
         success: true,
         data,
@@ -192,26 +141,16 @@ export const courseDrillService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/course-drills/${drillId}`, {
+      const data: CourseDrill = await apiFetch<CourseDrill>(`/course-drills/${drillId}`, {
         method: "PATCH",
+        body: JSON.stringify(drillData),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(drillData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update course drill:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update course drill",
-        };
-      }
-
-      const data: CourseDrill = await response.json();
       return {
         success: true,
         data,
@@ -246,27 +185,8 @@ export const courseDrillService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/course-drills/student/${studentId}/course/${courseId}/progress`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: StudentDrillSummary = await apiFetch(`/course-drills/student/${studentId}/course/${courseId}/progress`,);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch student drill progress:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch student drill progress",
-        };
-      }
-
-      const data: StudentDrillSummary = await response.json();
       return {
         success: true,
         data,
@@ -298,27 +218,8 @@ export const courseDrillService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/course-drills/my-progress/course/${courseId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: StudentDrillSummary = await apiFetch<StudentDrillSummary>(`/course-drills/my-progress/course/${courseId}`,);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch my drill progress:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch my drill progress",
-        };
-      }
-
-      const data: StudentDrillSummary = await response.json();
       return {
         success: true,
         data,

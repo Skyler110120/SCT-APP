@@ -1,9 +1,9 @@
 import Images from "@/src/assets/images";
 import { useAuth } from "@/src/context/AuthContext";
-import { themes } from "@/src/context/themes";
 import { UserRole } from "@/src/types/auth.types";
 import { Link, usePathname, useRouter } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
+import { navBarStyles as styles } from "../styles/navBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AppRouterType = Parameters<typeof Link>[0]["href"];
@@ -154,30 +154,3 @@ export default function BottomNavBar({}: BottomNavBarProps) {
     </View>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: themes.vegasGold,
-    padding: 10,
-  },
-  navItem: {},
-  navIcon: {
-    width: 64,
-    height: 50,
-  },
-  selectedIconBackground: {
-    backgroundColor: themes.black,
-    borderRadius: 20,
-    width: 140,
-    height: 112,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  navText: {
-    fontSize: 24,
-    fontFamily: "Chakra-Italic",
-    color: themes.vegasGold,
-  },
-});

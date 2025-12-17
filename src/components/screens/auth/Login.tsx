@@ -1,5 +1,6 @@
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/context/AuthContext";
+import { useEffect } from "react";
 import { themes } from "@/src/context/themes";
 import { LoginCredentials } from "@/src/types/auth.types";
 import { loginScreenStyles } from "@/src/styles/loginScreen";
@@ -22,6 +23,12 @@ import Images from "@/src/assets/images";
 // text inputs for email and password, a login button, a forgot password link,
 // and an option to sign in with Google.
 export default function LoginScreen() {
+
+  useEffect(() => {
+  console.log("LoginScreen mounted");
+  return () => console.log("LoginScreen unmounted");
+}, []);
+
   const router = useRouter();
   const { login, state } = useAuth();
 
@@ -49,6 +56,11 @@ export default function LoginScreen() {
       const success = await login(credentials);
       if (!success) {
         Alert.alert("Login Failed", state.error || "Invalid credentials");
+
+        setCredentials((prev) => ({
+          ...prev,
+          password: ""
+        }));
       }
     } catch (error) {
       Alert.alert("Error", "An unexpected error occurred");
@@ -63,7 +75,7 @@ export default function LoginScreen() {
       <BackgroundGradient>
         <SafeAreaView style={loginScreenStyles.container}>
           <View style={loginScreenStyles.backButtonContainer}>
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.push("/welcome")}>
               <Image source={Images.buttons.backButton} />
             </TouchableOpacity>
           </View>

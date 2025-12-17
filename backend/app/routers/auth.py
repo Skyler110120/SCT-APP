@@ -227,7 +227,7 @@ def enhanced_signup(
                 )
             
             logger.info(f"Student {user_data.email} will be assigned to instructor {instructor.email}")
-            
+
         course = None
         if user_data.role == UserRole.STUDENT: 
             if not user_data.course_id:

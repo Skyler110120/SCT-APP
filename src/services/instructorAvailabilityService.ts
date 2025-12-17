@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   Availability,
   AvailabilityUpdate,
@@ -7,18 +8,6 @@ import {
   AvailabilityListResponse,
   CreateAvailabilityRequest
 } from "../types/availability.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const instructorAvailabilityService = {
   /**
@@ -36,24 +25,8 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/availability/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: Availability[] = await apiFetch<Availability[]>(`/availability/me`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch availability:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch availabiltiy",
-        };
-      }
-
-      const data: Availability[] = await response.json();
       return {
         success: true,
         data,
@@ -94,28 +67,8 @@ export const instructorAvailabilityService = {
         end_date: endDate,
       })
 
-      const response = await fetch(
-        `${API_URL}/availability/instructor/${instructorId}/calendar?${queryParams}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
+      const data: Availability[] = await apiFetch<Availability[]>(`/availability/instructor/${instructorId}/calendar?${queryParams}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch availability for calendar:", errorData);
-        return {
-          success: false,
-          error:
-            errorData.detail || "Failed to fetch availability for calendar",
-        };
-      }
-
-      const data: Availability[] = await response.json();
       return {
         success: true,
         data,
@@ -147,26 +100,16 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/availability`, {
+      const data: Availability = await apiFetch<Availability>(`/availability`, {
         method: "POST",
+        body: JSON.stringify(availability),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(availability),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create availability:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create availability",
-        };
-      }
-
-      const data: Availability = await response.json();
       return {
         success: true,
         data,
@@ -200,29 +143,19 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/availability/${availabilityId}`,
+      const data: Availability = await apiFetch<Availability>(
+        `/availability/${availabilityId}`,
         {
           method: "PATCH",
+          body: JSON.stringify(availabilityUpdate),
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify(availabilityUpdate),
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update availability:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update availability",
-        };
-      }
-
-      const data: Availability = await response.json();
       return {
         success: true,
         data,
@@ -254,8 +187,8 @@ export const instructorAvailabilityService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/availability/${availabilityId}`,
+      const response = await apiFetch(
+        `availability/${availabilityId}`,
         {
           method: "DELETE",
           headers: {
@@ -264,16 +197,6 @@ export const instructorAvailabilityService = {
           },
         }
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to delete availability:", errorData);
-        return {
-            success: false,
-            error: errorData.detail || "Failed to delete availability"
-        }
-      }
-
       
       return {
         success: true,

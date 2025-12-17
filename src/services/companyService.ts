@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   Company,
   CreateCompanyRequest,
@@ -10,16 +11,8 @@ import {
   InviteCodeResponse,
   InviteCodeListResponse,
 } from "../types/company.types";
+import { InviteCodeValidationRequest } from "../types/onboarding.types";
 
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} 
 export const companyService = {
   /**
    * Get a company by ID
@@ -37,24 +30,7 @@ export const companyService = {
       }
     }
 
-    const response = await fetch(`${API_URL}/companies/${companyID}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      }
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Failed to fetch company:", errorData);
-      return {
-        success: false,
-        error: errorData.detail || "Failed to fetch company",
-      };
-    }
-
-    const data: Company = await response.json();
+    const data: Company = await apiFetch<Company>(`/companies/${companyID}`)
     return {
       success: true,
       data,
@@ -81,24 +57,8 @@ export const companyService = {
           error: "No authentication token found",
         };
       }
-
-      const response = await fetch(`${API_URL}/companies`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch companies:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch companies",
-        };
-      }
-      const data: Company[] = await response.json();
+       
+      const data: Company[] = await apiFetch<Company[]>("/companies");
       return {
         success: true,
         data,
@@ -129,26 +89,16 @@ export const companyService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/companies`, {
+      const data: Company = await apiFetch<Company>(`/companies`, {
         method: "POST",
+        body: JSON.stringify(companyData),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(companyData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create company:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create company",
-        };
-      }
-
-      const data: Company = await response.json();
+      
       return {
         success: true,
         data,
@@ -178,27 +128,7 @@ export const companyService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/companies/${companyID}/invite-codes`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch invite codes:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch invite codes",
-        };
-      }
-
-      const data: InviteCode[] = await response.json();
+      const data: InviteCode[] = await apiFetch<InviteCode[]>(`/companies/${companyID}/invite-codes`);
       return {
         success: true,
         data,
@@ -230,29 +160,19 @@ export const companyService = {
         };
       }
 
-      const response = await fetch(
-        `${API_URL}/companies/${inviteData.company_id}/invite-codes`,
+      const data: InviteCode = await apiFetch<InviteCode>(
+        `/companies/${inviteData.company_id}/invite-codes`,
         {
           method: "POST",
+          body: JSON.stringify({}),
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({}),
         }
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to create invite code:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to create invite code",
-        };
-      }
-
-      const data: InviteCode = await response.json();
+      
       return {
         success: true,
         data,

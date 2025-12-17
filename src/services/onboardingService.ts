@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ApiError, apiFetch } from "./api";
 import {
   InviteCodeValidationRequest,
   InviteCodeValidationResponse,
@@ -16,18 +17,6 @@ import { UserRole, UserResponse } from "../types/auth.types";
 import {
   isValidEnhancedSignupData,
 } from "../utils/onboardingValidationUtils";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 const ONBOARDING_STORAGE_KEYS = {
   INVITE_CODE: "onboarding_invite_code",
@@ -49,7 +38,7 @@ export const onboardingService = {
     code: string
   ): Promise<InviteCodeValidationResponse> {
     try {
-      const response = await fetch(`${API_URL}/auth/validate-invite`, {
+      const data: CompanyInfo = await apiFetch<CompanyInfo>(`/auth/validate-invite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,16 +46,6 @@ export const onboardingService = {
         },
         body: JSON.stringify({ code }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.detail || "Invalid invite code",
-        };
-      }
-
-      const data: CompanyInfo = await response.json();
 
       await this.saveOnboardingData("inviteCode", code);
       await this.saveOnboardingData("companyInfo", data);
@@ -92,23 +71,8 @@ export const onboardingService = {
     try {
       console.log("Getching instructors for company:", companyId);
 
-      const response = await fetch(
-        `${API_URL}/users/instructors/company/${companyId}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-      if (!response.ok) { 
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch instructors",
-        };
-      }
-      const data = await response.json();
+      const data = await apiFetch(`/users/instructors/company/${companyId}`);
+
       console.log(`Found ${data.length} instructors`);
 
       return {
@@ -143,7 +107,7 @@ export const onboardingService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/auth/signup`, {
+      const response = await apiFetch(`/auth/signup`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -151,29 +115,6 @@ export const onboardingService = {
         },
         body: JSON.stringify(signupData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Enhanced signup failed:", errorData);
-        if (response.status === 409) {
-          return {
-            success: false,
-            error: "An account with this email already exists",
-          };
-        }
-
-        if (response.status === 400 && errorData.detail?.includes("invite")) {
-          return {
-            success: false,
-            error: "Invalid invite code - please check and try again",
-          };
-        }
-
-        return {
-          success: false,
-          error: errorData.detail || "Account creation failed",
-        };
-      }
 
       console.log("Enhanced signup successful for:", signupData.email);
       const data = await response.json();
@@ -184,10 +125,25 @@ export const onboardingService = {
         data,
       };
     } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 409){
+          return {
+            success: false,
+            error: "An account with this email already exists",
+          };
+        }
+
+        if (error.status === 400 && error.detail?.includes("invite")){
+          return {
+            success: false,
+            error: "Invalid invite code. Please check and try again",
+          };
+        }
+      }
       console.error("Enhanced signup error:", error);
       return {
         success: false,
-        error: "Network error occurred during account creation",
+        error: "Error occurred during account creation",
       };
     }
   },
@@ -263,26 +219,16 @@ export const onboardingService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/onboarding/complete`, {
+      const data = await apiFetch(`/onboarding/complete`, {
         method: "POST",
+        body: JSON.stringify({ code }),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        body: JSON.stringify({ code }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("❌ Legacy onboarding failed:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to complete onboarding",
-        };
-      }
-
-      const data = await response.json();
+      
       return {
         success: true,
         data,

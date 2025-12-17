@@ -133,10 +133,11 @@ def delete_course_drill(db: Session, drill_id: int, user_id: int, company_id: in
     
     if not drill:
         raise HTTPException(
-            CourseDrill.id == drill_id,
-            CourseDrill.is_active == True
-        ).first()
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Drill not found or already deleted"
+        )
     
+    #Unused, not sure if it's needed later
     student_results_count = db.query(StudentDrillResult).filter(
         StudentDrillResult.drill_id == drill_id,
         StudentDrillResult.current_value.isnot(None)

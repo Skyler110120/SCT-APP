@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   ProfileDetailed,
   ProfileCreateRequest,
@@ -8,18 +9,6 @@ import {
   ProfileListResponse,
   InstructorListRequest,
 } from "@/src/types/profile.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const profileService = {
   /**
@@ -40,24 +29,8 @@ export const profileService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/profiles/me`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: ProfileDetailed = await apiFetch<ProfileDetailed>(`/profiles/me`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch profile:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch profile",
-        };
-      }
-
-      const data: ProfileDetailed = await response.json();
       console.log("Profile fetched successfully");
       return {
         success: true,
@@ -67,7 +40,7 @@ export const profileService = {
       console.error("Error fetching profile:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching profile",
+        error: "Error occurred while fetching profile",
       };
     }
   },
@@ -92,24 +65,15 @@ export const profileService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/profiles/me`, {
+      const response = await apiFetch(`/profiles/me`, {
         method: "PUT",
+        body: JSON.stringify(profileData),
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(profileData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to update profile:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to update profile",
-        };
-      }
 
       const data: ProfileDetailed = await response.json();
       console.log("Profile updated successfully");
@@ -123,7 +87,7 @@ export const profileService = {
       console.error("Error updating profile:", error);
       return {
         success: false,
-        error: "Network error occurred while updating profile",
+        error: "Error occurred while updating profile",
       };
     }
   },
@@ -147,24 +111,8 @@ export const profileService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/profiles/${userId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
+      const data: ProfileDetailed = await apiFetch<ProfileDetailed>(`/profiles/${userId}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Failed to fetch user profile:", errorData);
-        return {
-          success: false,
-          error: errorData.detail || "Failed to fetch user profile",
-        };
-      }
-
-      const data: ProfileDetailed = await response.json();
       console.log("Successfully fetched user profile");
 
       return {
@@ -175,7 +123,7 @@ export const profileService = {
       console.error("Error fetching user profile:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching user profile",
+        error: "Error occurred while fetching user profile",
       };
     }
   },
@@ -211,27 +159,11 @@ export const profileService = {
 
         const queryString = params.toString();
         const url = queryString
-            ? `${API_URL}/profiles/instructors?${queryString}`
-            : `${API_URL}/profiles/instructors`;
+            ? `/profiles/instructors?${queryString}`
+            : `/profiles/instructors`;
         
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/json",
-            },
-        });
+        const data: ProfileDetailed[] = await apiFetch<ProfileDetailed[]>(url);
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Failed to fetch instructors:", errorData);
-            return {
-                success: false,
-                error: errorData.detail || "Failed to fetch instructors"
-            }
-        }
-
-        const data: ProfileDetailed[] = await response.json();
         console.log("Successfully fetched instructor profiles");
         return {
             success: true,
@@ -241,7 +173,7 @@ export const profileService = {
         console.error("Error fetching instructors:", error);
         return {
             success: false,
-            error: "Network error occurred while fetching instructors",
+            error: "Error occurred while fetching instructors",
         }
     }
   }

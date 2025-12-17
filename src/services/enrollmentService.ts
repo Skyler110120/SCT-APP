@@ -1,22 +1,11 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiFetch } from "./api";
 import {
   WeeklyProgressUpdateRequest,
   EnrollmentResponse,
   StudentProgressListResponse,
 } from "../types/enrollment.types";
-
-let API_URL: string;
-
-if (__DEV__) {
-  if (Platform.OS === "android") {
-    API_URL = "http://10.0.2.2:8000";
-  } else {
-    API_URL = "http://localhost:8000";
-  }
-} else {
-  API_URL = "https://your-production-api.com";
-}
 
 export const enrollmentService = {
   /**
@@ -36,24 +25,8 @@ export const enrollmentService = {
             };
         }
 
-        const response = await fetch(`${API_URL}/courses/instructor/students`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Accept": "application/json"
-            },
-        });
+        const data = await apiFetch(`/courses/instructor/students`);
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Error fetching student progress:", errorData);
-            return {
-                success: false,
-                error: errorData.detail || "Failed to fetch student progress"
-            };
-        }
-
-        const data = await response.json();
         console.log("Successfully fetched student progress:", data)
 
         return {
@@ -88,7 +61,7 @@ export const enrollmentService = {
             };
         }
 
-        const response = await fetch(`${API_URL}/courses/progress`, {
+        const data = await apiFetch(`/courses/progress`, {
             method: "PATCH",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -98,16 +71,6 @@ export const enrollmentService = {
             body: JSON.stringify(progressData),
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Error updating student progress:", errorData);
-            return {
-                success: false,
-                error: errorData.detail || "Failed to update student progress"
-            }
-        }
-
-        const data = await response.json();
         console.log("Successfully updated student progress:");
 
         return {
