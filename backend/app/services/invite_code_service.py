@@ -75,10 +75,19 @@ def get_invite_codes(db: Session, company_id: Union[int, Company], skip: int = 0
         if isinstance(company_id, Company):
             company_id = company_id.id
             
-        return db.query(CompanyInviteCode).filter(
+        invite_codes = db.query(CompanyInviteCode).filter(
             CompanyInviteCode.company_id == company_id,
-            is_active = True
+            CompanyInviteCode.is_active == True
         ).offset(skip).limit(limit).all()
+
+        for code in invite_codes:
+            expires_at = code.expires_at.replace(tzinfo=timezone.utc)
+            if expires_at < datetime.now(timezone.utc):
+                code.is_active = False
+                invite_codes.remove(code)
+            db.commit()
+        
+        return invite_codes
         
     except Exception as e:
         logger.error(f"Error getting invite codes for company {company_id}: {e}")

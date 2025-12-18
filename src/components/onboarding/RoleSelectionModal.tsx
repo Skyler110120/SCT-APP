@@ -50,7 +50,7 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     if (companyInfo.is_first_user) {
       return (
         <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeTitle}>🎉 Welcome, Company Founder!</Text>
+          <Text style={styles.welcomeTitle}>Welcome, Company Founder!</Text>
           <Text style={styles.welcomeText}>
             You're setting up{" "}
             <Text style={styles.companyName}>{companyInfo.company_name}</Text>{" "}

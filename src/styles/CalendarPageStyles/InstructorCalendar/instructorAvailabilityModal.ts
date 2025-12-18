@@ -1,7 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { StyleSheet } from "react-native";
 
-export const availabilityModalStyles = StyleSheet.create({
+export const instructorAvailablityModal = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

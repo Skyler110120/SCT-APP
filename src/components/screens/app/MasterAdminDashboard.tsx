@@ -3,7 +3,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { companyService } from "@/src/services/companyService";
 import { userService } from "@/src/services/userService";
-import { masterAdminDashboardStyles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
+import { masterAdminDashboardStyles as styles} from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
 import { User } from "@/src/types/auth.types";
 import {
   Company,
@@ -27,7 +27,7 @@ import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 import InviteCodeList from "@/src/components/admin/InviteCodeList";
 
 export default function MasterAdminDashboard() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -234,15 +234,15 @@ export default function MasterAdminDashboard() {
   };
 
   return (
-    <View style={masterAdminDashboardStyles.container}>
+    <View style={styles.container}>
       <BackgroundGradient>
-        <SafeAreaView style={masterAdminDashboardStyles.safeArea}>
-          <View style={masterAdminDashboardStyles.contentContainer}>
-            <Text style={masterAdminDashboardStyles.pageTitle}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.contentContainer}>
+            <Text style={styles.pageTitle}>
               Master Admin
             </Text>
-            <View style={masterAdminDashboardStyles.columnsContainer}>
-              <View style={masterAdminDashboardStyles.leftColumn}>
+            <View style={styles.columnsContainer}>
+              <View style={styles.leftColumn}>
                 <CompanyList
                   companies={companies}
                   selectedCompany={selectedCompany}
@@ -251,7 +251,7 @@ export default function MasterAdminDashboard() {
                 />
               </View>
 
-              <View style={masterAdminDashboardStyles.rightColumn}>
+              <View style={styles.rightColumn}>
                 <InviteCodeList
                   inviteCodes={inviteCodes}
                   selectedCompany={selectedCompany}
@@ -261,18 +261,18 @@ export default function MasterAdminDashboard() {
               </View>
             </View>
             <AdminStats stats={stats} selectedCompany={selectedCompany} />
-            <View style={masterAdminDashboardStyles.buttonContainer}>
+            <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={masterAdminDashboardStyles.actionButton}
+                style={styles.actionButton}
                 onPress={() => setCompanyModalVisible(true)}
               >
-                <Text style={masterAdminDashboardStyles.buttonText}>
+                <Text style={styles.buttonText}>
                   Create Company
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  masterAdminDashboardStyles.actionButton,
+                  styles.actionButton,
                   !selectedCompany && { opacity: 0.5 },
                 ]}
                 onPress={() => {
@@ -284,18 +284,18 @@ export default function MasterAdminDashboard() {
                 }}
                 disabled={!selectedCompany}
               >
-                <Text style={masterAdminDashboardStyles.buttonText}>
+                <Text style={styles.buttonText}>
                   Create Invite Code
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={masterAdminDashboardStyles.actionButton}
+                style={styles.actionButton}
                 onPress={() => {
                   handleLogout();
                 }}
                 disabled={isLoggingOut}
               >
-                <Text style={masterAdminDashboardStyles.buttonText}>
+                <Text style={styles.buttonText}>
                   Log Out
                 </Text>
               </TouchableOpacity>

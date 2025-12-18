@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { adminUserActionModalStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminUserActionModalStyles";
 import { User, UserRole } from "@/src/types/auth.types";
 import { Picker } from "@react-native-picker/picker";
 import React from "react";

@@ -13,7 +13,7 @@ import { Calendar } from "react-native-calendars";
 
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
-import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailability";
+import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailabilityModal";
 import BottomNavBar from "@/src/components/NavBar";
 import SessionBookingModal from "@/src/components/SessionBookingModal";
 import SessionDetailsModal from "@/src/components/SessionDetailsModal";

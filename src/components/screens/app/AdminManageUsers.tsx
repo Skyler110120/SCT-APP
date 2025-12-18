@@ -1,12 +1,12 @@
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
-import UserActionModal from "@/src/components/user/UserActionModal";
-import UserFilters from "@/src/components/user/UserFilters";
-import UserTable from "@/src/components/user/UserTable";
+import UserActionModal from "@/src/components/user/AdminUserActionModal";
+import UserFilters from "@/src/components/user/AdminUserFilters";
+import UserTable from "@/src/components/user/AdminUserTable";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { userService } from "@/src/services/userService";
-import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { adminManageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminManageUsersStyles";
 import { User, UserRole } from "@/src/types/auth.types";
 import React, { useEffect, useState } from "react";
 import {

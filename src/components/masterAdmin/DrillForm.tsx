@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { masterAdminManageCourses as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/masterAdminCourseManagementStyles";
+import { drillFormStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillFormStyles";
 import {
   CourseDrill,
   CreateCourseDrillRequest,

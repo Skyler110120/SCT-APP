@@ -14,7 +14,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import InviteCodeList from "@/src/components/admin/InviteCodeList";
 import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 
-import { adminDashboardStyles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
+import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Company, InviteCode } from "@/src/types/company.types";
@@ -129,23 +129,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <View style={adminDashboardStyles.container}>
+    <View style={styles.container}>
       <BackgroundGradient>
-        <SafeAreaView style={adminDashboardStyles.safeArea}>
-          <View style={adminDashboardStyles.content}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
             {company && (
-              <Text style={adminDashboardStyles.pageTitle}>
+              <Text style={styles.pageTitle}>
                 {company.name} Dashboard
               </Text>
             )}
-            {/* Debugging indicator */}
             {isLoading && (
               <Text style={{ color: "white", textAlign: "center" }}>
                 Loading company data...
               </Text>
             )}
-            <View style={adminDashboardStyles.section}>
-              <Text style={adminDashboardStyles.sectionTitle}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
                 Invite Codes
               </Text>
               <InviteCodeList
@@ -156,21 +155,21 @@ export default function AdminDashboard() {
                 showTitle={false}
               />
               <TouchableOpacity
-                style={adminDashboardStyles.actionButton}
+                style={styles.actionButton}
                 onPress={() => setInviteCodeModalVisible(true)}
                 disabled={!company}
               >
-                <Text style={adminDashboardStyles.buttonText}>
+                <Text style={styles.buttonText}>
                   Create Invite Code
                 </Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              style={adminDashboardStyles.actionButton}
+              style={styles.actionButton}
               onPress={handleLogout}
               disabled={isLoggingOut}
             >
-              <Text style={adminDashboardStyles.buttonText}>Log Out</Text>
+              <Text style={styles.buttonText}>Log Out</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

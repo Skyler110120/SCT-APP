@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { availabilityModalStyles as styles } from "@/src/styles/CalendarPageStyles/InstructorCalendar/availabilityModalStyles";
+import { instructorAvailablityModal as styles } from "@/src/styles/CalendarPageStyles/InstructorCalendar/instructorAvailabilityModal";
 import {
   Availability,
   AvailabilityUpdate,

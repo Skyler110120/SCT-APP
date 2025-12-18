@@ -238,7 +238,7 @@ export const onboardingService = {
         invite_code: inviteCode,
     };
 
-      console.log("✅ Signup data assembled successfully");
+      console.log("Signup data assembled successfully");
       return signupData;
     } catch (error) {
       console.error("Create signup data error:", error);

@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { instructorStudentTableStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorStudentTableStyles";
 import { User } from "@/src/types/auth.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";

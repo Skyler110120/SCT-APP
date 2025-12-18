@@ -188,7 +188,6 @@ export const companyService = {
           },
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to fetch invite codes:", errorData);
