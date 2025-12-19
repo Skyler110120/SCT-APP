@@ -26,7 +26,7 @@ import { courseService } from "@/src/services/courseService";
 import { enrollmentService } from "@/src/services/enrollmentService";
 import { materialService } from "@/src/services/materialService";
 
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import {
   CourseInstructorView,
   CourseStudentView,

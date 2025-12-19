@@ -7,7 +7,8 @@ import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { userService } from "@/src/services/userService";
 import { adminManageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminManageUsersStyles";
-import { User, UserRole } from "@/src/types/auth.types";
+import { User } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,

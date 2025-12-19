@@ -5,8 +5,8 @@ from typing import List
 from app.dependencies.database import get_db
 from app.dependencies.auth import get_current_user
 from app.models.user import User, UserRole
-from app.schemas.invite_code import InviteCodeCreate, InviteCodeOut
-from app.services.invite_code_service import create_invite_code, get_invite_codes, get_invite_code_by_code, validate_invite_code
+from app.schemas.invite_code import InviteCodeOut
+from app.services.invite_code_service import create_invite_code, get_invite_codes, validate_invite_code
 from app.services.company_service import get_company_by_id
 
 router = APIRouter(
@@ -17,6 +17,7 @@ router = APIRouter(
 @router.post("", response_model=InviteCodeOut, status_code=status.HTTP_201_CREATED)
 def create_company_invite_code(
     company_id: int,
+    role: UserRole,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -50,6 +51,7 @@ def create_company_invite_code(
     db_invite_code = create_invite_code(
         db=db,
         company_id=company_id,
+        role=role,
         created_by_id=current_user.id,
     )
     

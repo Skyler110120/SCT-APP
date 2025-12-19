@@ -1,9 +1,4 @@
-export enum UserRole {
-    STUDENT = 'student',
-    INSTRUCTOR = 'instructor',
-    ADMIN = 'admin',
-    MASTER_ADMIN = 'masteradmin',
-}
+import { UserRole } from "./enums"
 
 export interface User {
     company_id: number | null;

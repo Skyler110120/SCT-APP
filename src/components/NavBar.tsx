@@ -1,7 +1,7 @@
 import Images from "@/src/assets/images";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import { Link, usePathname, useRouter } from "expo-router";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

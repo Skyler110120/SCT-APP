@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
-import { coursesStyles as styles } from "@/src/styles/CoursePageStyles/courseScreenStyles";
-import { UserRole } from "@/src/types/auth.types";
+import { studentProgressModalStyles as styles } from "@/src/styles/CoursePageStyles/studentProgressModalStyles";
+import { UserRole } from "@/src/types/enums";
 import { StudentWeeklyProgress } from "@/src/types/enrollment.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";

@@ -3,9 +3,9 @@ import { drillFormStyles as styles } from "@/src/styles/CoursePageStyles/MasterA
 import {
   CourseDrill,
   CreateCourseDrillRequest,
-  DrillType,
   UpdateCourseDrillRequest,
 } from "@/src/types/course.drills.types";
+import { DrillType } from "@/src/types/enums";
 import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {

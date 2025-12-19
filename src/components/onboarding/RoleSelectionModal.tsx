@@ -1,7 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
 import { roleSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/roleSelectionModalStyles";
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import React, { useState } from "react";
 import {

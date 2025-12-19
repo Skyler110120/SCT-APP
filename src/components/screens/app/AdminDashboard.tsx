@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
-  ScrollView,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 
@@ -18,6 +17,7 @@ import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles
 import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Company, InviteCode } from "@/src/types/company.types";
+import { UserRole } from "@/src/types/enums";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleCreateInviteCode = async () => {
+  const handleCreateInviteCode = async (selectedRole: UserRole) => {
     if (!company) {
       Alert.alert("Error", "Company information is not available");
       return;
@@ -86,6 +86,7 @@ export default function AdminDashboard() {
     try {
       const response = await companyService.createInviteCode({
         company_id: company.id,
+        role: selectedRole
       });
 
       if (response.success && response.data) {

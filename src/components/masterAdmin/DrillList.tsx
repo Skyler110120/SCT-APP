@@ -1,6 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { drillListStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillListStyles";
-import { CourseDrill, DrillType } from "@/src/types/course.drills.types";
+import { CourseDrill } from "@/src/types/course.drills.types";
+import { DrillType } from "@/src/types/enums";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";

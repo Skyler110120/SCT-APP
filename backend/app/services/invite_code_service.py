@@ -5,13 +5,13 @@ from typing import Optional, Tuple, Union
 import logging
 
 from app.models.invite_code import CompanyInviteCode
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.company import Company
 from app.schemas.auth import InviteCodeInfo
 
 logger = logging.getLogger(__name__)
 
-def create_invite_code(db: Session, company_id: int, created_by_id: int, 
+def create_invite_code(db: Session, company_id: int, created_by_id: int, role: UserRole, 
                        max_uses: int = InviteCodeSettings.MAX_USE, 
                        expires_in_days: int = InviteCodeSettings.EXPIRES_IN_DAYS):
     """
@@ -23,6 +23,7 @@ def create_invite_code(db: Session, company_id: int, created_by_id: int,
         created_by_id: ID of the user creating the code
         max_uses: max uses is 1
         expires_in_days: Every code expires after 3 days 
+        role: role to assign to user who uses the code
     Returns:
     
         The created invite code
@@ -43,7 +44,8 @@ def create_invite_code(db: Session, company_id: int, created_by_id: int,
             company_id=company_id,
             created_by_id=created_by_id,
             max_uses=max_uses,
-            expires_at=expires_at
+            expires_at=expires_at,
+            role=role
         )
     
         db.add(db_invite_code)

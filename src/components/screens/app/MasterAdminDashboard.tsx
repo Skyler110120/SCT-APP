@@ -5,6 +5,7 @@ import { companyService } from "@/src/services/companyService";
 import { userService } from "@/src/services/userService";
 import { masterAdminDashboardStyles as styles} from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
 import { User } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums"
 import {
   Company,
   CreateCompanyRequest,
@@ -186,6 +187,7 @@ export default function MasterAdminDashboard() {
     try {
       const response = await companyService.createInviteCode({
         company_id: selectedCompany.id,
+        role: UserRole.ADMIN
       });
 
       if (response.success && response.data) {

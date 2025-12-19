@@ -3,7 +3,7 @@ import { useRouter, useSegments } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
-import { UserRole } from "../types/auth.types";
+import { UserRole } from "../types/enums";
 import { navigateByRole } from "../utils/navigationUtil";
 
 interface RouterGuardProps {
@@ -30,13 +30,13 @@ export function RouteGuard({ children }: RouterGuardProps) {
       (firstSegment === "screens" && secondSegment === "auth");
 
     if (!isAuthenticated && isProtectedRoute && !isAuthRoute) {
-      router.replace("/screens/auth/Login");
+      router.replace("/login");
       return;
     } else if (isAuthenticated && isAuthRoute) {
       if (user) {
         navigateByRole(user.role, user.has_completed_onboarding);
       } else {
-        router.replace("/screens/auth/Dashboard");
+        router.replace("/welcome");
       }
       return
     }
