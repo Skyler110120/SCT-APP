@@ -1,4 +1,4 @@
-import { SleepQuality, PreStressLevel, PostStressLevel } from './forms.types';
+import { SleepQuality, PreStressLevel, PostStressLevel } from './enums';
 
 import { StudentDrillResultUpdate, StudentDrillSummary } from './course.drills.types';
 

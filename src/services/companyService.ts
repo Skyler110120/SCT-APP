@@ -90,7 +90,35 @@ export const companyService = {
    */
   async getInviteCodes(companyID: number): Promise<InviteCodeListResponse> {
     try {
-      const data: InviteCode[] = await apiFetch<InviteCode[]>(`/companies/${companyID}/invite-codes`);
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(
+        `${API_URL}/companies/${companyID}/invite-codes`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to fetch invite codes:", errorData);
+        return {
+          success: false,
+          error: errorData.detail || "Failed to fetch invite codes",
+        };
+      }
+
+      const data: InviteCode[] = await response.json();
       return {
         success: true,
         data,
@@ -113,14 +141,34 @@ export const companyService = {
     inviteData: CreateInviteCodeRequest
   ): Promise<InviteCodeResponse> {
     try {
-      const data: InviteCode = await apiFetch<InviteCode>(
-        `/companies/${inviteData.company_id}/invite-codes`,
+      const token = await AsyncStorage.getItem("auth_token");
+
+      if (!token) {
+        return {
+          success: false,
+          error: "No authentication token found",
+        };
+      }
+
+      const response = await fetch(
+        `${API_URL}/companies/${inviteData.company_id}/invite-codes/${inviteData.role}`,
         {
           method: "POST",
           body: JSON.stringify({}),
         }
       );
-      
+      console.log(inviteData)
+      console.log(response);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to create invite code:", errorData);
+        return {
+          success: false,
+          error: errorData.detail || "Failed to create invite code",
+        };
+      }
+
+      const data: InviteCode = await response.json();
       return {
         success: true,
         data,

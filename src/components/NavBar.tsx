@@ -1,6 +1,7 @@
 import Images from "@/src/assets/images";
 import { useAuth } from "@/src/context/AuthContext";
-import { UserRole } from "@/src/types/auth.types";
+import { themes } from "@/src/context/themes";
+import { UserRole } from "@/src/types/enums";
 import { Link, usePathname, useRouter } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { navBarStyles as styles } from "../styles/navBar";

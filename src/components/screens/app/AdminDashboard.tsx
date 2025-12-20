@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
+import * as Clipboard from "expo-clipboard";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  SafeAreaView,
   Text,
   TouchableOpacity,
-  SafeAreaView,
-  Alert,
-  ScrollView,
+  View,
 } from "react-native";
-import * as Clipboard from "expo-clipboard";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import InviteCodeForm from "@/src/components/InviteCodeForm";
+import InviteCodeList from "@/src/components/InviteCodeList";
 import BottomNavBar from "@/src/components/NavBar";
-import InviteCodeList from "@/src/components/admin/InviteCodeList";
-import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 
-import { adminDashboardStyles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
-import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
+import { companyService } from "@/src/services/companyService";
+import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
+import { UserRole } from "@/src/types/enums";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleCreateInviteCode = async () => {
+  const handleCreateInviteCode = async (selectedRole: UserRole) => {
     if (!company) {
       Alert.alert("Error", "Company information is not available");
       return;
@@ -86,6 +86,7 @@ export default function AdminDashboard() {
     try {
       const response = await companyService.createInviteCode({
         company_id: company.id,
+        role: selectedRole
       });
 
       if (response.success && response.data) {
@@ -129,23 +130,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <View style={adminDashboardStyles.container}>
+    <View style={styles.container}>
       <BackgroundGradient>
-        <SafeAreaView style={adminDashboardStyles.safeArea}>
-          <View style={adminDashboardStyles.content}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
             {company && (
-              <Text style={adminDashboardStyles.pageTitle}>
+              <Text style={styles.pageTitle}>
                 {company.name} Dashboard
               </Text>
             )}
-            {/* Debugging indicator */}
             {isLoading && (
               <Text style={{ color: "white", textAlign: "center" }}>
                 Loading company data...
               </Text>
             )}
-            <View style={adminDashboardStyles.section}>
-              <Text style={adminDashboardStyles.sectionTitle}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
                 Invite Codes
               </Text>
               <InviteCodeList
@@ -156,21 +156,21 @@ export default function AdminDashboard() {
                 showTitle={false}
               />
               <TouchableOpacity
-                style={adminDashboardStyles.actionButton}
+                style={styles.actionButton}
                 onPress={() => setInviteCodeModalVisible(true)}
                 disabled={!company}
               >
-                <Text style={adminDashboardStyles.buttonText}>
+                <Text style={styles.buttonText}>
                   Create Invite Code
                 </Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              style={adminDashboardStyles.actionButton}
+              style={styles.actionButton}
               onPress={handleLogout}
               disabled={isLoggingOut}
             >
-              <Text style={adminDashboardStyles.buttonText}>Log Out</Text>
+              <Text style={styles.buttonText}>Log Out</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

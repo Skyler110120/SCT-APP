@@ -1,7 +1,8 @@
 import { themes } from "@/src/context/themes";
 import { inviteCodeFormStyles as inviteCodeForm } from "@/src/styles/DashboardPageStyles/inviteCodeFormStyles";
 import { Company } from "@/src/types/company.types";
-import React from "react";
+import { UserRole } from "@/src/types/enums"
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Modal,
@@ -15,7 +16,7 @@ interface InviteCodeFormProps {
   company: Company;
   isSubmitting?: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (selectedRole: UserRole) => void;
 }
 
 const InviteCodeForm = ({
@@ -25,6 +26,7 @@ const InviteCodeForm = ({
   onClose,
   onSubmit,
 }: InviteCodeFormProps) => {
+
   if (!company) return null;
 
   return (
@@ -64,14 +66,47 @@ const InviteCodeForm = ({
                 inviteCodeForm.actionButton,
                 isSubmitting && { opacity: 0.7 },
               ]}
-              onPress={onSubmit}
+              
+              onPress={() => onSubmit(UserRole.STUDENT)}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color={themes.black} />
               ) : (
                 <Text style={inviteCodeForm.buttonText}>
-                  Create Invite Code
+                  Create Student Invite Code
+                </Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                inviteCodeForm.actionButton,
+                isSubmitting && { opacity: 0.7 },
+              ]}
+              onPress={() => onSubmit(UserRole.INSTRUCTOR)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color={themes.black} />
+              ) : (
+                <Text style={inviteCodeForm.buttonText}>
+                  Create Instructor Invite Code
+                </Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                inviteCodeForm.actionButton,
+                isSubmitting && { opacity: 0.7 },
+              ]}
+              onPress={() => onSubmit(UserRole.ADMIN)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color={themes.black} />
+              ) : (
+                <Text style={inviteCodeForm.buttonText}>
+                  Create Admin Invite Code
                 </Text>
               )}
             </TouchableOpacity>

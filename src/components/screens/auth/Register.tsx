@@ -11,7 +11,7 @@ import { RoleSelectionModal } from "@/src/components/onboarding/RoleSelectionMod
 import { courseService } from "@/src/services/courseService";
 import { onboardingService } from "@/src/services/onboardingService";
 
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import { CourseSummary } from "@/src/types/course.types";
 import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";

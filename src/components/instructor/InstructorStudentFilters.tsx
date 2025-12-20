@@ -1,5 +1,5 @@
 import { themes } from "@/src/context/themes";
-import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { instructorStudentFiltersStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorStudentFiltersStyles";
 import { Picker } from "@react-native-picker/picker";
 import React from "react";
 import { Text, TextInput, View } from "react-native";

@@ -1,3 +1,5 @@
+import { UserRole } from "./enums"
+
 export interface Company {
     id: number;
     name: string;
@@ -36,6 +38,7 @@ export interface InviteCode {
     id: number;
     code: string;
     company_id: number;
+    role: UserRole;
     created_by_id: number;
     max_uses: number;
     uses: number;
@@ -46,6 +49,7 @@ export interface InviteCode {
 
 export interface CreateInviteCodeRequest {
     company_id: number;
+    role: UserRole;
 }
 
 export interface CompanyResponse {

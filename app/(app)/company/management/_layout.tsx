@@ -2,7 +2,7 @@ import React from "react";
 import { Slot, Redirect } from "expo-router";
 import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
 
 export default function CompanyManagementLayout() {

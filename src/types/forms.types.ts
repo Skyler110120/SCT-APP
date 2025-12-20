@@ -1,20 +1,4 @@
-export enum SleepQuality {
-    POOR = "POOR",
-    AVERAGE = "AVERAGE",
-    GREAT = "GREAT"
-}
-
-export enum PreStressLevel {
-    LOW = "LOW",
-    MODERATE = "MODERATE",
-    HIGH = "HIGH"
-}
-
-export enum PostStressLevel {
-    LESS_STRESSED = "LESS_STRESSED",
-    SAME = "SAME",
-    MORE_STRESSED = "MORE_STRESSED"
-}
+import { SleepQuality, PreStressLevel, PostStressLevel } from "./enums";
 
 export interface CreateSessionFormRequest {
     session_id: number;

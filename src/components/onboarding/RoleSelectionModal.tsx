@@ -1,7 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
 import { roleSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/roleSelectionModalStyles";
-import { UserRole } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import React, { useState } from "react";
 import {
@@ -50,7 +50,7 @@ export const RoleSelectionModal: React.FC<RoleSelectionModalProps> = ({
     if (companyInfo.is_first_user) {
       return (
         <View style={styles.welcomeContainer}>
-          <Text style={styles.welcomeTitle}>🎉 Welcome, Company Founder!</Text>
+          <Text style={styles.welcomeTitle}>Welcome, Company Founder!</Text>
           <Text style={styles.welcomeText}>
             You're setting up{" "}
             <Text style={styles.companyName}>{companyInfo.company_name}</Text>{" "}

@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
 
-export const manageUsersStyles = StyleSheet.create({
+export const instructorManageStudentsStyles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",

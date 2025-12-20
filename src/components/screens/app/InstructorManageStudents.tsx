@@ -16,7 +16,7 @@ import InstructorStudentTable from "@/src/components/instructor/InstructorStuden
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { instructorService } from "@/src/services/instructorService";
-import { manageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/manageUsers";
+import { instructorManageStudentsStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorManageUsersStyles";
 import { User } from "@/src/types/auth.types";
 
 export default function InstructorStudents() {

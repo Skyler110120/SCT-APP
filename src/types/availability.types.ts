@@ -1,8 +1,4 @@
-export enum AvailabilityStatus {
-    AVAILABLE = "available",
-    UNAVAILABLE = "unavailable",
-    BOOKED = "booked"
-}
+import { AvailabilityStatus } from "./enums"
 
 export interface Availability {
     id: number;

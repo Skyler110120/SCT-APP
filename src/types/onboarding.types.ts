@@ -1,4 +1,5 @@
-import { UserRole, ApiResponse } from "@/src/types/auth.types";
+import { ApiResponse } from "@/src/types/auth.types";
+import { UserRole } from "./enums"
 
 export enum OnboardingStep {
   INVITE_CODE = "invite_code",

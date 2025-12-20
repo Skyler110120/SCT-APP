@@ -1,10 +1,5 @@
 import { CourseStudentView } from './course.types';
-
-export enum EnrollmentStatus {
-    ACTIVE = 'active',
-    COMPLETED = 'completed',
-    DROPPED = 'dropped'
-}
+import { EnrollmentStatus } from './enums';
 
 export enum ProgressionDecision {
     APPROVED = 'approved',

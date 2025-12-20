@@ -1,6 +1,3 @@
-/**
- * Drill Management Component for Master Admins
- */
 import React, { useState, useEffect } from "react";
 import {
   View,

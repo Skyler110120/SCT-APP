@@ -1,11 +1,5 @@
-//Enums to match backend enums
-export enum DrillType {
-    TIME = "TIME",
-    SCORE = "SCORE",
-    ACCURACY = "ACCURACY"
-}
+import { DrillType } from "./enums";
 
-// Course Drill Types
 export interface CreateCourseDrillRequest {
     course_id: number;
     drill_name: string;
