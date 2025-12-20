@@ -66,7 +66,7 @@ const InviteCodeList = ({
                     </View>
                     <View style={styles.detailsSection}>
                       <Text style={styles.codeDetails}>
-                        Uses: {code.uses}/{code.max_uses}
+                        Role: {code.role}
                       </Text>
                       <Text style={styles.codeDetails}>
                         Expires: {formatDate(code.expires_at)}

@@ -14,7 +14,7 @@ router = APIRouter(
     tags=["invite-codes"]
 )
 
-@router.post("", response_model=InviteCodeOut, status_code=status.HTTP_201_CREATED)
+@router.post("/{role}", response_model=InviteCodeOut, status_code=status.HTTP_201_CREATED)
 def create_company_invite_code(
     company_id: int,
     role: UserRole,
@@ -28,6 +28,7 @@ def create_company_invite_code(
     Master admins can create admin invite codes for any company
     """
     company = get_company_by_id(db, company_id)
+    print("entering company")
     if not company:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

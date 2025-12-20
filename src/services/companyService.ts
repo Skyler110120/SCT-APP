@@ -230,7 +230,7 @@ export const companyService = {
       }
 
       const response = await fetch(
-        `${API_URL}/companies/${inviteData.company_id}/invite-codes`,
+        `${API_URL}/companies/${inviteData.company_id}/invite-codes/${inviteData.role}`,
         {
           method: "POST",
           headers: {
@@ -241,7 +241,8 @@ export const companyService = {
           body: JSON.stringify({}),
         }
       );
-
+      console.log(inviteData)
+      console.log(response);
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Failed to create invite code:", errorData);

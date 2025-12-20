@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
+import * as Clipboard from "expo-clipboard";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  SafeAreaView,
   Text,
   TouchableOpacity,
-  SafeAreaView,
-  Alert,
+  View,
 } from "react-native";
-import * as Clipboard from "expo-clipboard";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import InviteCodeForm from "@/src/components/InviteCodeForm";
+import InviteCodeList from "@/src/components/InviteCodeList";
 import BottomNavBar from "@/src/components/NavBar";
-import InviteCodeList from "@/src/components/admin/InviteCodeList";
-import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
 
-import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
-import { companyService } from "@/src/services/companyService";
 import { useAuth } from "@/src/context/AuthContext";
+import { companyService } from "@/src/services/companyService";
+import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
 import { UserRole } from "@/src/types/enums";
 

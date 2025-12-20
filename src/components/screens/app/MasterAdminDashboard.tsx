@@ -3,14 +3,14 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { companyService } from "@/src/services/companyService";
 import { userService } from "@/src/services/userService";
-import { masterAdminDashboardStyles as styles} from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
+import { masterAdminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
 import { User } from "@/src/types/auth.types";
-import { UserRole } from "@/src/types/enums"
 import {
   Company,
   CreateCompanyRequest,
   InviteCode,
 } from "@/src/types/company.types";
+import { UserRole } from "@/src/types/enums";
 import * as Clipboard from "expo-clipboard";
 import React, { useEffect, useState } from "react";
 import {
@@ -24,8 +24,8 @@ import {
 import AdminStats from "@/src/components/admin/AdminStats";
 import CompanyForm from "@/src/components/admin/CompanyForm";
 import CompanyList from "@/src/components/admin/CompanyList";
-import InviteCodeForm from "@/src/components/admin/InviteCodeForm";
-import InviteCodeList from "@/src/components/admin/InviteCodeList";
+import InviteCodeForm from "@/src/components/InviteCodeForm";
+import InviteCodeList from "@/src/components/InviteCodeList";
 
 export default function MasterAdminDashboard() {
   const { logout } = useAuth();
