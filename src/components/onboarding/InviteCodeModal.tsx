@@ -1,6 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { inviteCodeModalStyles as styles } from "@/src/styles/RegisterPageStyles/inviteCodeModalStyles";
 import { CompanyInfo } from "@/src/types/onboarding.types";
+import { UserRole } from "@/src/types/enums";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -48,12 +49,6 @@ export function InviteCodeModal({
 
         setCode("");
         setError(null);
-
-        Alert.alert(
-          "Welcome!",
-          `You're joining ${result.data.company_name}. Please complete your registration.`,
-          [{ text: "Continue", style: "default" }]
-        );
       } else {
         console.log("Invite code validation failed:", result.error);
         setError(result.error || "Invalid invite code. Please try again.");

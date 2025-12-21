@@ -1,6 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { inviteCodeListStyles as styles } from "@/src/styles/DashboardPageStyles/inviteCodeListStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
+import { UserRole } from "../types/enums";
 import React from "react";
 import {
   ActivityIndicator,
@@ -9,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "@/src/context/AuthContext"
 
 interface InviteCodeListProps {
   inviteCodes: InviteCode[];
@@ -25,12 +27,13 @@ const InviteCodeList = ({
   onCopyCode,
   showTitle = true
 }: InviteCodeListProps) => {
+  const { user } = useAuth();
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "No expiration";
     return new Date(dateString).toLocaleDateString();
   };
-
-  const activeCodes = inviteCodes.filter(code => code.is_active);
+  
+  const codes = inviteCodes.filter(code => code.is_active);
 
   return (
     <View style={styles.sectionContainer}>
@@ -46,9 +49,9 @@ const InviteCodeList = ({
         <ActivityIndicator size="large" color={themes.vegasGold} />
       ) : selectedCompany ? (
         <ScrollView style={styles.listContainer}>
-          {activeCodes.length > 0 ? (
-            activeCodes.map((code, index) => (
-              <React.Fragment key={code.id}>
+          {codes.length > 0 ? (
+            codes.map((code, index) => (
+              <React.Fragment key={code.code}>
                 <View style={styles.inviteCodeCard}>
                   <View style={styles.horizontalLayout}>
                     <View style={styles.codeSection}>
@@ -74,7 +77,7 @@ const InviteCodeList = ({
                     </View>
                   </View>
                 </View>
-                {index < activeCodes.length - 1 && (
+                {index < codes.length - 1 && (
                   <View style={styles.inviteCodeSeparator} />
                 )}
               </React.Fragment>

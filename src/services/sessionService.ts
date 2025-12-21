@@ -9,9 +9,9 @@ import {
   SessionListResponse,
   AvailabilityCheckServiceResponse,
   SessionActionResponse,
-  SessionStatus,
   CalendarSessionsRequest,
 } from "@/src/types/sessions.types";
+import { SessionStatus } from "../types/enums";
 
 let API_URL: string;
 

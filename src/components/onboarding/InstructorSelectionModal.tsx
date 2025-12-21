@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { router } from "expo-router";
 
 interface InstructorSelectionModalProps {
   isVisible: boolean;
@@ -72,10 +73,14 @@ export const InstructorSelectionModal: React.FC<
 
   const renderPickerItems = () => {
     const items = [
-      <Picker.Item key="placeholder" label="Select an instructor..." value={0} />
+      <Picker.Item
+        key="placeholder"
+        label="Select an instructor..."
+        value={0}
+      />,
     ];
 
-    instructors.forEach(instructor => {
+    instructors.forEach((instructor) => {
       items.push(
         <Picker.Item
           key={instructor.id}
@@ -92,8 +97,8 @@ export const InstructorSelectionModal: React.FC<
     <View style={styles.emptyStateContainer}>
       <Text style={styles.emptyStateTitle}>No Instructors Available</Text>
       <Text style={styles.emptyStateDescription}>
-        {companyInfo.company_name} doesn't have any instructors yet. 
-        Contact your administrator to set up instructors before continuing.
+        {companyInfo.company_name} doesn't have any instructors yet. Contact
+        your administrator to set up instructors before continuing.
       </Text>
       <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
         <Text style={styles.retryButtonText}>Retry</Text>
@@ -111,7 +116,7 @@ export const InstructorSelectionModal: React.FC<
   const renderInstructorPicker = () => (
     <View style={styles.pickerSection}>
       <Text style={styles.filterLabel}>Choose Your Instructor</Text>
-      
+
       <Text style={styles.pickerDescription}>
         Select the instructor assigned to you.
       </Text>
@@ -153,19 +158,19 @@ export const InstructorSelectionModal: React.FC<
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Select Your Instructor</Text>
-          
+
           <View style={styles.contentContainer}>
-            {instructorsLoading ? (
-              renderLoadingState()
-            ) : instructors.length === 0 ? (
-              renderEmptyState()
-            ) : (
-              renderInstructorPicker()
-            )}
+            {instructorsLoading
+              ? renderLoadingState()
+              : instructors.length === 0
+              ? renderEmptyState()
+              : renderInstructorPicker()}
           </View>
+          <TouchableOpacity style={styles.retryButton} onPress={router.back}>
+            <Text style={styles.retryButtonText}>Back</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
 };
-

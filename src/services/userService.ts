@@ -2,7 +2,6 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   User,
-  UserRole,
   UserUpdate,
   UserResponse,
   UserListResponse,
@@ -14,6 +13,7 @@ import {
   UserWithInstructorResponse,
   UserWithStudentsResponse,
 } from "@/src/types/auth.types";
+import { UserRole } from "../types/enums";
 
 let API_URL: string;
 

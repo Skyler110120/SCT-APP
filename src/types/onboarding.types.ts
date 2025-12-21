@@ -17,7 +17,7 @@ export interface InviteCodeValidationRequest {
 export interface CompanyInfo {
   company_id: number;
   company_name: string;
-  is_first_user: boolean;
+  role: UserRole;
 }
 
 export type InviteCodeValidationResponse = ApiResponse<CompanyInfo>;

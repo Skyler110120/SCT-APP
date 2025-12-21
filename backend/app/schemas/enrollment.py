@@ -18,7 +18,6 @@ class EnrollmentRead(BaseModel):
     current_week_in_month: int
     week_display: str
     instructor_decision: Optional[ProgressionDecision]
-    instructor_notes: Optional[str]
     enrolled_at: datetime
     completed_at: Optional[datetime]
     
@@ -44,6 +43,5 @@ class StudentWeeklyProgress(BaseModel):
     week_display: str
     progress_percentage: int
     instructor_decision: Optional[ProgressionDecision]
-    instructor_notes: Optional[str]
     days_since_enrollment: int
     

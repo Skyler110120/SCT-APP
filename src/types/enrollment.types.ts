@@ -12,12 +12,11 @@ export interface StudentEnrollment {
     student_id: number;
     status: EnrollmentStatus;
     current_week: number;
-    progression_percentage: number;
+    progress_percentage: number;
     current_month: number;
     current_week_in_month: number;
     week_display: string;
     instructor_decision?: ProgressionDecision;
-    instructor_notes?: string;
     enrolled_at: string;
     completed_at?: string;
 }
@@ -34,7 +33,6 @@ export interface StudentWeeklyProgress {
     week_display: string;
     progress_percentage: number;
     instructor_decision?: ProgressionDecision;
-    instructor_notes?: string;
     days_since_enrollment: number;
 }
 

@@ -22,7 +22,7 @@ class RegisterRequest(BaseModel):
     password: str = Field(..., min_length=8, max_length=255)
     first_name: str = Field(..., max_length=100)
     last_name: str = Field(..., max_length=100)
-    role: Optional[UserRole] = UserRole.STUDENT
+    role: Optional[UserRole] = None
     company_id: Optional[int] = None
     instructor_id: Optional[int] = None
     course_id: Optional[int] = None
@@ -68,4 +68,5 @@ class InviteCodeInfo(BaseModel):
     company_id: int
     company_name: str
     is_first_user: bool = False
+    role: UserRole
     
