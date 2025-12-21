@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { drillManagementStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillManagementStyles";
@@ -19,6 +20,8 @@ import {
 import { courseDrillService } from "@/src/services/courseDrillService";
 import DrillList from "./DrillList";
 import DrillForm from "./DrillForm";
+
+const { width } = Dimensions.get("window");
 
 interface DrillManagementProps {
   visible: boolean;
@@ -192,15 +195,17 @@ export default function DrillManagment({
           <View style={styles.drillModalOverlay}>
             <View style={styles.drillModalContent}>
               <View style={styles.drillModalHeader}>
-                <Text style={styles.drillModalTitle}>Manage Drills</Text>
-                <Text style={styles.drillModalLabel}>{course.title}</Text>
+                <View style={{ flex: 1, alignItems: "center" }}>
+                  <Text style={styles.drillModalTitle}>Manage Drills</Text>
+                  <Text style={styles.drillModalLabel}>{course.title}</Text>
+                </View>
                 <TouchableOpacity
                   onPress={onClose}
                   style={styles.drillExitButton}
                 >
                   <FontAwesome
                     name="times"
-                    size={32}
+                    size={width * 0.06}
                     color={themes.vegasGold}
                   />
                 </TouchableOpacity>

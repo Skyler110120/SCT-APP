@@ -10,6 +10,7 @@ export const courseFormStyles = StyleSheet.create({
   },
   modalContent: {
     width: "80%",
+    height: "95%",
     alignSelf: "center",
     padding: 20,
     borderRadius: 20,

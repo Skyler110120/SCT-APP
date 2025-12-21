@@ -154,6 +154,7 @@ const DrillList: React.FC<DrillListProps> = ({
                 data={drills}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
+                style={{flex: 1}}
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}

@@ -29,9 +29,11 @@ export class ApiError extends Error {
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     const token = await AsyncStorage.getItem("auth_token")
 
+    const isFormData = options.body instanceof FormData;
+
     const headers = {
     Accept: "application/json",
-    ...(options.body && { "Content-Type": "application/json" }),
+    ...(options.body && !isFormData && { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
@@ -40,14 +42,13 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
         ...options,
         headers
     });
-
-    if (response.status === 401 && path !== "/auth/login") {
+    
+    if (response.status === 401){
+      if(path != "/auth/login"){
         await authService.clearAuthData();
         router.replace("/login");
-        throw new Error("Unauthorized");
-    } 
-    if (response.status === 401){
-      throw new Error("Invalid credentials");
+      }
+      throw new Error("Unauthorized");
     }
 
     if (response.status === 403) {

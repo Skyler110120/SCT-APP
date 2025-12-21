@@ -10,6 +10,7 @@ export const videoManagementModalStyles = StyleSheet.create({
   },
   modalContent: {
     width: "80%",
+    height: "80%",
     alignSelf: "center",
     padding: 20,
     borderRadius: 20,
@@ -28,6 +29,11 @@ export const videoManagementModalStyles = StyleSheet.create({
     fontSize: 28,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
+  },
+  exitButton: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: themes.white,
   },
   inputDescription: {
     fontSize: 16,

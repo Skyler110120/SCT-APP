@@ -25,6 +25,11 @@ export const loginScreenStyles = StyleSheet.create({
     width: 300,
     height: 300,
   },
+  keyboardView: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+  },
   textInputBox: {
     height: 90,
     width: "75%",

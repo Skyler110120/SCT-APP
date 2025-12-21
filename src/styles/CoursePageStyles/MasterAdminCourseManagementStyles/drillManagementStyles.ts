@@ -1,5 +1,7 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+
+const { width } = Dimensions.get("window");
 
 export const drillManagementStyles = StyleSheet.create({
     drillModalOverlay: {
@@ -19,48 +21,51 @@ export const drillManagementStyles = StyleSheet.create({
         backgroundColor: themes.black,
     },
     drillModalHeader: {
+        flexDirection: "row",
         alignItems: "center",
         marginBottom: 20,
     },
     drillModalTitle: {
-        marginBottom: 16,
+        marginBottom: 10,
         textAlign: "center",
-        fontSize: 28,
+        fontSize: width * 0.06,
         fontFamily: "Chakra-Bold",
         color: themes.vegasGold,
     },
     drillModalLabel: {
         marginBottom: 8,
-        fontSize: 20,
+        fontSize: width * 0.04,
         fontFamily: "Chakra-Regular",
         color: themes.white,
     },
     drillExitButton: {
-        padding: 8, 
+        padding: ".5%", 
+        paddingTop: "0.1%",
+        marginBottom: "10%",
         borderColor: "white", 
-        borderWidth: 1
+        borderWidth: 1,
     },
     drillListContainer: {
+        borderRadius: 8,
         flex: 1,
-        borderWidth: 1,
-        borderColor: themes.white
+        borderWidth: 2,
+        overflow: "hidden",
     },
     drillModalButtonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 16,
     },
     drillModalAddButton: {
         flex: 1,
-        padding: 12,
         alignItems: "center",
+        padding: "1%",
         borderRadius: 8,
         borderWidth: 1,
         borderColor: themes.vegasGold,
         backgroundColor: themes.black,
     },
     drillModalButtonText: {
-        fontSize: 24,
+        fontSize: width * 0.04,
         fontFamily: "Chakra-BoldItalic",
         color: themes.white,
     },

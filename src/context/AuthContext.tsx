@@ -238,7 +238,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   try {
     console.log("Starting enhanced signup for:", userData.email);
     
-    const signupResult = await onboardingService.completeEnhancedSignup(userData);
+    const signupResult = await onboardingService.signup(userData);
     
     if (!signupResult.success || !signupResult.data) {
       dispatch({

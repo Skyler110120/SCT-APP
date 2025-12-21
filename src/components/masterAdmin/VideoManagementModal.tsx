@@ -70,7 +70,7 @@ export default function VideoManagementModal({
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
       <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { height: "80%" }]}>
+        <View style={[styles.modalContent]}>
           <View style={styles.modalHeader}>
             <View style={{ flex: 1 }}>
               <Text style={styles.modalTitle}>Manage Videos</Text>
@@ -81,7 +81,7 @@ export default function VideoManagementModal({
             </View>
             <TouchableOpacity
               onPress={onClose}
-              style={{ padding: 8, borderWidth: 1, borderColor: themes.white}}
+              style={styles.exitButton}
               activeOpacity={0.7}
             >
               <FontAwesome name="times" size={24} color={themes.vegasGold} />

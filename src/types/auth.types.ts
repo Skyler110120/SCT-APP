@@ -166,3 +166,5 @@ export interface InstructorStudentsResponse {
     data?: User[];
     error?: string;
 }
+
+export { UserRole };

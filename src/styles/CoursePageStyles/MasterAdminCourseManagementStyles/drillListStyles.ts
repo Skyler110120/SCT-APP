@@ -3,7 +3,9 @@ import { StyleSheet } from "react-native";
 
 export const drillListStyles = StyleSheet.create({
   tableContainer: {
+    flex: 1,
     borderWidth: 1,
+    borderRadius: 8,
     borderColor: themes.vegasGold,
     backgroundColor: "transparent",
     overflow: "hidden",
