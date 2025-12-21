@@ -12,11 +12,10 @@ import {
   AuthState,
   LoginCredentials,
   User,
-  UserRole,
   UserUpdate,
   UserInfo,
-  TokenResponse,
 } from "../types/auth.types";
+import { UserRole } from "../types/enums";
 import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
 
 interface AuthContextType {
@@ -45,7 +44,7 @@ const initialState: AuthState = {
   is_loading: true,
   is_authenticated: false,
   needs_onboarding: true,
-  user: null, // This will be User type after conversion
+  user: null, 
   token: null,
   error: null,
 };

@@ -6,7 +6,6 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
 import { InstructorSelectionModal } from "@/src/components/onboarding/InstructorSelectionModal";
 import { InviteCodeModal } from "@/src/components/onboarding/InviteCodeModal";
-import { RoleSelectionModal } from "@/src/components/onboarding/RoleSelectionModal";
 
 import { courseService } from "@/src/services/courseService";
 import { onboardingService } from "@/src/services/onboardingService";
@@ -17,7 +16,7 @@ import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -32,18 +31,16 @@ import {
 
 type OnboardingStep =
   | "invite-code"
-  | "role-selection"
   | "instructor-selection"
   | "course-selection"
   | "registration";
-type UIFlowChoice = "student" | "instructor-or-admin";
 
 export default function RegisterScreen() {
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("invite-code");
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
-  const [uiFlowChoice, setUIFlowChoice] = useState<UIFlowChoice | null>(null);
+  const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
   const [selectedInstructor, setSelectedInstructor] =
     useState<Instructor | null>(null);
 
@@ -62,7 +59,6 @@ export default function RegisterScreen() {
     first_name: "",
     last_name: "",
   });
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChange = (field: keyof UserFormData, value: string) => {
@@ -72,33 +68,25 @@ export default function RegisterScreen() {
     }));
   };
 
-  const handleInviteCodeSuccess = (company: CompanyInfo) => {
+  const handleInviteCodeSuccess = async (company: CompanyInfo) => {
     console.log("Invite code validated for company:", company.company_name);
     setCompanyInfo(company);
-    setCurrentStep("role-selection");
+    setRole(company.role);
   };
+
+  useEffect(() => {
+    if (role && companyInfo) {
+      if (role === UserRole.STUDENT) {
+        loadInstructors();
+        setCurrentStep("instructor-selection");
+      } else {
+        setCurrentStep("registration");
+      }
+    }
+  }, [role, companyInfo]);
 
   const handleInviteCodeCancel = () => {
     router.back();
-  };
-
-  const handleRoleSelection = (role: UserRole) => {
-    console.log("UI flow choice selected:", role);
-
-    const flowChoice: UIFlowChoice =
-      role === UserRole.STUDENT ? "student" : "instructor-or-admin";
-    setUIFlowChoice(flowChoice);
-
-    if (flowChoice === "student") {
-      loadInstructors();
-      setCurrentStep("instructor-selection");
-    } else {
-      setCurrentStep("registration");
-    }
-  };
-
-  const handleRoleSelectionError = (error: string) => {
-    Alert.alert("Error", error);
   };
 
   const loadInstructors = async () => {
@@ -165,11 +153,8 @@ export default function RegisterScreen() {
   };
 
   const handleBack = () => {
-    if (currentStep === "role-selection") {
+    if (currentStep === "instructor-selection") {
       setCurrentStep("invite-code");
-      setCompanyInfo(null);
-    } else if (currentStep === "instructor-selection") {
-      setCurrentStep("role-selection");
       setSelectedInstructor(null);
       setInstructors([]);
     } else if (currentStep === "course-selection") {
@@ -177,10 +162,10 @@ export default function RegisterScreen() {
       setSelectedCourse(null);
       setCourses([]);
     } else if (currentStep === "registration") {
-      if (uiFlowChoice === "student") {
+      if (role === UserRole.STUDENT) {
         setCurrentStep("course-selection");
       } else {
-        setCurrentStep("role-selection");
+        setCurrentStep("invite-code");
       }
     }
   };
@@ -202,7 +187,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (!companyInfo || !uiFlowChoice) {
+    if (!companyInfo) {
       Alert.alert(
         "Error",
         "Missing onboarding information. Please restart the process."
@@ -210,12 +195,12 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (uiFlowChoice === "student") {
-      if (!selectedInstructor) {
+    if (role === UserRole.STUDENT) {
+      if (selectedInstructor === null) {
         Alert.alert("Error", "Please select an instructor");
         return;
       }
-      if (!selectedCourse) {
+      if (selectedCourse === null) {
         Alert.alert("Error", "Please select a course");
         return;
       }
@@ -228,9 +213,8 @@ export default function RegisterScreen() {
       const registrationData = {
         ...formData,
         companyInfo,
-        instructorId:
-          uiFlowChoice === "student" ? selectedInstructor?.id : null,
-        courseId: uiFlowChoice === "student" ? selectedCourse?.id : null,
+        instructorId: role === UserRole.STUDENT ? selectedInstructor?.id : null,
+        courseId: role === UserRole.STUDENT ? selectedCourse?.id : null,
       };
 
       await onboardingService.saveOnboardingData(
@@ -255,14 +239,8 @@ export default function RegisterScreen() {
       );
 
       if (signupResult.success) {
-        const successMessage =
-          uiFlowChoice === "student"
-            ? `Welcome to ${companyInfo?.company_name}! You've been assigned to ${selectedInstructor?.first_name} ${selectedInstructor?.last_name}.`
-            : companyInfo?.is_first_user
-            ? `Welcome to ${companyInfo?.company_name}! As the first user, you'll be promoted to Administrator.`
-            : `Welcome to ${companyInfo?.company_name}! You'll start with student access and can be promoted by your administrator.`;
-
-        Alert.alert("Registration Successful!", successMessage, [
+        
+        Alert.alert("Registration Successful!", `Welcome to ${companyInfo.company_name}`,[
           {
             text: "Continue to Login",
             onPress: () => {
@@ -292,15 +270,6 @@ export default function RegisterScreen() {
           isVisible={true}
           onValidateSuccess={handleInviteCodeSuccess}
           onCancel={handleInviteCodeCancel}
-        />
-      );
-    } else if (currentStep === "role-selection") {
-      return (
-        <RoleSelectionModal
-          isVisible={true}
-          companyInfo={companyInfo!}
-          onRoleSelected={handleRoleSelection}
-          onError={handleRoleSelectionError}
         />
       );
     } else if (currentStep === "instructor-selection") {
@@ -362,7 +331,7 @@ export default function RegisterScreen() {
                   </Text>
                   <Text style={styles.welcomeSubtext}>
                     Complete your account information below
-                    {uiFlowChoice === "student" &&
+                    {role === UserRole.STUDENT &&
                       selectedInstructor &&
                       selectedCourse &&
                       `\nYou'll be assigned to ${selectedInstructor.first_name} ${selectedInstructor.last_name}\nCourse: ${selectedCourse.title}`}

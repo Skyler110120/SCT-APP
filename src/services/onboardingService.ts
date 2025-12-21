@@ -2,7 +2,6 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ApiError, apiFetch } from "./api";
 import {
-  InviteCodeValidationRequest,
   InviteCodeValidationResponse,
   CompanyInfo,
   InstructorOption,
@@ -13,7 +12,8 @@ import {
   UserFormDataWithRegistration,
 } from "@/src/types/onboarding.types";
 import { CourseSummary } from "@/src/types/course.types";
-import { UserRole, UserResponse } from "../types/auth.types";
+import { UserResponse } from "../types/auth.types";
+import { UserRole } from "../types/enums";
 import {
   isValidEnhancedSignupData,
 } from "../utils/onboardingValidationUtils";
@@ -21,7 +21,6 @@ import {
 const ONBOARDING_STORAGE_KEYS = {
   INVITE_CODE: "onboarding_invite_code",
   COMPANY_INFO: "onboarding_company_info",
-  SELECTED_ROLE: "onboarding_selected_role",
   SELECTED_INSTRUCTOR: "onboarding_selected_instructor",
   SELECTED_COURSE: "onboarding_selected_course",
   FORM_DATA: "onboarding_form_data",
@@ -179,7 +178,7 @@ export const onboardingService = {
         password: registrationData.password,
         first_name: registrationData.first_name,
         last_name: registrationData.last_name,
-        role: UserRole.STUDENT,
+        role: companyInfo.role,
         company_id: companyInfo.company_id,
         instructor_id: needsInstructor ? selectedInstructor?.id || null : null,
         course_id: courseId,

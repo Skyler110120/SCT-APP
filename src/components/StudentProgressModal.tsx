@@ -296,11 +296,6 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
                           </Text>
                         </View>
                       </View>
-                      {student.instructor_notes && (
-                        <Text style={styles.studentNotes}>
-                          Notes: {student.instructor_notes}
-                        </Text>
-                      )}
                     </View>
 
                     {canUpdate && student.current_week < 24 && (

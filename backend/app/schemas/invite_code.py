@@ -13,6 +13,7 @@ class InviteCodeOut(BaseModel):
     id: int
     code: str
     company_id: int
+    created_by_id: int
     max_uses: int
     uses: int
     expires_at: Optional[datetime]

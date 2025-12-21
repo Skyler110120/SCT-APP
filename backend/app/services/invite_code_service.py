@@ -152,10 +152,6 @@ def validate_invite_code(db: Session, code: str) -> Tuple[Optional[int], bool]:
             db.commit()
             return None, False
         
-        company_id = invite_code.company_id
-        user_count = db.query(User).filter(User.company_id == company_id).count()
-        should_be_admin = (user_count == 0)
-        
         invite_code.uses += 1
         
         if invite_code.uses >= invite_code.max_uses:
@@ -164,7 +160,7 @@ def validate_invite_code(db: Session, code: str) -> Tuple[Optional[int], bool]:
         db.commit()
         
         logger.info(f"Legacy invite code validation successful: {code[:4]}...")
-        return invite_code.company_id, should_be_admin
+        return invite_code.company_id
         
     except Exception as e:
         logger.error(f"Error in legacy invite code validation: {e}")
@@ -221,7 +217,8 @@ def validate_invite_code_info(db: Session, code: str) -> Optional[InviteCodeInfo
         return InviteCodeInfo(
             company_id=invite_code.company_id,
             company_name=company.name,
-            if_first_user=is_first_user
+            if_first_user=is_first_user,
+            role=invite_code.role
         )
     
     except Exception as e:

@@ -2,7 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
 import {
   CourseSummary,
-  CourseStudentView,
   CourseInstructorView,
   CourseAdminView,
   CourseCreateRequest,
@@ -11,7 +10,6 @@ import {
   VideoCreateRequest,
   VideoUpdateRequest,
   CourseListResponse,
-  CourseStudentResponse,
   CourseInstructorListResponse,
   CourseAdminListResponse,
   CourseResponse,

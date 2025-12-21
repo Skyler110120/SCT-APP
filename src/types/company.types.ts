@@ -35,7 +35,7 @@ export interface UpdateCompanyRequest {
 }
 
 export interface InviteCode {
-    id: number;
+    user_id: number;
     code: string;
     company_id: number;
     role: UserRole;

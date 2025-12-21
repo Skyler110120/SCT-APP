@@ -3,7 +3,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
 import {
   User,
-  UserRole,
   UserUpdate,
   UserResponse,
   UserListResponse,
@@ -15,6 +14,7 @@ import {
   UserWithInstructorResponse,
   UserWithStudentsResponse,
 } from "@/src/types/auth.types";
+import { UserRole } from "../types/enums";
 
 export const userService = {
   /**

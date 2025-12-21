@@ -257,21 +257,12 @@ def enhanced_signup(
                 )
             logger.info(f"Invite code consumed for {user_data.email}")
         
-        company_user_count = db.query(User).filter(
-            User.company_id == user_data.company_id,
-            User.is_active == True
-        ).count()
-        
-        will_be_first_user = company_user_count == 0
-        
-        final_role = UserRole.ADMIN if will_be_first_user else UserRole.STUDENT
-        
         user_create_data = UserCreate(
             email=user_data.email,
             password=user_data.password,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
-            role=final_role,
+            role=user_data.role,
             company_id=user_data.company_id,
             instructor_id=user_data.instructor_id,
             has_completed_onboarding=True  
@@ -418,8 +409,8 @@ def read_users_me(
 
     logger.debug(f"User info requested for: {current_user.email}")
     
-    needs_onboarding, has_completed_onboarding = _calculate_onboarding_status(current_user)
-    
+    _, has_completed_onboarding = _calculate_onboarding_status(current_user)
+    print(current_user.id)
     return UserInfo(
         user_id=current_user.id,
         email=current_user.email,
