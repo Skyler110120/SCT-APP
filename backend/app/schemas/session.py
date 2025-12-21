@@ -104,7 +104,6 @@ class SessionOutDetailed(SessionOut):
     enrollment_progress_display: Optional[str] = None
     enrollment_progress_percentage: Optional[float] = None
     enrollment_status: Optional[str] = None
-    enrollment_instructor_notes: Optional[str] = None
     
     class Config:
         from_attributes = True

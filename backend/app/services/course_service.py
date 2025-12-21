@@ -351,7 +351,6 @@ def update_student_weekly_progress(db: Session, user: User, progress_data: Weekl
         )
     
     enrollment.instructor_decision = progress_data.decision
-    enrollment.instructor_notes = progress_data.notes
     
     if progress_data.decision == ProgressionDecision.APPROVED:
         if enrollment.current_week < 24:
@@ -397,7 +396,6 @@ def get_students_progress_by_role(db: Session, user: User) -> List[StudentWeekly
             week_display=enrollment.week_display,
             progress_percentage=enrollment.progress_percentage,
             instructor_decision=enrollment.instructor_decision,
-            instructor_notes=enrollment.instructor_notes,
             days_since_enrollment=days_enrolled,
         )
         results.append(progress)
