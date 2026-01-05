@@ -152,9 +152,11 @@ export default function MasterAdminDashboard() {
 
   const handleCreateCompany = async (data: CreateCompanyRequest) => {
     setIsSubmittingCompany(true);
+    console.log("[MasterAdminDashboard] handleCreateCompany called with:", data);
 
     try {
       const response = await companyService.createCompany(data);
+      console.log("[MasterAdminDashboard] createCompany response:", response);
 
       if (response.success && response.data) {
         const updatedCompanies = [...companies, response.data];
@@ -166,11 +168,19 @@ export default function MasterAdminDashboard() {
 
         Alert.alert("Success", "Company created successfully");
       } else {
-        Alert.alert("Error", response.error || "Failed to create company");
+        const errorMsg = response.error || "Failed to create company";
+        console.error("[MasterAdminDashboard] Company creation failed:", errorMsg);
+        Alert.alert("Error", errorMsg);
       }
-    } catch (error) {
-      console.error("Error creating company:", error);
-      Alert.alert("Error", "An unexpected error occurred, Please try again");
+    } catch (error: any) {
+      console.error("[MasterAdminDashboard] Unexpected error creating company:", error);
+      console.error("[MasterAdminDashboard] Error details:", {
+        message: error?.message,
+        status: error?.status,
+        detail: error?.detail,
+      });
+      const errorMsg = error?.message || error?.detail || "An unexpected error occurred, Please try again";
+      Alert.alert("Error", errorMsg);
     } finally {
       setIsSubmittingCompany(false);
     }

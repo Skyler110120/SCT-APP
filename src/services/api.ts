@@ -1,18 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { Platform } from "react-native";
-import { authService } from "./authService";
+import { API_URL, API_TIMEOUT } from "../config";
 
-let API_URL: string
+const AUTH_STORAGE_KEYS = ["auth_token", "token_data", "user_data"];
 
-if (__DEV__) {
-    if (Platform.OS === "android") {
-        API_URL = "http://10.0.2.2:8000";
-    } else {
-        API_URL = "http://localhost:8000";
-    }
-} else {
-    API_URL = "https://your-production-api.com";
+// Helper function to clear auth data (moved here to avoid circular dependency)
+async function clearAuthData(): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove(AUTH_STORAGE_KEYS);
+    console.log("Authentication data cleared");
+  } catch (error) {
+    console.error("Clear auth data error:", error);
+  }
 }
 
 export class ApiError extends Error {
@@ -26,54 +25,175 @@ export class ApiError extends Error {
   }
 }
 
+// Helper function to normalize API paths
+// Root-level endpoints (like /companies, /users, /courses) need trailing slashes
+// when redirect_slashes=False in FastAPI
+function normalizeApiPath(path: string, method?: string): string {
+  // Extract query string and fragment if they exist
+  let basePath = path;
+  let queryString = '';
+  let fragment = '';
+  
+  // Check for fragment first (comes after #)
+  const fragmentIndex = path.indexOf('#');
+  if (fragmentIndex !== -1) {
+    fragment = path.substring(fragmentIndex);
+    basePath = path.substring(0, fragmentIndex);
+  }
+  
+  // Check for query string (comes after ?)
+  const queryIndex = basePath.indexOf('?');
+  if (queryIndex !== -1) {
+    queryString = basePath.substring(queryIndex);
+    basePath = basePath.substring(0, queryIndex);
+  }
+  
+  // If base path already ends with slash, reconstruct and return
+  if (basePath.endsWith('/')) {
+    return basePath + queryString + fragment;
+  }
+  
+  // Root-level endpoints that need trailing slashes
+  const rootEndpoints = ['/companies', '/users', '/courses', '/events', '/instructors', '/auth', '/profile', '/onboarding'];
+  
+  // Check if this is a root-level endpoint without trailing slash
+  // POST, PUT, PATCH requests to root endpoints definitely need trailing slashes
+  const needsTrailingSlash = method && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase());
+  
+  for (const endpoint of rootEndpoints) {
+    if (basePath === endpoint) {
+      const normalized = `${basePath}/${queryString}${fragment}`;
+      console.log(`[normalizeApiPath] Normalized ${path} to ${normalized} (method: ${method})`);
+      return normalized;
+    }
+    // Also check if path starts with endpoint followed by a path segment
+    // e.g., /companies/123 should not get a trailing slash
+    if (basePath.startsWith(endpoint + '/') && basePath.length > endpoint.length + 1) {
+      console.log(`[normalizeApiPath] Path ${path} is a sub-path, no normalization needed`);
+      return path;
+    }
+  }
+  
+  // For GET requests with query params on root endpoints, add trailing slash
+  if (queryString && !needsTrailingSlash) {
+    for (const endpoint of rootEndpoints) {
+      if (basePath === endpoint) {
+        const normalized = `${basePath}/${queryString}${fragment}`;
+        console.log(`[normalizeApiPath] Normalized ${path} to ${normalized} (GET with query params)`);
+        return normalized;
+      }
+    }
+  }
+  
+  console.log(`[normalizeApiPath] No normalization needed for ${path}`);
+  return path;
+}
+
+// Helper function to add timeout to fetch
+function fetchWithTimeout(url: string, options: RequestInit, timeout: number): Promise<Response> {
+  return Promise.race([
+    fetch(url, options),
+    new Promise<Response>((_, reject) =>
+      setTimeout(() => reject(new Error(`Request timeout after ${timeout}ms`)), timeout)
+    ),
+  ]);
+}
+
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
-    const token = await AsyncStorage.getItem("auth_token")
+    // Normalize the path to ensure trailing slashes for root endpoints
+    const normalizedPath = normalizeApiPath(path, options.method);
+    const token = await AsyncStorage.getItem("auth_token");
+    const fullUrl = `${API_URL}${normalizedPath}`;
+    
+    console.log(`[apiFetch] Original path: ${path}`);
+    console.log(`[apiFetch] Normalized path: ${normalizedPath}`);
+    console.log(`[apiFetch] Starting ${options.method || 'GET'} ${fullUrl}`);
+    console.log(`[apiFetch] Timeout: ${API_TIMEOUT}ms`);
+    if (token) {
+      console.log(`[apiFetch] Using token: ${token.substring(0, 20)}...`);
+    }
+    if (options.body) {
+      console.log(`[apiFetch] Request body:`, options.body);
+    }
 
     const isFormData = options.body instanceof FormData;
 
     const headers = {
-    Accept: "application/json",
-    ...(options.body && !isFormData && { "Content-Type": "application/json" }),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(options.headers || {}),
-  };
+        Accept: "application/json",
+        ...(options.body && !isFormData && { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+    };
 
-    const response = await fetch(`${API_URL}${path}`, {
-        ...options,
-        headers
-    });
+    const startTime = Date.now();
     
-    if (response.status === 401){
-      if(path != "/auth/login"){
-        await authService.clearAuthData();
-        router.replace("/login");
-      }
-      throw new Error("Unauthorized");
-    }
-
-    if (response.status === 403) {
-        throw new Error("Forbidden access")
-    }
-
-    if (response.status === 409) {
-      throw new ApiError(409, "Request Conflict")
-    }
-
-    let data: any = null;
     try {
-      data = await response.json();
-    } catch (_) {
-      // 204 No Content
+      console.log(`[apiFetch] Making request to ${fullUrl}...`);
+      const response = await fetchWithTimeout(fullUrl, {
+          ...options,
+          headers
+      }, API_TIMEOUT);
+      
+      const duration = Date.now() - startTime;
+      console.log(`[apiFetch] Response received in ${duration}ms - Status: ${response.status} for ${normalizedPath}`);
+    
+      if (response.status === 401){
+        if(normalizedPath !== "/auth/login" && normalizedPath !== "/auth/login/"){
+          await clearAuthData();
+          router.replace("/login");
+        }
+        throw new Error("Unauthorized");
+      }
+
+      if (response.status === 403) {
+          throw new Error("Forbidden access")
+      }
+
+      if (response.status === 409) {
+        throw new ApiError(409, "Request Conflict")
+      }
+
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        // 204 No Content
+      }
+
+      if (!response.ok) {
+        console.error(`[apiFetch] Request failed with status ${response.status}`);
+        console.error(`[apiFetch] Response data:`, data);
+        
+        const msg =
+          data?.detail ||
+          data?.message ||
+          `Request failed with status ${response.status}`;
+
+        throw new ApiError(response.status, msg, data?.detail);
+      }
+
+      return data;
+    } catch (error: any) {
+      const duration = Date.now() - startTime;
+      console.error(`[apiFetch] Error after ${duration}ms:`, error);
+      
+      // Handle network errors
+      if (error?.message?.includes('timeout')) {
+        console.error(`[apiFetch] Request timed out after ${API_TIMEOUT}ms`);
+        throw new ApiError(408, `Request timeout - unable to reach server at ${API_URL}`);
+      }
+      
+      if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
+        console.error(`[apiFetch] Network error - cannot reach ${API_URL}`);
+        throw new ApiError(0, `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`);
+      }
+      
+      // Re-throw ApiError as-is
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      
+      // Wrap other errors
+      throw new ApiError(0, error?.message || 'Unknown network error');
     }
-
-    if (!response.ok) {
-      const msg =
-        data?.detail ||
-        data?.message ||
-        `Request failed with status ${response.status}`;
-
-      throw new ApiError(response.status, msg);
-    }
-
-    return data;
 }
