@@ -102,13 +102,12 @@ export const onboardingService = {
         };
       }
 
-      const response = await apiFetch(`/auth/signup`, {
+      const data = await apiFetch(`/auth/signup`, {
         method: "POST",
         body: JSON.stringify(signupData),
       });
 
       console.log("Enhanced signup successful for:", signupData.email);
-      const data = await response.json();
       await this.clearOnboardingData();
 
       return {

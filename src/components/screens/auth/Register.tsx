@@ -16,18 +16,19 @@ import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
   SafeAreaView,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 type OnboardingStep =
   | "invite-code"
@@ -68,28 +69,18 @@ export default function RegisterScreen() {
     }));
   };
 
+  // Track the last processed company to prevent infinite loops
+  const lastProcessedCompanyRef = useRef<{ companyId: number; role: UserRole } | null>(null);
+
   const handleInviteCodeSuccess = async (company: CompanyInfo) => {
     console.log("Invite code validated for company:", company.company_name);
     setCompanyInfo(company);
     setRole(company.role);
+    // Save the role to storage so createSignupDataFromOnboarding can access it
+    await onboardingService.saveSelectedRole(company.role);
   };
 
-  useEffect(() => {
-    if (role && companyInfo) {
-      if (role === UserRole.STUDENT) {
-        loadInstructors();
-        setCurrentStep("instructor-selection");
-      } else {
-        setCurrentStep("registration");
-      }
-    }
-  }, [role, companyInfo]);
-
-  const handleInviteCodeCancel = () => {
-    router.back();
-  };
-
-  const loadInstructors = async () => {
+  const loadInstructors = useCallback(async () => {
     if (!companyInfo) return;
 
     setInstructorsLoading(true);
@@ -104,11 +95,51 @@ export default function RegisterScreen() {
     } finally {
       setInstructorsLoading(false);
     }
+  }, [companyInfo]);
+
+  useEffect(() => {
+    if (!role || !companyInfo) return;
+
+    // Check if we've already processed this company/role combination
+    const currentKey = { companyId: companyInfo.company_id, role };
+    const lastKey = lastProcessedCompanyRef.current;
+    
+    if (
+      lastKey &&
+      lastKey.companyId === currentKey.companyId &&
+      lastKey.role === currentKey.role
+    ) {
+      // Already processed this combination, skip
+      return;
+    }
+
+    // Mark this combination as processed
+    lastProcessedCompanyRef.current = currentKey;
+
+    // Only proceed if we're transitioning from invite-code step or haven't set a step yet
+    if (role === UserRole.STUDENT) {
+      // Only set step if we're coming from invite-code
+      if (currentStep === "invite-code") {
+        setCurrentStep("instructor-selection");
+      }
+      loadInstructors();
+    } else {
+      // Only set step if we're coming from invite-code
+      if (currentStep === "invite-code") {
+        setCurrentStep("registration");
+      }
+    }
+  }, [role, companyInfo, loadInstructors, currentStep]);
+
+  const handleInviteCodeCancel = () => {
+    router.back();
   };
 
-  const handleInstructorSelection = (instructor: Instructor) => {
+  const handleInstructorSelection = async (instructor: Instructor) => {
     console.log("Instructor selected:", instructor);
     setSelectedInstructor(instructor);
+    // Save instructor to storage so createSignupDataFromOnboarding can access it
+    await onboardingService.saveSelectedInstructor(instructor);
     loadCourses();
     setCurrentStep("course-selection");
   };
@@ -141,6 +172,8 @@ export default function RegisterScreen() {
   const handleCourseSelection = async (course: CourseSummary) => {
     console.log("Course selected:", course);
     setSelectedCourse(course);
+    // Save course to storage so createSignupDataFromOnboarding can access it
+    await onboardingService.saveSelectedCourse(course);
     setCurrentStep("registration");
   };
 
@@ -234,9 +267,7 @@ export default function RegisterScreen() {
         return;
       }
 
-      const signupResult = await onboardingService.completeEnhancedSignup(
-        signupData
-      );
+      const signupResult = await onboardingService.signup(signupData);
 
       if (signupResult.success) {
         
@@ -316,10 +347,15 @@ export default function RegisterScreen() {
               <Image source={Images.buttons.backButton} />
             </TouchableOpacity>
           </View>
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            enableOnAndroid={true}
+            enableAutomaticScroll={true}
+            extraScrollHeight={Platform.OS === "ios" ? 40 : 80}
+            extraHeight={120}
+            keyboardOpeningTime={0}
           >
             <View style={styles.registerScreenContentContainer}>
               <Image source={Images.logo.sctLogo} style={styles.image} />
@@ -339,74 +375,72 @@ export default function RegisterScreen() {
                 </View>
               )}
 
-              <View style={styles.nameInputBoxContainer}>
+              <View style={styles.formContainer}>
+                <View style={styles.nameInputBoxContainer}>
+                  <TextInput
+                    placeholder="First Name"
+                    placeholderTextColor={themes.vegasGold}
+                    style={styles.nameInputBox}
+                    value={formData.first_name}
+                    onChangeText={(text) => handleChange("first_name", text)}
+                    returnKeyType="next"
+                  />
+                  <TextInput
+                    placeholder="Last Name"
+                    placeholderTextColor={themes.vegasGold}
+                    style={styles.nameInputBox}
+                    value={formData.last_name}
+                    onChangeText={(text) => handleChange("last_name", text)}
+                    returnKeyType="next"
+                  />
+                </View>
+
                 <TextInput
-                  multiline={false}
-                  scrollEnabled={false}
-                  placeholder="First Name"
+                  placeholder="Email"
                   placeholderTextColor={themes.vegasGold}
-                  style={styles.nameInputBox}
-                  value={formData.first_name}
-                  onChangeText={(text) => handleChange("first_name", text)}
+                  style={styles.textInputBox}
+                  value={formData.email}
+                  onChangeText={(text) => handleChange("email", text)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="next"
                 />
+
                 <TextInput
-                  multiline={false}
-                  scrollEnabled={false}
-                  placeholder="Last Name"
+                  placeholder="Password"
                   placeholderTextColor={themes.vegasGold}
-                  style={styles.nameInputBox}
-                  value={formData.last_name}
-                  onChangeText={(text) => handleChange("last_name", text)}
+                  style={styles.textInputBox}
+                  secureTextEntry={true}
+                  value={formData.password}
+                  onChangeText={(text) => handleChange("password", text)}
+                  returnKeyType="next"
                 />
+
+                <TextInput
+                  placeholder="Confirm Password"
+                  placeholderTextColor={themes.vegasGold}
+                  style={styles.textInputBox}
+                  secureTextEntry={true}
+                  value={formData.confirm_password}
+                  onChangeText={(text) => handleChange("confirm_password", text)}
+                  returnKeyType="done"
+                  onSubmitEditing={handleRegister}
+                />
+
+                <TouchableOpacity
+                  style={styles.signUpButton}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
+                  )}
+                </TouchableOpacity>
               </View>
-
-              <TextInput
-                multiline={false}
-                scrollEnabled={false}
-                placeholder="Email"
-                placeholderTextColor={themes.vegasGold}
-                style={styles.textInputBox}
-                value={formData.email}
-                onChangeText={(text) => handleChange("email", text)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              <TextInput
-                multiline={false}
-                scrollEnabled={false}
-                placeholder="Password"
-                placeholderTextColor={themes.vegasGold}
-                style={styles.textInputBox}
-                secureTextEntry={true}
-                value={formData.password}
-                onChangeText={(text) => handleChange("password", text)}
-              />
-
-              <TextInput
-                multiline={false}
-                scrollEnabled={false}
-                placeholder="Confirm Password"
-                placeholderTextColor={themes.vegasGold}
-                style={styles.textInputBox}
-                secureTextEntry={true}
-                value={formData.confirm_password}
-                onChangeText={(text) => handleChange("confirm_password", text)}
-              />
-
-              <TouchableOpacity
-                style={styles.signUpButton}
-                onPress={handleRegister}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
-                )}
-              </TouchableOpacity>
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </BackgroundGradient>
     </View>
