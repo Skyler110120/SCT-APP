@@ -9,11 +9,9 @@ interface EnvironmentConfig {
   USE_HTTPS: boolean;
 }
 
-// Manual override for physical Android device - set this to your computer's local IP
-// Find it with: ipconfig (Windows) or ifconfig (Mac/Linux)
-// Look for IPv4 Address under your active network adapter (usually 192.168.x.x)
-// Leave empty to auto-detect from Expo
-const ANDROID_PHYSICAL_DEVICE_IP = "192.168.0.21"; // Your detected local IP - change if needed
+// Manual override for physical Android device - set via EXPO_PUBLIC_ANDROID_DEVICE_IP in app.config.js
+// or .env. Find your IP with: ipconfig (Windows) / ifconfig (Mac/Linux). Leave empty to auto-detect.
+const ANDROID_PHYSICAL_DEVICE_IP = (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_ANDROID_DEVICE_IP) || "";
 
 // Development URL varies by platform
 // - Web/iOS: localhost works fine
@@ -42,6 +40,12 @@ const getDevelopmentApiUrl = (): string => {
   return "http://localhost:8000";
 };
 
+// Staging API - deploy a separate App Runner instance for production and set EXPO_PUBLIC_PRODUCTION_API_URL
+const STAGING_API_URL = "https://mdqbj8ddyc.us-east-2.awsapprunner.com";
+const PRODUCTION_API_URL = (typeof process !== "undefined" && process.env?.EXPO_PUBLIC_PRODUCTION_API_URL)
+  ? process.env.EXPO_PUBLIC_PRODUCTION_API_URL
+  : STAGING_API_URL; // Use separate production URL when deployed - set in app.config.js extra or .env
+
 export const environments: Record<Environment, EnvironmentConfig> = {
   development: {
     API_URL: getDevelopmentApiUrl(),
@@ -49,14 +53,12 @@ export const environments: Record<Environment, EnvironmentConfig> = {
     USE_HTTPS: false,
   },
   staging: {
-    // Deployed API on AWS App Runner
-    API_URL: "https://mdqbj8ddyc.us-east-2.awsapprunner.com",
+    API_URL: STAGING_API_URL,
     API_TIMEOUT: 15000,
     USE_HTTPS: true,
   },
   production: {
-    // Deployed API on AWS App Runner
-    API_URL: "https://mdqbj8ddyc.us-east-2.awsapprunner.com",
+    API_URL: PRODUCTION_API_URL,
     API_TIMEOUT: 10000,
     USE_HTTPS: true,
   },

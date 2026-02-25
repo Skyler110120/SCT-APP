@@ -1,4 +1,5 @@
 import { useAuth } from "@/src/context/AuthContext";
+import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
 import { detailModalStyles as styles } from "@/src/styles/CalendarPageStyles/detailModalStyles";
 import { SessionDetailed } from "@/src/types/sessions.types";
@@ -52,7 +53,7 @@ export default function SessionDetailsModal({
 
   if (!session) return null;
 
-  const isInstructor = user?.role === "instructor";
+  const isInstructor = user?.role === UserRole.INSTRUCTOR;
   const canBeCancelled = session.can_be_cancelled;
   const canBeStarted = session.can_be_completed && isInstructor;
 

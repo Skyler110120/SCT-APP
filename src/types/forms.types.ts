@@ -2,6 +2,7 @@ import { SleepQuality, PreStressLevel, PostStressLevel } from "./enums";
 
 export interface CreateSessionFormRequest {
     session_id: number;
+    student_id?: number;
 }
 
 export interface UpdateSessionFormRequest {
@@ -48,7 +49,7 @@ export interface SessionForm {
     course_id?: number;
     week_number: number;
 
-    sleep_hourse?: number;
+    sleep_hours?: number;
     sleep_quality?: SleepQuality;
     has_eaten?: boolean;
     has_pain?: boolean;

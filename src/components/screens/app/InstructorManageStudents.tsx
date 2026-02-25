@@ -18,6 +18,7 @@ import { themes } from "@/src/context/themes";
 import { instructorService } from "@/src/services/instructorService";
 import { instructorManageStudentsStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorManageUsersStyles";
 import { User } from "@/src/types/auth.types";
+import { UserRole } from "@/src/types/enums";
 
 export default function InstructorStudents() {
   const { user } = useAuth();
@@ -33,7 +34,7 @@ export default function InstructorStudents() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.role === "instructor") {
+    if (user?.role === UserRole.INSTRUCTOR) {
       loadMyStudents();
     } else {
       setIsLoading(false);

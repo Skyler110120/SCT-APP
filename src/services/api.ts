@@ -8,9 +8,8 @@ const AUTH_STORAGE_KEYS = ["auth_token", "token_data", "user_data"];
 async function clearAuthData(): Promise<void> {
   try {
     await AsyncStorage.multiRemove(AUTH_STORAGE_KEYS);
-    console.log("Authentication data cleared");
   } catch (error) {
-    console.error("Clear auth data error:", error);
+    if (__DEV__) console.error("Clear auth data error:", error);
   }
 }
 
@@ -63,13 +62,11 @@ function normalizeApiPath(path: string, method?: string): string {
   for (const endpoint of rootEndpoints) {
     if (basePath === endpoint) {
       const normalized = `${basePath}/${queryString}${fragment}`;
-      console.log(`[normalizeApiPath] Normalized ${path} to ${normalized} (method: ${method})`);
+      if (__DEV__) console.log(`[normalizeApiPath] ${path} → ${normalized}`);
       return normalized;
     }
     // Also check if path starts with endpoint followed by a path segment
-    // e.g., /companies/123 should not get a trailing slash
     if (basePath.startsWith(endpoint + '/') && basePath.length > endpoint.length + 1) {
-      console.log(`[normalizeApiPath] Path ${path} is a sub-path, no normalization needed`);
       return path;
     }
   }
@@ -78,14 +75,11 @@ function normalizeApiPath(path: string, method?: string): string {
   if (queryString && !needsTrailingSlash) {
     for (const endpoint of rootEndpoints) {
       if (basePath === endpoint) {
-        const normalized = `${basePath}/${queryString}${fragment}`;
-        console.log(`[normalizeApiPath] Normalized ${path} to ${normalized} (GET with query params)`);
-        return normalized;
+        return `${basePath}/${queryString}${fragment}`;
       }
     }
   }
   
-  console.log(`[normalizeApiPath] No normalization needed for ${path}`);
   return path;
 }
 
@@ -105,15 +99,8 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     const token = await AsyncStorage.getItem("auth_token");
     const fullUrl = `${API_URL}${normalizedPath}`;
     
-    console.log(`[apiFetch] Original path: ${path}`);
-    console.log(`[apiFetch] Normalized path: ${normalizedPath}`);
-    console.log(`[apiFetch] Starting ${options.method || 'GET'} ${fullUrl}`);
-    console.log(`[apiFetch] Timeout: ${API_TIMEOUT}ms`);
-    if (token) {
-      console.log(`[apiFetch] Using token: ${token.substring(0, 20)}...`);
-    }
-    if (options.body) {
-      console.log(`[apiFetch] Request body:`, options.body);
+    if (__DEV__) {
+      console.log(`[apiFetch] ${options.method || 'GET'} ${fullUrl} (timeout: ${API_TIMEOUT}ms)`);
     }
 
     const isFormData = options.body instanceof FormData;
@@ -128,14 +115,13 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     const startTime = Date.now();
     
     try {
-      console.log(`[apiFetch] Making request to ${fullUrl}...`);
       const response = await fetchWithTimeout(fullUrl, {
           ...options,
           headers
       }, API_TIMEOUT);
       
       const duration = Date.now() - startTime;
-      console.log(`[apiFetch] Response received in ${duration}ms - Status: ${response.status} for ${normalizedPath}`);
+      if (__DEV__) console.log(`[apiFetch] ${response.status} in ${duration}ms`);
     
       if (response.status === 401){
         if(normalizedPath !== "/auth/login" && normalizedPath !== "/auth/login/"){
@@ -161,8 +147,7 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       }
 
       if (!response.ok) {
-        console.error(`[apiFetch] Request failed with status ${response.status}`);
-        console.error(`[apiFetch] Response data:`, data);
+        if (__DEV__) console.error(`[apiFetch] ${response.status}`, data);
         
         const msg =
           data?.detail ||
@@ -174,17 +159,14 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
 
       return data;
     } catch (error: any) {
-      const duration = Date.now() - startTime;
-      console.error(`[apiFetch] Error after ${duration}ms:`, error);
+      if (__DEV__) console.error(`[apiFetch] Error:`, error);
       
       // Handle network errors
       if (error?.message?.includes('timeout')) {
-        console.error(`[apiFetch] Request timed out after ${API_TIMEOUT}ms`);
         throw new ApiError(408, `Request timeout - unable to reach server at ${API_URL}`);
       }
       
       if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
-        console.error(`[apiFetch] Network error - cannot reach ${API_URL}`);
         throw new ApiError(0, `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`);
       }
       

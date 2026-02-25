@@ -10,6 +10,7 @@ export interface Availability {
     status: AvailabilityStatus;
     start_date: string;
     end_date?: string;
+    instructor_name?: string;
 }
 
 export interface CreateAvailabilityRequest {

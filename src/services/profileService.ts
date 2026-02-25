@@ -47,12 +47,11 @@ export const profileService = {
     try {
       console.log("Updating Profile Data:", profileData);
 
-      const response = await apiFetch(`/profiles/me`, {
+      const data: ProfileDetailed = await apiFetch<ProfileDetailed>(`/profiles/me`, {
         method: "PUT",
         body: JSON.stringify(profileData),
       });
 
-      const data: ProfileDetailed = await response.json();
       console.log("Profile updated successfully");
 
       return {

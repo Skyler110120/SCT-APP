@@ -144,34 +144,26 @@ export const onboardingService = {
     try {
       console.log("Assembling signup data from onboarding flow");
 
-      const [inviteCode, companyInfo, intendedRole, selectedInstructor, selectedCourse] =
+      const [inviteCode, companyInfo, intendedRole, selectedCourse] =
         await Promise.all([
           this.getStoredInviteCode(),
           this.getStoredCompanyInfo(),
           this.getStoredSelectedRole(),
-          this.getStoredSelectedInstructor(),
-          this.getStoredSelectedCourse()
+          this.getStoredSelectedCourse(),
         ]);
 
       if (!inviteCode || !companyInfo || !intendedRole) {
-        console.error("Missing required onboarding context:")
+        console.error("Missing required onboarding context");
         return null;
       }
 
-      const needsInstructor = intendedRole === UserRole.STUDENT;
-      const needsCourse = intendedRole === UserRole.STUDENT;
-
-      if (needsInstructor && !selectedInstructor) {
-        console.error("Student role requires instructor selection");
-        return null;
-      }
-
-      if (needsCourse && !selectedCourse) {
+      if (intendedRole === UserRole.STUDENT && !selectedCourse) {
         console.error("Student role requires course selection");
         return null;
       }
 
       const courseId = selectedCourse?.id || registrationData.course_id || null;
+      // instructor_id is no longer required at signup — students book any available instructor
       const signupData: EnhancedSignupData = {
         email: registrationData.email,
         password: registrationData.password,
@@ -179,10 +171,10 @@ export const onboardingService = {
         last_name: registrationData.last_name,
         role: companyInfo.role,
         company_id: companyInfo.company_id,
-        instructor_id: needsInstructor ? selectedInstructor?.id || null : null,
+        instructor_id: null,
         course_id: courseId,
         invite_code: inviteCode,
-    };
+      };
 
       console.log("Signup data assembled successfully");
       return signupData;
@@ -332,19 +324,12 @@ export const onboardingService = {
       ]);
 
       if (!inviteCode || !companyInfo || !selectedRole || !formData) {
-        console.log('Missing basic onboarding data');
+        console.log("Missing basic onboarding data");
         return false;
       }
 
-      if (selectedRole === UserRole.STUDENT) {
-        const selectedInstructor = await this.getStoredSelectedInstructor();
-        if (!selectedInstructor) {
-          console.log('Student role requires instructor selection');
-          return false
-        }
-      }
-
-      console.log('Onboarding data is complete')
+      // Students no longer need an instructor at signup
+      console.log("Onboarding data is complete");
       return true;
     } catch (error) {
       console.error("Check onboarding data completeness error:", error);
@@ -396,8 +381,6 @@ export const onboardingService = {
         progress.nextStepNeeded = 'Validate company information';
       } else if (!progress.hasSelectedRole) {
         progress.nextStepNeeded = 'Select your role';
-      } else if (selectedRole === UserRole.STUDENT && !progress.hasSelectedInstructor) {
-        progress.nextStepNeeded = 'Choose your instructor';
       } else if (!progress.hasFormData) {
         progress.nextStepNeeded = 'Complete personal information';
       }

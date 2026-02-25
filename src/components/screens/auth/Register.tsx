@@ -4,7 +4,6 @@ import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
-import { InstructorSelectionModal } from "@/src/components/onboarding/InstructorSelectionModal";
 import { InviteCodeModal } from "@/src/components/onboarding/InviteCodeModal";
 
 import { courseService } from "@/src/services/courseService";
@@ -12,11 +11,10 @@ import { onboardingService } from "@/src/services/onboardingService";
 
 import { UserRole } from "@/src/types/enums";
 import { CourseSummary } from "@/src/types/course.types";
-import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 
 import { useRouter } from "expo-router";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -30,11 +28,8 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-type OnboardingStep =
-  | "invite-code"
-  | "instructor-selection"
-  | "course-selection"
-  | "registration";
+// Students skip instructor selection — they book any available instructor after signup.
+type OnboardingStep = "invite-code" | "course-selection" | "registration";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -42,14 +37,8 @@ export default function RegisterScreen() {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("invite-code");
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
-  const [selectedInstructor, setSelectedInstructor] =
-    useState<Instructor | null>(null);
 
-  const [instructors, setInstructors] = useState<Instructor[]>([]);
-  const [instructorsLoading, setInstructorsLoading] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(
-    null
-  );
+  const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
 
@@ -63,93 +52,37 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChange = (field: keyof UserFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Track the last processed company to prevent infinite loops
   const lastProcessedCompanyRef = useRef<{ companyId: number; role: UserRole } | null>(null);
 
   const handleInviteCodeSuccess = async (company: CompanyInfo) => {
-    console.log("Invite code validated for company:", company.company_name);
     setCompanyInfo(company);
     setRole(company.role);
-    // Save the role to storage so createSignupDataFromOnboarding can access it
     await onboardingService.saveSelectedRole(company.role);
   };
-
-  const loadInstructors = useCallback(async () => {
-    if (!companyInfo) return;
-
-    setInstructorsLoading(true);
-    try {
-      const instructorList = await onboardingService.getCompanyInstructors(
-        companyInfo.company_id
-      );
-      setInstructors((instructorList.data as Instructor[]) || []);
-    } catch (error) {
-      console.error("Error loading instructors:", error);
-      Alert.alert("Error", "Failed to load instructors. Please try again.");
-    } finally {
-      setInstructorsLoading(false);
-    }
-  }, [companyInfo]);
 
   useEffect(() => {
     if (!role || !companyInfo) return;
 
-    // Check if we've already processed this company/role combination
     const currentKey = { companyId: companyInfo.company_id, role };
     const lastKey = lastProcessedCompanyRef.current;
-    
-    if (
-      lastKey &&
-      lastKey.companyId === currentKey.companyId &&
-      lastKey.role === currentKey.role
-    ) {
-      // Already processed this combination, skip
-      return;
-    }
-
-    // Mark this combination as processed
+    if (lastKey?.companyId === currentKey.companyId && lastKey?.role === currentKey.role) return;
     lastProcessedCompanyRef.current = currentKey;
 
-    // Only proceed if we're transitioning from invite-code step or haven't set a step yet
+    if (currentStep !== "invite-code") return;
+
     if (role === UserRole.STUDENT) {
-      // Only set step if we're coming from invite-code
-      if (currentStep === "invite-code") {
-        setCurrentStep("instructor-selection");
-      }
-      loadInstructors();
+      setCurrentStep("course-selection");
+      loadCourses();
     } else {
-      // Only set step if we're coming from invite-code
-      if (currentStep === "invite-code") {
-        setCurrentStep("registration");
-      }
+      setCurrentStep("registration");
     }
-  }, [role, companyInfo, loadInstructors, currentStep]);
+  }, [role, companyInfo, currentStep]);
 
   const handleInviteCodeCancel = () => {
     router.back();
-  };
-
-  const handleInstructorSelection = async (instructor: Instructor) => {
-    console.log("Instructor selected:", instructor);
-    setSelectedInstructor(instructor);
-    // Save instructor to storage so createSignupDataFromOnboarding can access it
-    await onboardingService.saveSelectedInstructor(instructor);
-    loadCourses();
-    setCurrentStep("course-selection");
-  };
-
-  const handleInstructorSelectionError = (error: string) => {
-    Alert.alert("Error", error);
-  };
-
-  const handleInstructorRetry = () => {
-    loadInstructors();
   };
 
   const loadCourses = async () => {
@@ -186,12 +119,8 @@ export default function RegisterScreen() {
   };
 
   const handleBack = () => {
-    if (currentStep === "instructor-selection") {
+    if (currentStep === "course-selection") {
       setCurrentStep("invite-code");
-      setSelectedInstructor(null);
-      setInstructors([]);
-    } else if (currentStep === "course-selection") {
-      setCurrentStep("instructor-selection");
       setSelectedCourse(null);
       setCourses([]);
     } else if (currentStep === "registration") {
@@ -228,15 +157,9 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (role === UserRole.STUDENT) {
-      if (selectedInstructor === null) {
-        Alert.alert("Error", "Please select an instructor");
-        return;
-      }
-      if (selectedCourse === null) {
-        Alert.alert("Error", "Please select a course");
-        return;
-      }
+    if (role === UserRole.STUDENT && selectedCourse === null) {
+      Alert.alert("Error", "Please select a course");
+      return;
     }
 
     setIsLoading(true);
@@ -246,7 +169,6 @@ export default function RegisterScreen() {
       const registrationData = {
         ...formData,
         companyInfo,
-        instructorId: role === UserRole.STUDENT ? selectedInstructor?.id : null,
         courseId: role === UserRole.STUDENT ? selectedCourse?.id : null,
       };
 
@@ -303,18 +225,6 @@ export default function RegisterScreen() {
           onCancel={handleInviteCodeCancel}
         />
       );
-    } else if (currentStep === "instructor-selection") {
-      return (
-        <InstructorSelectionModal
-          isVisible={true}
-          companyInfo={companyInfo!}
-          instructors={instructors}
-          isLoading={instructorsLoading}
-          onInstructorSelected={handleInstructorSelection}
-          onError={handleInstructorSelectionError}
-          onRetry={handleInstructorRetry}
-        />
-      );
     } else if (currentStep === "course-selection") {
       return (
         <CourseSelectionModal
@@ -322,7 +232,6 @@ export default function RegisterScreen() {
           companyInfo={companyInfo!}
           courses={courses}
           isLoading={coursesLoading}
-          selectedInstructor={selectedInstructor!}
           onCourseSelected={handleCourseSelection}
           onError={handleCourseSelectionError}
           onRetry={handleCourseRetry}
@@ -367,10 +276,8 @@ export default function RegisterScreen() {
                   </Text>
                   <Text style={styles.welcomeSubtext}>
                     Complete your account information below
-                    {role === UserRole.STUDENT &&
-                      selectedInstructor &&
-                      selectedCourse &&
-                      `\nYou'll be assigned to ${selectedInstructor.first_name} ${selectedInstructor.last_name}\nCourse: ${selectedCourse.title}`}
+                    {role === UserRole.STUDENT && selectedCourse &&
+                      `\nCourse: ${selectedCourse.title}`}
                   </Text>
                 </View>
               )}

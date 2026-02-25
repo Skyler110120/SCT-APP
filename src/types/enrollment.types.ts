@@ -6,6 +6,12 @@ export enum ProgressionDecision {
     NEEDS_MORE = 'needs_more'
 }
 
+export enum EnrollmentPhase {
+    NORMAL = 'NORMAL',
+    MAKEUP_FREE = 'MAKEUP_FREE',
+    MAKEUP_PAID = 'MAKEUP_PAID',
+}
+
 export interface StudentEnrollment {
     id: number;
     course_id: number;
@@ -19,6 +25,13 @@ export interface StudentEnrollment {
     instructor_decision?: ProgressionDecision;
     enrolled_at: string;
     completed_at?: string;
+
+    // Payment / phase fields
+    subscription_id?: number | null;
+    payment_required: boolean;
+    enrollment_phase: EnrollmentPhase;
+    completed_sessions_count: number;
+    make_up_sessions_remaining: number;
 }
 
 export interface EnrollmentWithCourse extends StudentEnrollment {

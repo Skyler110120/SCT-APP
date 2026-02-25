@@ -15,34 +15,38 @@ export interface Session extends SessionBase {
     course_id?: number | null;
     enrollment_id?: number | null;
     status: SessionStatus;
+    /** Locked enrollment week for group sessions (all participants must share this week). */
+    week_number?: number | null;
     created_at: string;
     updated_at: string;
 }
 
 export interface SessionDetailed extends Session {
-    //User information
+    // User information
     instructor_name?: string;
     instructor_email?: string;
     student_name?: string;
     student_email?: string;
     company_name?: string;
 
-    //Computed fields
+    // Computed fields
     duration_minutes?: number;
     can_be_cancelled?: boolean;
-    can_be_completed?: boolean
+    can_be_completed?: boolean;
+    /** Number of students currently in this session (group sessions). */
+    participant_count?: number;
 
-    //Course information
-    course_title?: string
+    // Course information
+    course_title?: string;
     course_description?: string;
     course_gun_type?: string;
     course_difficulty?: string;
 
-    //Enrollment information
+    // Enrollment information
     enrollment_current_week?: number;
-    enrollment_progress_display?: string;  
+    enrollment_progress_display?: string;
     enrollment_progress_percentage?: number;
-    enrollment_status?: string;   
+    enrollment_status?: string;
     enrollment_instructor_notes?: string;
 }
 

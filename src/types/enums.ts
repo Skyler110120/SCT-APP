@@ -1,8 +1,8 @@
 export enum UserRole {
-    STUDENT = 'student',
-    INSTRUCTOR = 'instructor',
-    ADMIN = 'admin',
-    MASTER_ADMIN = 'masteradmin',
+    STUDENT = 'STUDENT',
+    INSTRUCTOR = 'INSTRUCTOR',
+    ADMIN = 'ADMIN',
+    MASTER_ADMIN = 'MASTERADMIN',
 }
 
 export enum AvailabilityStatus {

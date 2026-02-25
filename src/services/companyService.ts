@@ -109,6 +109,40 @@ export const companyService = {
    * @param inviteData - data for the new invite code
    * @returns new invte code or error message
    */
+  /**
+   * Get a signed onboarding link for the company (TASK-ONB-001).
+   * Returns a token, join URL, and company info.
+   */
+  async getOnboardingLink(
+    companyId: number,
+    courseId?: number
+  ): Promise<{
+    success: boolean;
+    data?: {
+      token: string;
+      join_url: string;
+      company_id: number;
+      company_name: string;
+      course_id?: number;
+      expires_in_days: number;
+    };
+    error?: string;
+  }> {
+    try {
+      const params = new URLSearchParams();
+      if (courseId) params.set("course_id", courseId.toString());
+      const qs = params.toString() ? `?${params.toString()}` : "";
+      const data = await apiFetch(`/companies/${companyId}/onboarding-link${qs}`);
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error getting onboarding link:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to generate onboarding link",
+      };
+    }
+  },
+
   async createInviteCode(
     inviteData: CreateInviteCodeRequest
   ): Promise<InviteCodeResponse> {

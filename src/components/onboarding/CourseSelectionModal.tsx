@@ -2,7 +2,6 @@ import { themes } from "@/src/context/themes";
 import { onboardingService } from "@/src/services/onboardingService";
 import { courseSelectionModalStyles as styles } from "@/src/styles/RegisterPageStyles/courseSelectionModalStyles";
 import { CourseSummary } from "@/src/types/course.types";
-import { Instructor } from "@/src/types/instructor.types";
 import { CompanyInfo } from "@/src/types/onboarding.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -20,7 +19,6 @@ type ValidIconName = "circle-o" | "dot-circle-o" | "bullseye";
 interface CourseSelectionModalProps {
   isVisible: boolean;
   companyInfo: CompanyInfo;
-  selectedInstructor: Instructor;
   courses: CourseSummary[];
   isLoading: boolean;
   onCourseSelected: (course: CourseSummary) => void;
@@ -32,7 +30,6 @@ interface CourseSelectionModalProps {
 export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
   isVisible,
   companyInfo,
-  selectedInstructor,
   courses,
   isLoading: coursesLoading,
   onCourseSelected,
@@ -200,9 +197,8 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
       <Text style={styles.courseListTitle}>Choose Your Training Course</Text>
 
       <Text style={styles.courseListDescription}>
-        Select the course you signed up for Your Instructor{" "}
-        {selectedInstructor.first_name} {selectedInstructor.last_name} will
-        guide you
+        Select the training course you'd like to enroll in at{" "}
+        {companyInfo.company_name}
       </Text>
 
       <ScrollView

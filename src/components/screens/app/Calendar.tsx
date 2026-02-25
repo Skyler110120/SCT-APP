@@ -26,6 +26,7 @@ import { eventService } from "@/src/services/eventService";
 import { instructorAvailabilityService } from "@/src/services/instructorAvailabilityService";
 import { sessionService } from "@/src/services/sessionService";
 
+import { UserRole } from "@/src/types/enums";
 import {
   Availability,
   AvailabilityUpdate,
@@ -105,10 +106,10 @@ export default function CalendarScreen() {
         promises.push(loadSessionsForMonth());
       }
 
-      if (user?.role === "instructor") {
+      if (user?.role === UserRole.INSTRUCTOR) {
         promises.push(loadMyAvailabilities());
-      } else if (user?.role === "student" && user?.instructor_id) {
-        promises.push(loadInstructorAvailabilities(user.instructor_id));
+      } else if (user?.role === UserRole.STUDENT) {
+        promises.push(loadCompanyAvailabilities());
       }
 
       await Promise.all(promises);
@@ -209,7 +210,7 @@ export default function CalendarScreen() {
     }
   };
 
-  const loadInstructorAvailabilities = async (instructorId: number) => {
+  const loadCompanyAvailabilities = async () => {
     try {
       const selectedDateObject = new Date(selectedDate);
       const startOfMonth = new Date(
@@ -225,8 +226,7 @@ export default function CalendarScreen() {
       const startDateString = formatDateForAPI(startOfMonth);
       const endDateString = formatDateForAPI(endOfMonth);
       const response =
-        await instructorAvailabilityService.getAvailabilityForCalendar(
-          instructorId,
+        await instructorAvailabilityService.getCompanyAvailability(
           startDateString,
           endDateString
         );
@@ -235,12 +235,12 @@ export default function CalendarScreen() {
         setAvailabilities(response.data);
       } else {
         console.error(
-          "Failed to load instructor availablities:",
+          "Failed to load company availabilities:",
           response.error
         );
       }
     } catch (error) {
-      console.error("Error loading instructor availabilities:", error);
+      console.error("Error loading company availabilities:", error);
     }
   };
 
@@ -256,7 +256,7 @@ export default function CalendarScreen() {
       return;
     }
 
-    if (user?.role !== "admin") {
+    if (user?.role !== UserRole.ADMIN) {
       Alert.alert("Permission Denied", "Only admins can create events");
       return;
     }
@@ -265,7 +265,7 @@ export default function CalendarScreen() {
   };
 
   const handleManageAvailability = () => {
-    if (user?.role !== "instructor") {
+    if (user?.role !== UserRole.INSTRUCTOR) {
       Alert.alert(
         "Permission Denied",
         "Only instructors can manage availability"
@@ -471,7 +471,7 @@ export default function CalendarScreen() {
   console.log('User role:', user?.role);
   console.log('Availability:', availability);
   
-  if (user?.role === "student") {
+  if (user?.role === UserRole.STUDENT) {
     console.log('✅ Setting availability for booking');
     setSelectedAvailabilityForBooking(availability);
     setShowSessionBookingModal(true);
@@ -504,7 +504,7 @@ export default function CalendarScreen() {
         setShowSessionDetailsModal(false);
         Alert.alert("Success", "Session cancelled successfully");
 
-        if (user?.role === "instructor") {
+        if (user?.role === UserRole.INSTRUCTOR) {
           await loadMyAvailabilities();
         } else if (user?.instructor_id) {
           await loadInstructorAvailabilities(user.instructor_id);
@@ -532,8 +532,11 @@ export default function CalendarScreen() {
   };
 
   const handleBeginSession = (sessionId: number) => {
-    // For future performance form implementation
-    Alert.alert("Coming Soon", "Performance tracking will be available soon");
+    router.push({
+      pathname: "/company/session-form",
+      params: { sessionId: sessionId.toString() },
+    });
+    setShowSessionDetailsModal(false);
   };
 
   const markedDates = {
@@ -556,7 +559,7 @@ export default function CalendarScreen() {
   const renderActionButtons = () => {
     const buttons = [];
 
-    if (user?.role === "admin") {
+    if (user?.role === UserRole.ADMIN) {
       buttons.push(
         <TouchableOpacity
           key="create-event"
@@ -568,7 +571,7 @@ export default function CalendarScreen() {
       );
     }
 
-    if (user?.role === "instructor") {
+    if (user?.role === UserRole.INSTRUCTOR) {
       buttons.push(
         <TouchableOpacity
           key="manage-availability"
@@ -802,7 +805,7 @@ export default function CalendarScreen() {
           {renderActionButtons()}
 
           <View style={styles.scheduleContainer}>
-            {user?.role === "instructor" && showAvailabilityManagement ? (
+            {user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement ? (
               renderAvailabilityManagement()
             ) : (
               <>
@@ -850,7 +853,7 @@ export default function CalendarScreen() {
                             >
                               Progress: {session.enrollment_progress_display}
                             </Text>
-                            {user?.role === "instructor" ? (
+                            {user?.role === UserRole.INSTRUCTOR ? (
                               <Text
                                 style={[
                                   styles.sessionText,
@@ -893,7 +896,7 @@ export default function CalendarScreen() {
                       </Text>
                     )}
 
-                  {user?.role === "instructor" &&
+                  {user?.role === UserRole.INSTRUCTOR &&
                     availabilities.length === 0 && (
                       <>
                         <Text style={styles.sectionSubtitle}>
@@ -909,7 +912,7 @@ export default function CalendarScreen() {
                   {availabilities.length > 0 && (
                     <>
                       <Text style={styles.sectionSubtitle}>
-                        {user?.role === "instructor"
+                        {user?.role === UserRole.INSTRUCTOR
                           ? "Your Availability"
                           : "Instructor's Availability"}
                       </Text>
@@ -921,10 +924,10 @@ export default function CalendarScreen() {
                               styles.sessionCard,
                             ]}
                             onPress={() =>
-                              user?.role === "student" &&
+                              user?.role === UserRole.STUDENT &&
                               handleAvailabilityPress(availability)
                             }
-                            disabled={user?.role !== "student"}
+                            disabled={user?.role !== UserRole.STUDENT}
                           >
                             <View >
                               <Text style={styles.sessionText}>
@@ -932,7 +935,17 @@ export default function CalendarScreen() {
                                 {formatTimeString(availability.start_time)} -{" "}
                                 {formatTimeString(availability.end_time)}
                               </Text>
-                              {user?.role === "student" && (
+                              {availability.instructor_name && user?.role === UserRole.STUDENT && (
+                                <Text
+                                  style={[
+                                    styles.sessionText,
+                                    { fontSize: 22 },
+                                  ]}
+                                >
+                                  Instructor: {availability.instructor_name}
+                                </Text>
+                              )}
+                              {user?.role === UserRole.STUDENT && (
                                 <Text
                                   style={[
                                     styles.sessionText,
@@ -943,7 +956,7 @@ export default function CalendarScreen() {
                                 </Text>
                               )}
                             </View>
-                            {user?.role === "student" && (
+                            {user?.role === UserRole.STUDENT && (
                               <View
                                 style={{
                                   justifyContent: "center",
@@ -979,7 +992,7 @@ export default function CalendarScreen() {
                           {formatDateString(selectedDate)}
                         </Text>
                       )}
-                      {user?.role === "instructor" && (
+                      {user?.role === UserRole.INSTRUCTOR && (
                         <Text style={styles.hintText}>
                           Click "Manage Availability" to see your full weekly
                           scheudle
@@ -993,7 +1006,7 @@ export default function CalendarScreen() {
           </View>
         </SafeAreaView>
 
-        {user?.role === "admin" && (
+        {user?.role === UserRole.ADMIN && (
           <CreateEventModal
             visible={showCreateEventModal}
             isSubmitting={isSubmittingEvent}
@@ -1003,7 +1016,7 @@ export default function CalendarScreen() {
           />
         )}
 
-        {user?.role === "instructor" && (
+        {user?.role === UserRole.INSTRUCTOR && (
           <InstructorAvailabilityModal
             visible={showAvailabilityModal}
             isSubmitting={isSubmittingAvailability}
@@ -1017,7 +1030,7 @@ export default function CalendarScreen() {
           />
         )}
 
-        {user?.role === "student" && (
+        {user?.role === UserRole.STUDENT && (
           <SessionBookingModal
             visible={showSessionBookingModal}
             availability={selectedAvailabilityForBooking}
@@ -1040,7 +1053,7 @@ export default function CalendarScreen() {
           onCancel={handleSessionCancel}
           onReviewMaterials={handleReviewMaterials}
           onBeginSession={
-            user?.role === "instructor" ? handleBeginSession : undefined
+            user?.role === UserRole.INSTRUCTOR ? handleBeginSession : undefined
           }
           isCancelling={isCancellingSession}
         />

@@ -124,6 +124,28 @@ export const instructorAvailabilityService = {
   },
 
   /**
+   * Get availability for all instructors in the current user's company.
+   * Used by students to see bookable slots across any instructor (TASK-ONB-004).
+   * @param startDate - Start date (YYYY-MM-DD)
+   * @param endDate - End date (YYYY-MM-DD)
+   */
+  async getCompanyAvailability(
+    startDate: string,
+    endDate: string,
+  ): Promise<AvailabilityListResponse> {
+    try {
+      const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+      const data: Availability[] = await apiFetch<Availability[]>(
+        `/availability/company/all?${params}`,
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Failed to fetch company availability:", error);
+      return { success: false, error: "Failed to fetch company availability" };
+    }
+  },
+
+  /**
    * Delete an existing availability
    * @param availabilityId - ID of the availability to delete
    * @returns Promise with success status or error message
@@ -133,7 +155,7 @@ export const instructorAvailabilityService = {
   ): Promise<AvailabilityResponse> {
     try {
       const response = await apiFetch(
-        `availability/${availabilityId}`,
+        `/availability/${availabilityId}`,
         {
           method: "DELETE",
         }

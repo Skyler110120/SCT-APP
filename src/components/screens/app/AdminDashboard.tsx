@@ -1,8 +1,11 @@
 import * as Clipboard from "expo-clipboard";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -14,6 +17,7 @@ import InviteCodeList from "@/src/components/InviteCodeList";
 import BottomNavBar from "@/src/components/NavBar";
 
 import { useAuth } from "@/src/context/AuthContext";
+import { themes } from "@/src/context/themes";
 import { companyService } from "@/src/services/companyService";
 import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
@@ -30,6 +34,8 @@ export default function AdminDashboard() {
   const [isSubmittingCode, setIsSubmittingCode] = useState<boolean>(false);
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
     useState<boolean>(false);
+  const [onboardingLink, setOnboardingLink] = useState<string | null>(null);
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
   useEffect(() => {
     if (user?.company_id) {
@@ -129,6 +135,33 @@ export default function AdminDashboard() {
     Alert.alert("Copied", "Invite code copied to clipboard");
   };
 
+  const handleGenerateQR = async () => {
+    if (!company) return;
+    setIsGeneratingQR(true);
+    try {
+      const response = await companyService.getOnboardingLink(company.id);
+      if (response.success && response.data) {
+        setOnboardingLink(response.data.join_url);
+      } else {
+        Alert.alert("Error", response.error || "Failed to generate QR code");
+      }
+    } catch (err) {
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setIsGeneratingQR(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (onboardingLink) {
+      await Clipboard.setStringAsync(onboardingLink);
+      Alert.alert("Copied", "Onboarding link copied to clipboard");
+    }
+  };
+
+  const getQRCodeUrl = (text: string, size: number = 200) =>
+    `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+
   return (
     <View style={styles.container}>
       <BackgroundGradient>
@@ -144,6 +177,62 @@ export default function AdminDashboard() {
                 Loading company data...
               </Text>
             )}
+            {/* QR Onboarding Section (TASK-ONB-003) */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Student Onboarding QR</Text>
+              {onboardingLink ? (
+                <View style={{ alignItems: "center", paddingVertical: 12 }}>
+                  <Image
+                    source={{ uri: getQRCodeUrl(onboardingLink, 250) }}
+                    style={{
+                      width: 200,
+                      height: 200,
+                      borderRadius: 8,
+                      backgroundColor: themes.white,
+                    }}
+                    resizeMode="contain"
+                  />
+                  <Text
+                    style={{
+                      color: "rgba(255,255,255,0.6)",
+                      fontSize: 12,
+                      fontFamily: "Chakra-Regular",
+                      textAlign: "center",
+                      marginTop: 8,
+                    }}
+                  >
+                    Students scan this QR to sign up
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, { marginTop: 8 }]}
+                    onPress={handleCopyLink}
+                  >
+                    <Text style={styles.buttonText}>Copy Link</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionButton, { marginTop: 4 }]}
+                    onPress={handleGenerateQR}
+                  >
+                    <Text style={styles.buttonText}>Regenerate</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleGenerateQR}
+                  disabled={!company || isGeneratingQR}
+                >
+                  {isGeneratingQR ? (
+                    <ActivityIndicator size="small" color={themes.black} />
+                  ) : (
+                    <Text style={styles.buttonText}>
+                      Generate QR Code
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
                 Invite Codes

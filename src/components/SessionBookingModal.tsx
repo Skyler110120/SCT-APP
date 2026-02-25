@@ -23,6 +23,7 @@ interface SessionBookingModalProps {
   visible: boolean;
   availability: Availability | null;
   selectedDate: string;
+  instructorId: number;
   onClose: () => void;
   onBookingSuccess: (session: SessionDetailed) => void;
 }
@@ -31,6 +32,7 @@ export default function SessionBookingModal({
   visible,
   availability,
   selectedDate,
+  instructorId,
   onClose,
   onBookingSuccess,
 }: SessionBookingModalProps) {
@@ -101,7 +103,7 @@ export default function SessionBookingModal({
   }
 
   const handleBookSession = async () => {
-    if (!selectedStartTime || !availability || !user?.instructor_id) {
+    if (!selectedStartTime || !availability) {
       Alert.alert("Error", "Missing required information to book the session.");
       return;
     }
@@ -118,7 +120,7 @@ export default function SessionBookingModal({
     try {
       const endTime = calculateEndTime(selectedStartTime);
       const bookingData: DirectBookingRequest = {
-        instructor_id: user.instructor_id,
+        instructor_id: instructorId,
         title: `Training Session`,
         description: `Scheduled training session`,
         start_time: `${selectedDate}T${selectedStartTime}:00`,
