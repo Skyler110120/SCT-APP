@@ -46,7 +46,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!credentials.email || !credentials.password) {
-      Alert.alert("Error", "Please enter both email and password");
+      Alert.alert("Error", "Please enter your email or phone number and password");
       return;
     }
 
@@ -94,13 +94,13 @@ export default function LoginScreen() {
                 <TextInput
                   multiline={false}
                   scrollEnabled={false}
-                  placeholder="Email"
+                  placeholder="Email or phone number"
                   placeholderTextColor={themes.vegasGold}
                   style={styles.textInputBox}
                   value={credentials.email}
                   onChangeText={(text) => handleChange("email", text)}
-                  keyboardType="email-address"
                   autoCapitalize="none"
+                  autoComplete="username"
                 />
                 <TextInput
                   multiline={false}

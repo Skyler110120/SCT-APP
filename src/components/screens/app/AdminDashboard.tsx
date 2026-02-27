@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -19,8 +20,12 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { companyService } from "@/src/services/companyService";
+import { smsInviteService } from "@/src/services/smsInviteService";
+import { courseService } from "@/src/services/courseService";
 import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
+import { CourseSummary } from "@/src/types/course.types";
+import { SmsInviteListItem } from "@/src/types/smsOnboarding.types";
 import { UserRole } from "@/src/types/enums";
 
 export default function AdminDashboard() {
@@ -37,6 +42,15 @@ export default function AdminDashboard() {
   const [onboardingLink, setOnboardingLink] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
+  // SMS Invite state
+  const [smsPhone, setSmsPhone] = useState("");
+  const [smsRole, setSmsRole] = useState<string>("STUDENT");
+  const [smsCourseId, setSmsCourseId] = useState<number | null>(null);
+  const [courses, setCourses] = useState<CourseSummary[]>([]);
+  const [smsInvites, setSmsInvites] = useState<SmsInviteListItem[]>([]);
+  const [isSendingSms, setIsSendingSms] = useState(false);
+  const [smsMessage, setSmsMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   useEffect(() => {
     if (user?.company_id) {
       fetchCompanyData(Number(user.company_id));
@@ -48,13 +62,23 @@ export default function AdminDashboard() {
   const fetchCompanyData = async (companyId: number) => {
     setIsLoading(true);
     try {
-      const companyResponse = await companyService.getCompany(companyId);
+      const [companyResponse, coursesResponse, smsResponse] = await Promise.all([
+        companyService.getCompany(companyId),
+        courseService.getCourseForSelection(),
+        smsInviteService.listInvites(companyId),
+      ]);
 
       if (companyResponse.success && companyResponse.data) {
         setCompany(companyResponse.data);
         fetchInviteCodes(companyResponse.data.id);
       } else {
         Alert.alert("Error", "Failed to load company data");
+      }
+      if (coursesResponse.success && coursesResponse.data) {
+        setCourses(coursesResponse.data);
+      }
+      if (smsResponse.success && smsResponse.data) {
+        setSmsInvites(smsResponse.data);
       }
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -159,6 +183,42 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendSmsInvite = async () => {
+    if (!company || !smsPhone.trim()) return;
+
+    setIsSendingSms(true);
+    setSmsMessage(null);
+
+    try {
+      const result = await smsInviteService.createInvite(company.id, {
+        phone_number: smsPhone.trim(),
+        role: smsRole,
+        course_id: smsRole === "STUDENT" ? smsCourseId : null,
+      });
+
+      if (result.success && result.data) {
+        setSmsMessage({ type: "success", text: `Invite sent to ${smsPhone.trim()}` });
+        setSmsPhone("");
+        const refreshed = await smsInviteService.listInvites(company.id);
+        if (refreshed.success && refreshed.data) {
+          setSmsInvites(refreshed.data);
+        }
+      } else {
+        setSmsMessage({ type: "error", text: result.error || "Failed to send invite" });
+      }
+    } catch {
+      setSmsMessage({ type: "error", text: "An error occurred while sending the invite" });
+    } finally {
+      setIsSendingSms(false);
+    }
+  };
+
+  const SMS_ROLES = [
+    { label: "Student", value: "STUDENT" },
+    { label: "Instructor", value: "INSTRUCTOR" },
+    { label: "Admin", value: "ADMIN" },
+  ];
+
   const getQRCodeUrl = (text: string, size: number = 200) =>
     `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 
@@ -258,6 +318,153 @@ export default function AdminDashboard() {
                 </Text>
               </TouchableOpacity>
             </View>
+            {/* SMS Invite Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>SMS Invites</Text>
+
+              <TextInput
+                style={styles.textInput}
+                placeholder="Phone number (e.g. +15551234567)"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={smsPhone}
+                onChangeText={(text) => {
+                  setSmsPhone(text);
+                  setSmsMessage(null);
+                }}
+                keyboardType="phone-pad"
+                autoCapitalize="none"
+              />
+
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 8 }}>
+                {SMS_ROLES.map((r) => (
+                  <TouchableOpacity
+                    key={r.value}
+                    onPress={() => setSmsRole(r.value)}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 20,
+                      borderWidth: 1,
+                      borderColor: themes.vegasGold,
+                      backgroundColor: smsRole === r.value ? themes.vegasGold : "transparent",
+                    }}
+                  >
+                    <Text style={{
+                      fontFamily: "Chakra-Bold",
+                      fontSize: 14,
+                      color: smsRole === r.value ? themes.black : themes.vegasGold,
+                    }}>
+                      {r.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {smsRole === "STUDENT" && courses.length > 0 && (
+                <View style={{ marginTop: 8 }}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => setSmsCourseId(null)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 6,
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          borderColor: themes.vegasGold,
+                          backgroundColor: smsCourseId === null ? themes.vegasGold : "transparent",
+                        }}
+                      >
+                        <Text style={{
+                          fontFamily: "Chakra-Regular",
+                          fontSize: 13,
+                          color: smsCourseId === null ? themes.black : themes.white,
+                        }}>
+                          No Course
+                        </Text>
+                      </TouchableOpacity>
+                      {courses.map((c) => (
+                        <TouchableOpacity
+                          key={c.id}
+                          onPress={() => setSmsCourseId(c.id)}
+                          style={{
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 16,
+                            borderWidth: 1,
+                            borderColor: themes.vegasGold,
+                            backgroundColor: smsCourseId === c.id ? themes.vegasGold : "transparent",
+                          }}
+                        >
+                          <Text style={{
+                            fontFamily: "Chakra-Regular",
+                            fontSize: 13,
+                            color: smsCourseId === c.id ? themes.black : themes.white,
+                          }}>
+                            {c.title}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
+                </View>
+              )}
+
+              {smsMessage && (
+                <Text style={{
+                  marginTop: 8,
+                  fontFamily: "Chakra-Regular",
+                  fontSize: 14,
+                  textAlign: "center",
+                  color: smsMessage.type === "success" ? "#4CAF50" : "#FF4444",
+                }}>
+                  {smsMessage.text}
+                </Text>
+              )}
+
+              <TouchableOpacity
+                style={[styles.actionButton, { opacity: isSendingSms || !smsPhone.trim() ? 0.5 : 1 }]}
+                onPress={handleSendSmsInvite}
+                disabled={isSendingSms || !smsPhone.trim()}
+              >
+                {isSendingSms ? (
+                  <ActivityIndicator size="small" color={themes.black} />
+                ) : (
+                  <Text style={styles.buttonText}>Send SMS Invite</Text>
+                )}
+              </TouchableOpacity>
+
+              {smsInvites.length > 0 && (
+                <View style={{ marginTop: 12 }}>
+                  <Text style={{
+                    fontFamily: "Chakra-Bold",
+                    fontSize: 16,
+                    color: themes.vegasGold,
+                    marginBottom: 8,
+                  }}>
+                    Recent Invites
+                  </Text>
+                  {smsInvites.slice(0, 10).map((inv) => (
+                    <View key={inv.id} style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "rgba(197,179,88,0.2)",
+                    }}>
+                      <Text style={{ fontFamily: "Chakra-Regular", fontSize: 14, color: themes.white }}>
+                        {inv.target_phone_number}
+                      </Text>
+                      <Text style={{ fontFamily: "Chakra-Regular", fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                        {inv.target_role} · {inv.invite_status}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+
             <TouchableOpacity
               style={styles.actionButton}
               onPress={handleLogout}
