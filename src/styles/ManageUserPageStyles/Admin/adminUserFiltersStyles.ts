@@ -12,7 +12,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
   },
   filterSectionTitle: {
     marginBottom: 16,
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
@@ -26,7 +26,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
   },
   filterLabel: {
     marginBottom: 8,
-    fontSize: 20,
+    fontSize: 17,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },

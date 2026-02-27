@@ -10,6 +10,12 @@ export const calendarScreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent'
   },
+  pageScroll: {
+    flex: 1,
+  },
+  pageScrollContent: {
+    paddingBottom: 24,
+  },
   calendarContainer: {
     borderRadius: 20,
     overflow: "hidden",
@@ -18,15 +24,22 @@ export const calendarScreenStyles = StyleSheet.create({
     borderColor: themes. white,
   },
   scheduleContainer: {
-    flex: 1,
     borderTopLeftRadius: 100,
     borderTopRightRadius: 100,
+    borderBottomLeftRadius: 100,
+    borderBottomRightRadius: 100,
     marginTop: 30,
+    marginBottom: 16,
+    paddingTop: 8,
     paddingRight: 16,
     paddingLeft: 16,
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: themes. vegasGold,
+  },
+  scheduleList: {
+    minHeight: 220,
+    maxHeight: 420,
   },
   scheduleText: {
     fontSize: 48,
@@ -199,7 +212,6 @@ export const calendarScreenStyles = StyleSheet.create({
     color: "#FF4444",
   },
   scrollContentContainer: {
-    paddingBottom: 120,
-    flexGrow: 1,
+    paddingBottom: 96,
   },
 });

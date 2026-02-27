@@ -12,15 +12,16 @@ export const navigateByRole = (
     hasCompletedOnboarding: boolean
 ): void => {
     if(!hasCompletedOnboarding) {
-        router.replace("/screens/app/InstructorDashboard")
+        router.replace("/dashboard")
+        return;
     }
     if (role === UserRole.MASTER_ADMIN) {
-        router.replace("/screens/app/MasterAdminDashboard")
+        router.replace("/system/dashboard")
     } else if (role === UserRole.ADMIN) { 
-        router.replace("/screens/app/AdminDashboard")
+        router.replace("/company/management/dashboard")
     } else if (role === UserRole.INSTRUCTOR) {
-        router.replace("/screens/app/InstructorDashboard")
+        router.replace("/learning/dashboard")
     } else {
-        router.replace("/screens/app/InstructorDashboard")
+        router.replace("/learning/dashboard")
     }
 }

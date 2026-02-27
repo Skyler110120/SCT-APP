@@ -17,7 +17,7 @@ export const adminManageUsersStyles = StyleSheet.create({
   pageTitle: {
     marginBottom: 24,
     textAlign: "center",
-    fontSize: 40,
+    fontSize: 34,
     fontFamily: "Chakra-BoldItalic",
     color: themes.vegasGold,
   },

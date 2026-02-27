@@ -205,7 +205,7 @@ export const sessionService = {
 
       return {
         success: true,
-        data: data.session,
+        data,
         message: "Training session cancelled successfully",
       };
     } catch (error) {

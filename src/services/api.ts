@@ -53,7 +53,12 @@ function normalizeApiPath(path: string, method?: string): string {
   }
   
   // Root-level endpoints that need trailing slashes
-  const rootEndpoints = ['/companies', '/users', '/courses', '/events', '/instructors', '/auth', '/profile', '/onboarding'];
+  const rootEndpoints = [
+    '/companies', '/users', '/courses', '/events',
+    '/instructors', '/auth', '/profiles', '/onboarding',
+    '/sessions', '/session-forms', '/test-session-forms',
+    '/availability', '/materials', '/course-drills',
+  ];
   
   // Check if this is a root-level endpoint without trailing slash
   // POST, PUT, PATCH requests to root endpoints definitely need trailing slashes

@@ -34,8 +34,12 @@ const InstructorStudentTable: React.FC<InstructorStudentTableProps> = ({
     return (
       <View style={styles.userRow}>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{formatName(item)}</Text>
-          <Text style={styles.userEmail}>{item.email}</Text>
+          <Text style={styles.userName} numberOfLines={1}>
+            {formatName(item)}
+          </Text>
+          <Text style={styles.userEmail} numberOfLines={1}>
+            {item.email}
+          </Text>
 
           <View style={styles.userMeta}>
             <View style={[styles.roleBadge, { backgroundColor: status.color }]}>

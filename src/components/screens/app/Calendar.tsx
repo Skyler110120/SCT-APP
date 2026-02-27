@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
@@ -52,7 +53,9 @@ interface Session {
 
 export default function CalendarScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const availabilityScrollViewRef = useRef<ScrollView>(null);
+  const bottomContentPadding = insets.bottom + 150;
 
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
@@ -489,7 +492,7 @@ export default function CalendarScreen() {
   const handleBookingSuccess = (session: SessionDetailed) => {
     setSessions((prevSessions) => [...prevSessions, session]);
     setShowSessionBookingModal(false);
-    Alert.alert("Successs", "Training session booked successfully");
+    Alert.alert("Success", "Training session booked successfully");
   };
 
   const handleSessionCancel = async (sessionId: number) => {
@@ -507,7 +510,7 @@ export default function CalendarScreen() {
         if (user?.role === UserRole.INSTRUCTOR) {
           await loadMyAvailabilities();
         } else if (user?.instructor_id) {
-          await loadInstructorAvailabilities(user.instructor_id);
+          await loadCompanyAvailabilities();
         }
       } else {
         Alert.alert("Error", response.error || "Failed to cancel session");
@@ -607,8 +610,10 @@ export default function CalendarScreen() {
 
         <ScrollView
           ref={availabilityScrollViewRef}
+          style={styles.scheduleList}
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={true}
+          nestedScrollEnabled={true}
         >
           <View style={styles.addButtonContainer}>
             <TouchableOpacity
@@ -751,259 +756,275 @@ export default function CalendarScreen() {
     <View style={styles.container}>
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.calendarContainer}>
-            <Calendar
-              current={selectedDate}
-              markingType={"custom"}
-              markedDates={{
-                [selectedDate]: {
-                  selected: true,
-                },
-              }}
-              theme={{
-                calendarBackground: "transparent",
-                textSectionTitleColor: themes.vegasGold,
-                selectedDayBackgroundColor: themes.vegasGold,
-                selectedDayTextColor: themes.black,
-                todayTextColor: themes.vegasGold,
-                dayTextColor: themes.vegasGold,
-                textDisabledColor: themes.white,
-                monthTextColor: themes.vegasGold,
-                arrowColor: themes.vegasGold,
-                textMonthFontSize: 48,
-                textDayFontSize: 16,
-                textDayHeaderFontSize: 16,
-                ...({
-                  "stylesheet.day.basic": {
-                    base: {
-                      width: 70,
-                      height: 70,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: 20,
-                      borderWidth: 1,
-                      borderColor: themes.white,
-                    },
+          <ScrollView
+            style={styles.pageScroll}
+            contentContainerStyle={[
+              styles.pageScrollContent,
+              { paddingBottom: bottomContentPadding },
+            ]}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled={true}
+          >
+            <View style={styles.calendarContainer}>
+              <Calendar
+                current={selectedDate}
+                markingType={"custom"}
+                markedDates={{
+                  [selectedDate]: {
+                    selected: true,
                   },
-                } as any),
-                ...({
-                  "stylesheet.day.header": {
-                    base: {
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      paddingHorizontal: 20,
-                      color: themes.white,
+                }}
+                theme={{
+                  calendarBackground: "transparent",
+                  textSectionTitleColor: themes.vegasGold,
+                  selectedDayBackgroundColor: themes.vegasGold,
+                  selectedDayTextColor: themes.black,
+                  todayTextColor: themes.vegasGold,
+                  dayTextColor: themes.vegasGold,
+                  textDisabledColor: themes.white,
+                  monthTextColor: themes.vegasGold,
+                  arrowColor: themes.vegasGold,
+                  textMonthFontSize: 48,
+                  textDayFontSize: 16,
+                  textDayHeaderFontSize: 16,
+                  ...({
+                    "stylesheet.day.basic": {
+                      base: {
+                        width: 70,
+                        height: 70,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 20,
+                        borderWidth: 1,
+                        borderColor: themes.white,
+                      },
                     },
-                  },
-                } as any),
-              }}
-              onDayPress={handleSelectDate}
-            />
-          </View>
+                  } as any),
+                  ...({
+                    "stylesheet.day.header": {
+                      base: {
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingHorizontal: 20,
+                        color: themes.white,
+                      },
+                    },
+                  } as any),
+                }}
+                onDayPress={handleSelectDate}
+              />
+            </View>
 
-          {renderActionButtons()}
+            {renderActionButtons()}
 
-          <View style={styles.scheduleContainer}>
-            {user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement ? (
-              renderAvailabilityManagement()
-            ) : (
-              <>
-                <Text style={styles.scheduleText}>Schedule</Text>
-                <ScrollView>
-                  {eventsForSelectedDate.length > 0 && (
-                    <>
-                      <Text style={styles.sectionSubtitle}>Events</Text>
-                      {eventsForSelectedDate.map((event) => (
-                        <View key={event.id} style={styles.sessionCard}>
-                          <Text style={[styles.sessionText]}>
-                            {event.title}: {""}
-                            {formatTimeString(event.start_time)} -{" "}
-                            {formatTimeString(event.end_time)}
-                          </Text>
-                        </View>
-                      ))}
-                    </>
-                  )}
-                  {sessionsForSelectedDate.length > 0 && (
-                    <>
-                      <Text style={styles.sectionSubtitle}>
-                        Training Sessions
-                      </Text>
-                      {sessionsForSelectedDate.map((session) => (
-                        <TouchableOpacity
-                          key={session.id}
-                          style={styles.sessionCard}
-                          onPress={() => handleSessionPress(session)}
-                        >
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={[
-                                styles.sessionText,
-                                { fontSize: 28, fontFamily: "Chakra-Bold" },
-                              ]}
-                            >
-                              {session.course_title || session.title} From {formatTimeString(session.start_time)} -{" "}{formatTimeString(session.end_time)}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.sessionText,
-                                { fontSize: 28 }
-                              ]}
-                            >
-                              Progress: {session.enrollment_progress_display}
-                            </Text>
-                            {user?.role === UserRole.INSTRUCTOR ? (
-                              <Text
-                                style={[
-                                  styles.sessionText,
-                                  { fontSize: 28 },
-                                ]}
-                              >
-                                Student: {session.student_name} 
-                              </Text>
-                            ) : (
-                              <Text
-                                style={[
-                                  styles.sessionText,
-                                  { fontSize: 28 },
-                                ]}
-                              >
-                                Instructor: {session.instructor_name}
-                              </Text>
-                            )}
-                          </View>
-                          <TouchableOpacity>
-                            <Text
-                              style={[
-                                styles.actionButtonText,
-                                { fontSize: 28 },
-                              ]}
-                            >
-                              VIEW
-                            </Text>
-                          </TouchableOpacity>
-                        </TouchableOpacity>
-                      ))}
-                    </>
-                  )}
-
-                  {eventsForSelectedDate.length === 0 &&
-                    sessionsForSelectedDate.length === 0 &&
-                    availabilitiesForSelectedDate.length === 0 && (
-                      <Text style={styles.noAvailabilityText}>
-                        No schedule items for this date.
-                      </Text>
-                    )}
-
-                  {user?.role === UserRole.INSTRUCTOR &&
-                    availabilities.length === 0 && (
+            <View style={styles.scheduleContainer}>
+              {user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement ? (
+                renderAvailabilityManagement()
+              ) : (
+                <>
+                  <Text style={styles.scheduleText}>Schedule</Text>
+                  <ScrollView
+                    style={styles.scheduleList}
+                    contentContainerStyle={styles.scrollContentContainer}
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {eventsForSelectedDate.length > 0 && (
                       <>
-                        <Text style={styles.sectionSubtitle}>
-                          Your Availability
-                        </Text>
-                        <Text style={styles.noAvailabilityText}>
-                          No availability set. Click "Manage Availability" to
-                          create your schedule.
-                        </Text>
+                        <Text style={styles.sectionSubtitle}>Events</Text>
+                        {eventsForSelectedDate.map((event) => (
+                          <View key={event.id} style={styles.sessionCard}>
+                            <Text style={[styles.sessionText]}>
+                              {event.title}: {""}
+                              {formatTimeString(event.start_time)} -{" "}
+                              {formatTimeString(event.end_time)}
+                            </Text>
+                          </View>
+                        ))}
                       </>
                     )}
-
-                  {availabilities.length > 0 && (
-                    <>
-                      <Text style={styles.sectionSubtitle}>
-                        {user?.role === UserRole.INSTRUCTOR
-                          ? "Your Availability"
-                          : "Instructor's Availability"}
-                      </Text>
-                      {availabilitiesForSelectedDate.length > 0 ? (
-                        availabilitiesForSelectedDate.map((availability) => (
+                    {sessionsForSelectedDate.length > 0 && (
+                      <>
+                        <Text style={styles.sectionSubtitle}>
+                          Training Sessions
+                        </Text>
+                        {sessionsForSelectedDate.map((session) => (
                           <TouchableOpacity
-                            key={availability.id}
-                            style={[
-                              styles.sessionCard,
-                            ]}
-                            onPress={() =>
-                              user?.role === UserRole.STUDENT &&
-                              handleAvailabilityPress(availability)
-                            }
-                            disabled={user?.role !== UserRole.STUDENT}
+                            key={session.id}
+                            style={styles.sessionCard}
+                            onPress={() => handleSessionPress(session)}
                           >
-                            <View >
-                              <Text style={styles.sessionText}>
-                                Available:{" "}
-                                {formatTimeString(availability.start_time)} -{" "}
-                                {formatTimeString(availability.end_time)}
+                            <View style={{ flex: 1 }}>
+                              <Text
+                                style={[
+                                  styles.sessionText,
+                                  { fontSize: 28, fontFamily: "Chakra-Bold" },
+                                ]}
+                              >
+                                {session.course_title || session.title} From {formatTimeString(session.start_time)} -{" "}{formatTimeString(session.end_time)}
                               </Text>
-                              {availability.instructor_name && user?.role === UserRole.STUDENT && (
+                              <Text
+                                style={[
+                                  styles.sessionText,
+                                  { fontSize: 28 }
+                                ]}
+                              >
+                                Progress: {session.enrollment_progress_display}
+                              </Text>
+                              {user?.role === UserRole.INSTRUCTOR ? (
                                 <Text
                                   style={[
                                     styles.sessionText,
-                                    { fontSize: 22 },
+                                    { fontSize: 28 },
                                   ]}
                                 >
-                                  Instructor: {availability.instructor_name}
+                                  Student: {session.student_name} 
                                 </Text>
-                              )}
-                              {user?.role === UserRole.STUDENT && (
+                              ) : (
                                 <Text
                                   style={[
                                     styles.sessionText,
-                                    { fontSize: 20 },
+                                    { fontSize: 28 },
                                   ]}
                                 >
-                                  Tap to book a session
+                                  Instructor: {session.instructor_name}
                                 </Text>
                               )}
                             </View>
-                            {user?.role === UserRole.STUDENT && (
-                              <View
-                                style={{
-                                  justifyContent: "center",
-                                  paddingRight: 10,
-                                }}
+                            <TouchableOpacity>
+                              <Text
+                                style={[
+                                  styles.actionButtonText,
+                                  { fontSize: 28 },
+                                ]}
                               >
-                                <Text
-                                  style={[
-                                    styles.actionButtonText,
-                                    { fontSize: 20 },
-                                  ]}
-                                >
-                                  BOOK
-                                </Text>
-                              </View>
-                            )}
+                                VIEW
+                              </Text>
+                            </TouchableOpacity>
                           </TouchableOpacity>
-                        ))
-                      ) : (
+                        ))}
+                      </>
+                    )}
+
+                    {eventsForSelectedDate.length === 0 &&
+                      sessionsForSelectedDate.length === 0 &&
+                      availabilitiesForSelectedDate.length === 0 && (
                         <Text style={styles.noAvailabilityText}>
-                          No availability for{" "}
-                          {
-                            [
-                              "Sunday",
-                              "Monday",
-                              "Tuesday",
-                              "Wednesday",
-                              "Thursday",
-                              "Friday",
-                              "Saturday",
-                            ][selectedDayOfWeek]
-                          }{" "}
-                          {formatDateString(selectedDate)}
+                          No schedule items for this date.
                         </Text>
                       )}
-                      {user?.role === UserRole.INSTRUCTOR && (
-                        <Text style={styles.hintText}>
-                          Click "Manage Availability" to see your full weekly
-                          scheudle
-                        </Text>
+
+                    {user?.role === UserRole.INSTRUCTOR &&
+                      availabilities.length === 0 && (
+                        <>
+                          <Text style={styles.sectionSubtitle}>
+                            Your Availability
+                          </Text>
+                          <Text style={styles.noAvailabilityText}>
+                            No availability set. Click "Manage Availability" to
+                            create your schedule.
+                          </Text>
+                        </>
                       )}
-                    </>
-                  )}
-                </ScrollView>
-              </>
-            )}
-          </View>
+
+                    {availabilities.length > 0 && (
+                      <>
+                        <Text style={styles.sectionSubtitle}>
+                          {user?.role === UserRole.INSTRUCTOR
+                            ? "Your Availability"
+                            : "Instructor's Availability"}
+                        </Text>
+                        {availabilitiesForSelectedDate.length > 0 ? (
+                          availabilitiesForSelectedDate.map((availability) => (
+                            <TouchableOpacity
+                              key={availability.id}
+                              style={[
+                                styles.sessionCard,
+                              ]}
+                              onPress={() =>
+                                user?.role === UserRole.STUDENT &&
+                                handleAvailabilityPress(availability)
+                              }
+                              disabled={user?.role !== UserRole.STUDENT}
+                            >
+                              <View >
+                                <Text style={styles.sessionText}>
+                                  Available:{" "}
+                                  {formatTimeString(availability.start_time)} -{" "}
+                                  {formatTimeString(availability.end_time)}
+                                </Text>
+                                {availability.instructor_name && user?.role === UserRole.STUDENT && (
+                                  <Text
+                                    style={[
+                                      styles.sessionText,
+                                      { fontSize: 22 },
+                                    ]}
+                                  >
+                                    Instructor: {availability.instructor_name}
+                                  </Text>
+                                )}
+                                {user?.role === UserRole.STUDENT && (
+                                  <Text
+                                    style={[
+                                      styles.sessionText,
+                                      { fontSize: 20 },
+                                    ]}
+                                  >
+                                    Tap to book a session
+                                  </Text>
+                                )}
+                              </View>
+                              {user?.role === UserRole.STUDENT && (
+                                <View
+                                  style={{
+                                    justifyContent: "center",
+                                    paddingRight: 10,
+                                  }}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.actionButtonText,
+                                      { fontSize: 20 },
+                                    ]}
+                                  >
+                                    BOOK
+                                  </Text>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+                          ))
+                        ) : (
+                          <Text style={styles.noAvailabilityText}>
+                            No availability for{" "}
+                            {
+                              [
+                                "Sunday",
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                              ][selectedDayOfWeek]
+                            }{" "}
+                            {formatDateString(selectedDate)}
+                          </Text>
+                        )}
+                        {user?.role === UserRole.INSTRUCTOR && (
+                          <Text style={styles.hintText}>
+                            Click "Manage Availability" to see your full weekly
+                            schedule
+                          </Text>
+                        )}
+                      </>
+                    )}
+                  </ScrollView>
+                </>
+              )}
+            </View>
+          </ScrollView>
         </SafeAreaView>
 
         {user?.role === UserRole.ADMIN && (

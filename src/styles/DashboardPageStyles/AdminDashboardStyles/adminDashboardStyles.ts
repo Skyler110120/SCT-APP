@@ -10,14 +10,16 @@ export const adminDashboardStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-  content: {
-    flex: 1,
-    padding: 16,
+  scrollContent: {
+    flexGrow: 1,
     paddingBottom: 24,
+  },
+  content: {
+    padding: 16,
   },
   pageTitle: {
     padding: 8,
-    fontSize: 48,
+    fontSize: 36,
     fontFamily: "Chakra-Italic",
     textAlign: "center",
     color: themes.vegasGold,
@@ -45,7 +47,7 @@ export const adminDashboardStyles = StyleSheet.create({
     overflow: "hidden",
   },
   sectionTitle: {
-    fontSize: 36,
+    fontSize: 30,
     fontFamily: "Chakra-Italic",
     textAlign: "center",
     color: themes.vegasGold,
@@ -67,7 +69,7 @@ export const adminDashboardStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },

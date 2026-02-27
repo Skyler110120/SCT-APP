@@ -12,10 +12,14 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
     paddingTop: 20,
     backgroundColor: "transparent",
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
   pageTitle: {
     marginBottom: 24,
     textAlign: "center",
-    fontSize: 40,
+    fontSize: 34,
     fontFamily: "Chakra-BoldItalic",
     color: themes.vegasGold,
   },
@@ -60,7 +64,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   buttonContainer: {
-    flexDirection:  "row",
+    flexDirection: "column",
     justifyContent: "space-between",
     marginBottom: 16,
   },
@@ -73,7 +77,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: 24,
+    fontSize: 20,
     fontFamily: "Chakra-BoldItalic",
     color: themes.white,
   },

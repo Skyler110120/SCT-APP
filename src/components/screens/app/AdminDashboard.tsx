@@ -166,7 +166,11 @@ export default function AdminDashboard() {
     <View style={styles.container}>
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.content}>
             {company && (
               <Text style={styles.pageTitle}>
                 {company.name} Dashboard
@@ -261,7 +265,8 @@ export default function AdminDashboard() {
             >
               <Text style={styles.buttonText}>Log Out</Text>
             </TouchableOpacity>
-          </View>
+            </View>
+          </ScrollView>
         </SafeAreaView>
         {company && (
           <InviteCodeForm

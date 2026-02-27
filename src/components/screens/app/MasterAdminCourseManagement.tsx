@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -370,7 +371,11 @@ export default function MasterAdminCourseManagement() {
     <View style={styles.container}>
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
-          <Text style={styles.pageTitle}>Course Management</Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.pageTitle}>Course Management</Text>
             {isLoading && courses.length === 0 ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={themes.vegasGold} />
@@ -423,6 +428,7 @@ export default function MasterAdminCourseManagement() {
               <Text style={styles.buttonText}>Manage Drills</Text>
             </TouchableOpacity>
           </View>
+          </ScrollView>
         </SafeAreaView>
 
         <CourseForm

@@ -23,8 +23,12 @@ const UserTable: React.FC<UserTableProps> = ({
   const renderItem = ({ item }: { item: User }) => (
     <View style={styles.userRow}>
       <View style={styles.userInfo}>
-        <Text style={styles.userName}>{formatName(item)}</Text>
-        <Text style={styles.userEmail}>{item.email}</Text>
+        <Text style={styles.userName} numberOfLines={1}>
+          {formatName(item)}
+        </Text>
+        <Text style={styles.userEmail} numberOfLines={1}>
+          {item.email}
+        </Text>
         <View style={styles.userMeta}>
           <View style={styles.roleBadge}>
             <Text style={styles.roleBadgeText}>
@@ -67,7 +71,7 @@ const UserTable: React.FC<UserTableProps> = ({
 
   return (
     <View style={styles.tableContainer}>
-      <Text style={styles.tableSectionTitle}> Users: ({users.length})</Text>
+      <Text style={styles.tableSectionTitle}>Users: ({users.length})</Text>
       {users.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateText}>No users found</Text>

@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import {
   Alert,
   SafeAreaView,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -249,70 +250,75 @@ export default function MasterAdminDashboard() {
     <View style={styles.container}>
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.contentContainer}>
-            <Text style={styles.pageTitle}>
-              Master Admin
-            </Text>
-            <View style={styles.columnsContainer}>
-              <View style={styles.leftColumn}>
-                <CompanyList
-                  companies={companies}
-                  selectedCompany={selectedCompany}
-                  onSelectCompany={handleSelectCompany}
-                  isLoading={isLoading}
-                />
-              </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.contentContainer}>
+              <Text style={styles.pageTitle}>
+                Master Admin
+              </Text>
+              <View style={styles.columnsContainer}>
+                <View style={styles.leftColumn}>
+                  <CompanyList
+                    companies={companies}
+                    selectedCompany={selectedCompany}
+                    onSelectCompany={handleSelectCompany}
+                    isLoading={isLoading}
+                  />
+                </View>
 
-              <View style={styles.rightColumn}>
-                <InviteCodeList
-                  inviteCodes={inviteCodes}
-                  selectedCompany={selectedCompany}
-                  isLoading={isLoadingCodes}
-                  onCopyCode={copyToClipboard}
-                />
+                <View style={styles.rightColumn}>
+                  <InviteCodeList
+                    inviteCodes={inviteCodes}
+                    selectedCompany={selectedCompany}
+                    isLoading={isLoadingCodes}
+                    onCopyCode={copyToClipboard}
+                  />
+                </View>
+              </View>
+              <AdminStats stats={stats} selectedCompany={selectedCompany} />
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => setCompanyModalVisible(true)}
+                >
+                  <Text style={styles.buttonText}>
+                    Create Company
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    !selectedCompany && { opacity: 0.5 },
+                  ]}
+                  onPress={() => {
+                    if (selectedCompany) {
+                      setInviteCodeModalVisible(true);
+                    } else {
+                      Alert.alert("Error", "Please select a company first");
+                    }
+                  }}
+                  disabled={!selectedCompany}
+                >
+                  <Text style={styles.buttonText}>
+                    Create Invite Code
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => {
+                    handleLogout();
+                  }}
+                  disabled={isLoggingOut}
+                >
+                  <Text style={styles.buttonText}>
+                    Log Out
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
-            <AdminStats stats={stats} selectedCompany={selectedCompany} />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => setCompanyModalVisible(true)}
-              >
-                <Text style={styles.buttonText}>
-                  Create Company
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  !selectedCompany && { opacity: 0.5 },
-                ]}
-                onPress={() => {
-                  if (selectedCompany) {
-                    setInviteCodeModalVisible(true);
-                  } else {
-                    Alert.alert("Error", "Please select a company first");
-                  }
-                }}
-                disabled={!selectedCompany}
-              >
-                <Text style={styles.buttonText}>
-                  Create Invite Code
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => {
-                  handleLogout();
-                }}
-                disabled={isLoggingOut}
-              >
-                <Text style={styles.buttonText}>
-                  Log Out
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </SafeAreaView>
 
         <CompanyForm

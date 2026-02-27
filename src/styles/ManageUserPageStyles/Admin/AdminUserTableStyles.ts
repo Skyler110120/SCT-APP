@@ -1,5 +1,9 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+import { Dimensions } from "react-native";
+
+const { width } = Dimensions.get("window");
+const isCompact = width < 420;
 
 export const adminUserTableStyles = StyleSheet. create({
   tableContainer: {
@@ -14,7 +18,7 @@ export const adminUserTableStyles = StyleSheet. create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: themes. vegasGold,
-    fontSize: 28,
+    fontSize: isCompact ? 22 : 28,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
@@ -33,22 +37,22 @@ export const adminUserTableStyles = StyleSheet. create({
     paddingBottom: 16,
   },
   userRow: {
-    flexDirection: "row",
+    flexDirection: isCompact ? "column" : "row",
     padding: 16,
-    alignItems: "center",
+    alignItems: isCompact ? "stretch" : "center",
   },
   userInfo: {
-    flex: 3,
+    flex: isCompact ? 0 : 3,
   },
   userName:  {
     marginBottom: 4,
-    fontSize:  24,
+    fontSize: isCompact ? 20 : 24,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
-    fontSize: 18,
+    fontSize: isCompact ? 15 : 18,
     fontFamily: "Chakra-Regular",
     color: themes.white,
     opacity: 0.8,
@@ -68,13 +72,15 @@ export const adminUserTableStyles = StyleSheet. create({
     backgroundColor: themes.black,
   },
   roleBadgeText: {
-    fontSize: 18,
+    fontSize: isCompact ? 14 : 18,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
   userActions:  {
-    flex: 1,
-    flexDirection: "column",
+    flex: isCompact ? 0 : 1,
+    marginTop: isCompact ? 8 : 0,
+    flexDirection: isCompact ? "row" : "column",
+    flexWrap: "wrap",
   },
   actionButton: {
     marginBottom: 8,
@@ -85,7 +91,7 @@ export const adminUserTableStyles = StyleSheet. create({
   },
   actionText: {
     marginLeft: 6,
-    fontSize: 16,
+    fontSize: isCompact ? 14 : 16,
     fontFamily: "Chakra-BoldItalic",
     color: themes.vegasGold,
   },

@@ -3,6 +3,7 @@ import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
+import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import { themes } from '@/src/context/themes';
 
 export default function RootLayout() {
@@ -23,8 +24,10 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-        <Slot />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+          <Slot />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

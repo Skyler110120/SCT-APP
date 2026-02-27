@@ -13,31 +13,34 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
   contentContainer: {
-    flex: 1,
     padding: "2%",
   },
   columnsContainer: {
-    flex: 1,
-    flexDirection: "row",
+    flexDirection: width < 900 ? "column" : "row",
   },
   leftColumn: {
     flex: 1,
-    marginRight: "2%",
+    marginRight: width < 900 ? 0 : "2%",
+    marginBottom: width < 900 ? 12 : 0,
   },
   rightColumn: {
-    flex: 2,
+    flex: width < 900 ? 1 : 2,
   },
   pageTitle: {
     padding: 8,
     marginTop: "7%",
-    fontSize: width * 0.08,
+    fontSize: width < 900 ? 34 : width * 0.08,
     fontFamily: "Chakra-Italic",
     textAlign: "center",
     color: themes.vegasGold,
   },
   buttonContainer: {
-    flexDirection: "row",
+    flexDirection: width < 900 ? "column" : "row",
     justifyContent: "space-between",
     marginBottom: "1%",
   },
