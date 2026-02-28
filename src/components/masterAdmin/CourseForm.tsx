@@ -30,6 +30,8 @@ interface CourseFormProps {
   onClose: () => void;
   onCreateCourse?: (data: CourseCreateRequest) => Promise<void>;
   onUpdateCourse?: (data: CourseUpdateRequest) => Promise<void>;
+  /** When creating, default display order is existingCourseCount + 1 (append at end). */
+  existingCourseCount?: number;
 }
 
 export default function CourseForm({
@@ -39,6 +41,7 @@ export default function CourseForm({
   onClose,
   onCreateCourse,
   onUpdateCourse,
+  existingCourseCount = 0,
 }: CourseFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -70,14 +73,14 @@ export default function CourseForm({
         setDescription("");
         setRequiredGunType(GunType.HANDGUN);
         setDifficultyLevel(CourseDifficulty.BEGINNER);
-        setOrderIndex("1");
+        setOrderIndex(String((existingCourseCount ?? 0) + 1));
         setIsActive(true);
         setPdfS3Key("");
         setInstructorScriptS3Key("");
       }
       setErrors({});
     }
-  }, [visible, isEditMode, course]);
+  }, [visible, isEditMode, course, existingCourseCount]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -265,7 +268,7 @@ export default function CourseForm({
                   <Text style={styles.warningText}>{errors.orderIndex}</Text>
                 )}
                 <Text style={styles.inputDescription}>
-                  Order in which the videos appear (1-99)
+                  Display position (1 = first). Courses at this position and below will shift down.
                 </Text>
               </View>
 

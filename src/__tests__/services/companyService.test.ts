@@ -129,14 +129,30 @@ describe("companyService.getInviteCodes", () => {
 });
 
 describe("companyService.createInviteCode", () => {
-  it("returns created invite code", async () => {
+  it("returns created invite code and calls correct API path with role", async () => {
     mockApiFetch.mockResolvedValueOnce(mockInviteCode);
+    const result = await companyService.createInviteCode({
+      company_id: 1,
+      role: "admin" as any,
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.code).toBe("TEST123");
+    // API path must include company_id and role per backend: POST /companies/{id}/invite-codes/{role}
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/companies/1/invite-codes/admin",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("returns error when no auth token", async () => {
+    const AsyncStorage = require("@react-native-async-storage/async-storage");
+    AsyncStorage.getItem.mockResolvedValueOnce(null);
     const result = await companyService.createInviteCode({
       company_id: 1,
       role: "student" as any,
     });
-    expect(result.success).toBe(true);
-    expect(result.data?.code).toBe("TEST123");
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("No authentication token found");
   });
 
   it("returns error on failure", async () => {

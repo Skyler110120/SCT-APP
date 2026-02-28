@@ -3,7 +3,7 @@ import { courseListStyles as styles } from "@/src/styles/CoursePageStyles/Master
 import { CourseAdminView } from "@/src/types/course.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface CourseListProps {
   courses: CourseAdminView[];
@@ -40,11 +40,9 @@ const CourseList: React.FC<CourseListProps> = ({
         style={[
           styles.row,
           isSelected && {
-            backgroundColor: themes.black + "40",
+            backgroundColor: themes.black + "80",
             borderColor: themes.vegasGold,
-            borderTopWidth: 1,
-            borderLeftWidth: 1,
-            
+            borderWidth: 2,
           },
         ]}
         onPress={() => onSelectCourse(item)}
@@ -125,15 +123,14 @@ const CourseList: React.FC<CourseListProps> = ({
                 <Text style={styles.emptyStateText}>No courses found</Text>
             </View>
         ) : (
-            <FlatList
-                data={courses}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString()}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                extraData={selectedCourse?.id}
-            />
+            <View style={styles.listContent}>
+                {courses.map((item, index) => (
+                    <React.Fragment key={item.id.toString()}>
+                        {index > 0 && <View style={styles.separator} />}
+                        {renderItem({ item })}
+                    </React.Fragment>
+                ))}
+            </View>
         )}
     </View>
   )

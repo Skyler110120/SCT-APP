@@ -104,11 +104,9 @@ export default function MasterAdminCourseManagement() {
       const response = await courseService.createCourse(data);
 
       if (response.success && response.data) {
-        const updatedCourses = [...courses, response.data];
-        setCourses(updatedCourses);
-        setSelectedCourse(response.data);
         setCourseModalVisible(false);
-
+        await fetchCourses();
+        setSelectedCourse(response.data);
         Alert.alert(
           "Success",
           `Course "${response.data.title}" created successfully`
@@ -404,29 +402,47 @@ export default function MasterAdminCourseManagement() {
               </View>
             )}
 
+          <View style={styles.selectedBanner}>
+            <Text style={styles.selectedBannerLabel}>Selected course</Text>
+            {selectedCourse ? (
+              <Text style={styles.selectedBannerTitle} numberOfLines={2}>
+                {selectedCourse.title}
+              </Text>
+            ) : (
+              <Text style={styles.selectedBannerPlaceholder}>
+                Select a course above to manage videos and drills
+              </Text>
+            )}
+          </View>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={styles.actionButton}
+              style={styles.createCourseButton}
               onPress={handleCreateCoursePress}
             >
-              <Text style={styles.buttonText}>Create Course</Text>
+              <Text style={styles.createCourseButtonText}>Create Course</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, !selectedCourse && { opacity: 0.5 }]}
-              onPress={handleManageVideosPress}
-              disabled={!selectedCourse}
-            >
-              <Text style={styles.buttonText}>Manage Videos</Text>
-            </TouchableOpacity>
+            <Text style={styles.contextActionsLabel}>
+              For selected course
+            </Text>
+            <View style={styles.contextButtonRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, !selectedCourse && { opacity: 0.5 }]}
+                onPress={handleManageVideosPress}
+                disabled={!selectedCourse}
+              >
+                <Text style={styles.buttonText}>Manage Videos</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, !selectedCourse && { opacity: 0.5}]}
-              onPress={handleManageDrillsPress}
-              disabled={!selectedCourse}
-            >
-              <Text style={styles.buttonText}>Manage Drills</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, !selectedCourse && { opacity: 0.5 }]}
+                onPress={handleManageDrillsPress}
+                disabled={!selectedCourse}
+              >
+                <Text style={styles.buttonText}>Manage Drills</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           </ScrollView>
         </SafeAreaView>
@@ -441,6 +457,7 @@ export default function MasterAdminCourseManagement() {
           }}
           onCreateCourse={editingCourse ? undefined : handleCreateCourse}
           onUpdateCourse={editingCourse ? handleUpdateCourse : undefined}
+          existingCourseCount={courses.length}
         />
 
         {selectedCourse && (
