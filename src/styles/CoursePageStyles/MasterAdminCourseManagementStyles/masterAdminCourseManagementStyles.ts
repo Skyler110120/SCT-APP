@@ -102,6 +102,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
     alignItems: "center",
     padding: 14,
     marginHorizontal: 8,
+    marginTop: 16,
     marginBottom: 8,
     borderRadius: 15,
     borderWidth: 2,

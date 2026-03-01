@@ -38,6 +38,18 @@ type AvailabilityModalProps = {
   ) => void;
 };
 
+/** Session length is fixed at 2 hours; availability = one session slot. */
+const SESSION_DURATION_HOURS = 2;
+
+function addHoursToTimeString(timeStr: string, hours: number): string {
+  const [h, m] = timeStr.split(":").map(Number);
+  const totalMinutes = h * 60 + m + hours * 60;
+  const wrapped = ((totalMinutes % (24 * 60)) + 24 * 60) % (24 * 60);
+  const newH = Math.floor(wrapped / 60);
+  const newM = wrapped % 60;
+  return `${String(newH).padStart(2, "0")}:${String(newM).padStart(2, "0")}`;
+}
+
 const daysOfWeek = [
   { label: "Sun", value: 0 },
   { label: "Mon", value: 1 },
@@ -70,7 +82,6 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   });
   const [errors, setErrors] = useState<{
     start_time?: string;
-    end_time?: string;
     day_of_week?: string;
     start_date?: string;
     end_date?: string;
@@ -79,7 +90,6 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
   const formatDateToLocalString = (date: Date): string => {
     const year = date.getFullYear();
@@ -98,19 +108,21 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     if (visible) {
       if (mode === "edit" && selectedAvailability) {
         setSelectedDays([selectedAvailability.day_of_week]);
+        const start = selectedAvailability.start_time;
         setFormData({
-          start_time: selectedAvailability.start_time,
-          end_time: selectedAvailability.end_time,
+          start_time: start,
+          end_time: addHoursToTimeString(start, SESSION_DURATION_HOURS),
           start_date: selectedAvailability.start_date,
           end_date: selectedAvailability.end_date || undefined,
         });
       } else {
         const today = new Date();
         const todayString = formatDateToLocalString(today);
+        const defaultStart = "09:00";
         setSelectedDays([]);
         setFormData({
-          start_time: "09:00",
-          end_time: "10:00",
+          start_time: defaultStart,
+          end_time: addHoursToTimeString(defaultStart, SESSION_DURATION_HOURS),
           start_date: todayString,
           end_date: "",
         });
@@ -123,10 +135,13 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     field: keyof CreateAvailabilityRequest,
     value: string | number
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === "start_time" && typeof value === "string") {
+        next.end_time = addHoursToTimeString(value, SESSION_DURATION_HOURS);
+      }
+      return next;
+    });
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -136,7 +151,6 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   const validateForm = () => {
     const newErrors: {
       start_time?: string;
-      end_time?: string;
       start_date?: string;
       end_date?: string;
       day_of_week?: string;
@@ -148,9 +162,6 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     if (!formData.start_time) {
       newErrors.start_time = "Start time is required";
     }
-    if (!formData.end_time) {
-      newErrors.end_time = "End time is required";
-    }
     if (!formData.start_date) {
       newErrors.start_date = "Start date is required";
     }
@@ -158,18 +169,9 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     if (formData.end_date && formData.start_date) {
       const startDate = createLocalDate(formData.start_date);
       const endDate = createLocalDate(formData.end_date);
-      
+
       if (endDate < startDate) {
         newErrors.end_date = "End date cannot be before start date";
-      }
-    }
-
-    if (formData.start_time && formData.end_time) {
-      const startTime = new Date(`1970-01-01T${formData.start_time}`);
-      const endTime = new Date(`1970-01-01T${formData.end_time}`);
-      
-      if (endTime <= startTime) {
-        newErrors.end_time = "End time must be after start time";
       }
     }
 
@@ -411,7 +413,9 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                   <Text style={styles.errorText}>{errors.end_date}</Text>
                 )}
               </View>
-              <Text style={styles.modalText}>Select Start and End Time</Text>
+              <Text style={styles.modalText}>
+                Session start time (each slot is {SESSION_DURATION_HOURS} hours)
+              </Text>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
                   style={styles.modalButton}
@@ -444,37 +448,9 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 {errors.start_time && (
                   <Text style={styles.errorText}>{errors.start_time}</Text>
                 )}
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={() => setShowEndTimePicker(true)}
-                >
-                  <Text style={styles.modalButtonText}>
-                    {formData.end_time
-                      ? formatTimeString(formData.end_time)
-                      : "Select End Time"}
-                  </Text>
-                </TouchableOpacity>
-                {showEndTimePicker && (
-                  <DateTimePicker
-                    value={
-                      formData.end_time
-                        ? new Date(`1970-01-01T${formData.end_time}`)
-                        : new Date()
-                    }
-                    mode="time"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={(_, time) => {
-                      setShowEndTimePicker(false);
-                      if (time) {
-                        const timeString = formatTimeToString(time);
-                        handleChange("end_time", timeString);
-                      }
-                    }}
-                  />
-                )}
-                {errors.end_time && (
-                  <Text style={styles.errorText}>{errors.end_time}</Text>
-                )}
+                <Text style={styles.modalText}>
+                  End time: {formData.start_time ? formatTimeString(formData.end_time) : "—"} (auto)
+                </Text>
               </View>
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity style={styles.modalButton} onPress={onClose}>

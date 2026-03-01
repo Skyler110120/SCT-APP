@@ -1,3 +1,19 @@
+export type MaterialType = "course_pdf" | "instructor_script" | "video";
+
+export interface UploadUrlRequest {
+  course_id: number;
+  material_type: MaterialType;
+  filename: string;
+  content_type?: string;
+  week_number?: number;
+}
+
+export interface UploadUrlResponse {
+  upload_url: string;
+  s3_key: string;
+  expires_in_seconds: number;
+}
+
 export interface MaterialAccessRequest {
 
 }

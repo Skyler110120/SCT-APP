@@ -130,9 +130,11 @@ export default function MasterAdminCourseManagement() {
       const response = await courseService.updateCourse(editingCourse.id, data);
 
       if (response.success && response.data) {
-        const updatedCourses = courses.map((course) =>
-          course.id == editingCourse.id ? response.data! : course
-        );
+        const updatedCourses = courses
+          .map((course) =>
+            course.id === editingCourse.id ? response.data! : course
+          )
+          .sort((a, b) => a.order_index - b.order_index);
         setCourses(updatedCourses);
 
         if (selectedCourse?.id === editingCourse.id) {
@@ -201,29 +203,36 @@ export default function MasterAdminCourseManagement() {
     }
   };
 
+  const courseForVideo = editingCourse ?? selectedCourse;
+
   const handleCreateVideo = async (data: VideoCreateRequest) => {
-    if (!selectedCourse) return;
+    if (!courseForVideo) return;
 
     setIsSubmittingVideo(true);
 
     try {
       const response = await courseService.addVideoToCourse(
-        selectedCourse.id,
+        courseForVideo.id,
         data
       );
 
       if (response.success && response.data) {
         const updatedCourse = {
-          ...selectedCourse,
-          videos: [...selectedCourse.videos, response.data],
+          ...courseForVideo,
+          videos: [...(courseForVideo.videos || []), response.data],
         };
 
         const updatedCourses = courses.map((course) =>
-          course.id === selectedCourse.id ? updatedCourse : course
+          course.id === courseForVideo.id ? updatedCourse : course
         );
 
         setCourses(updatedCourses);
-        setSelectedCourse(updatedCourse);
+        if (selectedCourse?.id === courseForVideo.id) {
+          setSelectedCourse(updatedCourse);
+        }
+        if (editingCourse?.id === courseForVideo.id) {
+          setEditingCourse(updatedCourse);
+        }
         setVideoModalVisible(false);
 
         Alert.alert(
@@ -242,7 +251,7 @@ export default function MasterAdminCourseManagement() {
   };
 
   const handleUpdateVideo = async (data: VideoUpdateRequest) => {
-    if (!editingVideo || !selectedCourse) return;
+    if (!editingVideo || !courseForVideo) return;
 
     setIsSubmittingVideo(true);
 
@@ -251,18 +260,23 @@ export default function MasterAdminCourseManagement() {
 
       if (response.success && response.data) {
         const updatedCourse = {
-          ...selectedCourse,
-          videos: selectedCourse.videos.map((video) =>
+          ...courseForVideo,
+          videos: (courseForVideo.videos || []).map((video) =>
             video.id === editingVideo.id ? response.data! : video
           ),
         };
 
         const updatedCourses = courses.map((course) =>
-          course.id === selectedCourse.id ? updatedCourse : course
+          course.id === courseForVideo.id ? updatedCourse : course
         );
 
         setCourses(updatedCourses);
-        setSelectedCourse(updatedCourse);
+        if (selectedCourse?.id === courseForVideo.id) {
+          setSelectedCourse(updatedCourse);
+        }
+        if (editingCourse?.id === courseForVideo.id) {
+          setEditingCourse(updatedCourse);
+        }
         setVideoModalVisible(false);
         setEditingVideo(null);
 
@@ -355,7 +369,11 @@ export default function MasterAdminCourseManagement() {
       Alert.alert("Error", "Please select a course first");
       return;
     }
+    setEditingVideo(null);
+    setVideoModalVisible(true);
+  };
 
+  const handleAddVideoFromCourseForm = (course: CourseAdminView) => {
     setEditingVideo(null);
     setVideoModalVisible(true);
   };
@@ -416,13 +434,6 @@ export default function MasterAdminCourseManagement() {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.createCourseButton}
-              onPress={handleCreateCoursePress}
-            >
-              <Text style={styles.createCourseButtonText}>Create Course</Text>
-            </TouchableOpacity>
-
             <Text style={styles.contextActionsLabel}>
               For selected course
             </Text>
@@ -443,6 +454,13 @@ export default function MasterAdminCourseManagement() {
                 <Text style={styles.buttonText}>Manage Drills</Text>
               </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+              style={styles.createCourseButton}
+              onPress={handleCreateCoursePress}
+            >
+              <Text style={styles.createCourseButtonText}>Create Course</Text>
+            </TouchableOpacity>
           </View>
           </ScrollView>
         </SafeAreaView>
@@ -458,6 +476,7 @@ export default function MasterAdminCourseManagement() {
           onCreateCourse={editingCourse ? undefined : handleCreateCourse}
           onUpdateCourse={editingCourse ? handleUpdateCourse : undefined}
           existingCourseCount={courses.length}
+          onOpenAddVideo={handleAddVideoFromCourseForm}
         />
 
         {selectedCourse && (
@@ -471,11 +490,11 @@ export default function MasterAdminCourseManagement() {
           />
         )}
 
-        {selectedCourse && (
+        {courseForVideo && (
           <VideoForm
             visible={videoModalVisible}
             video={editingVideo}
-            course={selectedCourse}
+            course={courseForVideo}
             isSubmitting={isSubmittingVideo}
             onClose={() => {
               setVideoModalVisible(false);

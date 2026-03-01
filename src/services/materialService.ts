@@ -1,5 +1,4 @@
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
 import { apiFetch } from "./api";
 import {
   MaterialAccessRequest,
@@ -7,6 +6,8 @@ import {
   MaterialInfoResponse,
   MaterialInfoServiceResponse,
   MaterialAccessServiceResponse,
+  UploadUrlRequest,
+  UploadUrlResponse,
 } from "../types/material.types";
 
 export const materialService = {
@@ -110,6 +111,94 @@ export const materialService = {
       return {
         success: false,
         error: "Network error occurred while getting instructor script access",
+      };
+    }
+  },
+
+  /**
+   * Request a presigned PUT URL for uploading a course material.
+   * MasterAdmin only.
+   */
+  async requestUploadUrl(
+    request: UploadUrlRequest
+  ): Promise<{ success: true; data: UploadUrlResponse } | { success: false; error: string }> {
+    try {
+      const data: UploadUrlResponse = await apiFetch<UploadUrlResponse>(
+        "/materials/upload-url",
+        {
+          method: "POST",
+          body: JSON.stringify(request),
+        }
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error requesting upload URL:", error);
+      return {
+        success: false,
+        error: "Failed to get upload URL",
+      };
+    }
+  },
+
+  /**
+   * Upload a file to a presigned PUT URL (e.g. from requestUploadUrl).
+   * Uses the file at fileUri and optional contentType.
+   */
+  async uploadFileToPresignedUrl(
+    uploadUrl: string,
+    fileUri: string,
+    contentType?: string
+  ): Promise<{ success: true } | { success: false; error: string }> {
+    try {
+      const base64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      const headers: Record<string, string> = {};
+      if (contentType) headers["Content-Type"] = contentType;
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        body: bytes.buffer,
+        headers,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Upload failed:", res.status, text);
+        return { success: false, error: `Upload failed: ${res.status}` };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return {
+        success: false,
+        error: "Upload failed. Please try again.",
+      };
+    }
+  },
+
+  /**
+   * Get temporary access URL for a course video (S3 or external).
+   * Use this when the video has video_s3_key; otherwise use video.video_url directly.
+   */
+  async getVideoAccess(
+    courseId: number,
+    videoId: number
+  ): Promise<MaterialAccessServiceResponse> {
+    try {
+      const data: MaterialAccessResponse = await apiFetch<MaterialAccessResponse>(
+        `/materials/courses/${courseId}/videos/${videoId}/access`,
+        { method: "POST" }
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error getting video access:", error);
+      return {
+        success: false,
+        error: "Failed to get video access",
       };
     }
   },

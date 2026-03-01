@@ -278,43 +278,60 @@ export default function MasterAdminDashboard() {
                 </View>
               </View>
               <AdminStats stats={stats} selectedCompany={selectedCompany} />
+
+              <View style={styles.selectedBanner}>
+                <Text style={styles.selectedBannerLabel}>Selected company</Text>
+                {selectedCompany ? (
+                  <Text style={styles.selectedBannerTitle} numberOfLines={2}>
+                    {selectedCompany.name}
+                  </Text>
+                ) : (
+                  <Text style={styles.selectedBannerPlaceholder}>
+                    Select a company above to create invite codes
+                  </Text>
+                )}
+              </View>
+
               <View style={styles.buttonContainer}>
+                <Text style={styles.contextActionsLabel}>
+                  For selected company
+                </Text>
+                <View style={styles.contextButtonRow}>
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      !selectedCompany && { opacity: 0.5 },
+                    ]}
+                    onPress={() => {
+                      if (selectedCompany) {
+                        setInviteCodeModalVisible(true);
+                      } else {
+                        Alert.alert("Error", "Please select a company first");
+                      }
+                    }}
+                    disabled={!selectedCompany}
+                  >
+                    <Text style={styles.buttonText}>
+                      Create Invite Code
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 <TouchableOpacity
-                  style={styles.actionButton}
+                  style={styles.createCompanyButton}
                   onPress={() => setCompanyModalVisible(true)}
                 >
-                  <Text style={styles.buttonText}>
+                  <Text style={styles.createCompanyButtonText}>
                     Create Company
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    !selectedCompany && { opacity: 0.5 },
-                  ]}
-                  onPress={() => {
-                    if (selectedCompany) {
-                      setInviteCodeModalVisible(true);
-                    } else {
-                      Alert.alert("Error", "Please select a company first");
-                    }
-                  }}
-                  disabled={!selectedCompany}
-                >
-                  <Text style={styles.buttonText}>
-                    Create Invite Code
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => {
-                    handleLogout();
-                  }}
+                  style={styles.logoutButton}
+                  onPress={() => handleLogout()}
                   disabled={isLoggingOut}
                 >
-                  <Text style={styles.buttonText}>
-                    Log Out
-                  </Text>
+                  <Text style={styles.logoutButtonText}>Log Out</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -218,20 +218,17 @@ export default function Courses() {
 
   const openDocument = async (url: string, title: string) => {
     try {
-      console.log(`Opening document: ${title}`);
-
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
       } else {
         Alert.alert(
           "Cannot Open Document",
-          `Unable to open ${title}. Please check if you have a PDF reader app installed`
+          `Unable to open ${title}. You may need a PDF reader app installed.`
         );
       }
-    } catch (error) {
-      console.error(`Error opening document ${title}:`, error);
-      Alert.alert("Error", `Failed to open ${title}. Please try again later.`);
+    } catch {
+      Alert.alert("Error", `Failed to open ${title}. Please try again.`);
     }
   };
 
@@ -299,7 +296,7 @@ export default function Courses() {
 
       if (response.success && response.data) {
         console.log("Got presigned URL, opening script...");
-        await openDocument(response.data.access_url, "Instructor Script")
+        await openDocument(response.data.access_url, "Instructor Script");
       } else {
         console.error("Failed to get script access:", response.error);
         Alert.alert(

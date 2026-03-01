@@ -18,7 +18,10 @@ export interface CourseVideo {
     id: number;
     title: string;
     description?: string;
-    video_url: string;
+    video_url?: string | null;
+    video_s3_key?: string | null;
+    video_filename?: string | null;
+    video_content_type?: string | null;
     order_index: number;
     week_number?: number;
     created_at?: string;
@@ -73,6 +76,10 @@ export interface CourseAdminView {
     difficulty_level: string
     pdf_s3_key?: string | null;
     instructor_script_s3_key?: string | null;
+    pdf_filename?: string | null;
+    instructor_script_filename?: string | null;
+    pdf_content_type?: string | null;
+    instructor_script_content_type?: string | null;
     total_weeks: number;
     is_active: boolean;
     order_index: number;
@@ -87,8 +94,12 @@ export interface CourseCreateRequest {
     description?: string;
     required_gun_type: string;
     difficulty_level: string;
-    pdf_s3_key: string;
-    instructor_script_s3_key: string;
+    pdf_s3_key?: string;
+    instructor_script_s3_key?: string;
+    pdf_filename?: string;
+    instructor_script_filename?: string;
+    pdf_content_type?: string;
+    instructor_script_content_type?: string;
     order_index: number;
 }
 
@@ -99,6 +110,10 @@ export interface CourseUpdateRequest {
     difficulty_level?: string;
     pdf_s3_key?: string;
     instructor_script_s3_key?: string;
+    pdf_filename?: string;
+    instructor_script_filename?: string;
+    pdf_content_type?: string;
+    instructor_script_content_type?: string;
     is_active?: boolean;
     order_index?: number;
 }
@@ -106,7 +121,10 @@ export interface CourseUpdateRequest {
 export interface VideoCreateRequest {
     title: string;
     description?: string;
-    video_url: string;
+    video_url?: string;
+    video_s3_key?: string;
+    video_filename?: string;
+    video_content_type?: string;
     order_index: number;
     week_number?: number;
 }
@@ -114,7 +132,10 @@ export interface VideoCreateRequest {
 export interface VideoUpdateRequest {
     title?: string;
     description?: string;
-    video_url?: string;
+    video_url?: string | null;
+    video_s3_key?: string | null;
+    video_filename?: string | null;
+    video_content_type?: string | null;
     order_index?: number;
     week_number?: number;
 }

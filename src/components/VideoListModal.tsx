@@ -2,8 +2,9 @@ import { themes } from "@/src/context/themes";
 import { videoListModalStyles as styles } from "@/src/styles/CoursePageStyles/videoListModalStyles";
 import { CourseVideo, CourseView } from "@/src/types/course.types";
 import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Linking,
   Modal,
@@ -13,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { materialService } from "@/src/services/materialService";
 
 interface VideoListModalProps {
   visible: boolean;
@@ -25,21 +27,40 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
   course,
   onClose,
 }) => {
+  const [loadingVideoId, setLoadingVideoId] = useState<number | null>(null);
+
   const handleOpenVideo = async (video: CourseVideo) => {
     try {
       console.log(`🎥 Opening video: ${video.title}`);
 
-      const supported = await Linking.canOpenURL(video.video_url);
+      let urlToOpen: string;
+      if (video.video_s3_key?.trim()) {
+        setLoadingVideoId(video.id);
+        const res = await materialService.getVideoAccess(course.id, video.id);
+        setLoadingVideoId(null);
+        if (!res.success || !res.data?.access_url) {
+          Alert.alert("Error", res.error || "Failed to get video access");
+          return;
+        }
+        urlToOpen = res.data.access_url;
+      } else if (video.video_url?.trim()) {
+        urlToOpen = video.video_url;
+      } else {
+        Alert.alert("Error", "This video has no URL or file.");
+        return;
+      }
 
+      const supported = await Linking.canOpenURL(urlToOpen);
       if (supported) {
-        await Linking.openURL(video.video_url);
+        await Linking.openURL(urlToOpen);
       } else {
         Alert.alert(
           "Cannot Open Video",
-          "Unable to open video.  Please check the video URL or your internet connection."
+          "Unable to open video. Please check the video URL or your internet connection."
         );
       }
     } catch (error) {
+      setLoadingVideoId(null);
       console.error("Error opening video:", error);
       Alert.alert("Error", "Failed to open video");
     }
@@ -90,13 +111,18 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
                 style={styles.videoItem}
                 onPress={() => handleOpenVideo(video)}
                 activeOpacity={0.7}
+                disabled={loadingVideoId === video.id}
               >
                 <View style={styles.videoIcon}>
-                  <FontAwesome
-                    name="play-circle"
-                    size={24}
-                    color={themes.vegasGold}
-                  />
+                  {loadingVideoId === video.id ? (
+                    <ActivityIndicator size="small" color={themes.vegasGold} />
+                  ) : (
+                    <FontAwesome
+                      name="play-circle"
+                      size={24}
+                      color={themes.vegasGold}
+                    />
+                  )}
                 </View>
 
                 <View style={styles.videoContent}>

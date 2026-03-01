@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   SafeAreaView,
   ScrollView,
   Text,
@@ -57,11 +58,37 @@ export default function CalendarScreen() {
   const availabilityScrollViewRef = useRef<ScrollView>(null);
   const bottomContentPadding = insets.bottom + 150;
 
+  const goToPrevMonth = () => {
+    const d = new Date(visibleMonth + "T00:00:00");
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);
+    setVisibleMonth(d.toISOString().split("T")[0]);
+  };
+  const goToNextMonth = () => {
+    const d = new Date(visibleMonth + "T00:00:00");
+    d.setDate(1);
+    d.setMonth(d.getMonth() + 1);
+    setVisibleMonth(d.toISOString().split("T")[0]);
+  };
+
+  const screenWidth = Dimensions.get("window").width;
+  const horizontalPadding = 40;
+  const daySize = Math.min(
+    70,
+    Math.max(36, Math.floor((screenWidth - horizontalPadding - 24) / 7))
+  );
+  const monthTitleFontSize = screenWidth < 400 ? 22 : 48;
+
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedDate, setSelectedDate] = useState(today);
+  const firstOfThisMonth = (() => {
+    const d = new Date();
+    d.setDate(1);
+    return d.toISOString().split("T")[0];
+  })();
+  const [visibleMonth, setVisibleMonth] = useState(firstOfThisMonth);
 
   const [showAvailabilityManagement, setShowAvailabilityManagement] =
     useState<boolean>(false);
@@ -542,12 +569,36 @@ export default function CalendarScreen() {
     setShowSessionDetailsModal(false);
   };
 
-  const markedDates = {
-    [selectedDate]: {
+  const datesWithActivity = new Set<string>();
+  events.forEach((event) => {
+    const dateStr = new Date(event.start_time).toISOString().split("T")[0];
+    datesWithActivity.add(dateStr);
+  });
+  sessions.forEach((session) => {
+    const dateStr = new Date(session.start_time).toISOString().split("T")[0];
+    datesWithActivity.add(dateStr);
+  });
+
+  const markedDates: Record<
+    string,
+    { selected?: boolean; selectedColor?: string; marked?: boolean; dotColor?: string }
+  > = {};
+  datesWithActivity.forEach((dateStr) => {
+    markedDates[dateStr] = {
+      ...(dateStr === selectedDate && {
+        selected: true,
+        selectedColor: themes.vegasGold,
+      }),
+      marked: true,
+      dotColor: themes.vegasGold,
+    };
+  });
+  if (!markedDates[selectedDate]) {
+    markedDates[selectedDate] = {
       selected: true,
       selectedColor: themes.vegasGold,
-    },
-  };
+    };
+  }
 
   const sessionsForSelectedDate = sessions.filter((session) => {
     const sessionDate = new Date(session.start_time);
@@ -767,13 +818,11 @@ export default function CalendarScreen() {
           >
             <View style={styles.calendarContainer}>
               <Calendar
+                key={visibleMonth}
+                initialDate={visibleMonth}
                 current={selectedDate}
-                markingType={"custom"}
-                markedDates={{
-                  [selectedDate]: {
-                    selected: true,
-                  },
-                }}
+                markingType={"dot"}
+                markedDates={markedDates}
                 theme={{
                   calendarBackground: "transparent",
                   textSectionTitleColor: themes.vegasGold,
@@ -784,17 +833,17 @@ export default function CalendarScreen() {
                   textDisabledColor: themes.white,
                   monthTextColor: themes.vegasGold,
                   arrowColor: themes.vegasGold,
-                  textMonthFontSize: 48,
-                  textDayFontSize: 16,
-                  textDayHeaderFontSize: 16,
+                  textMonthFontSize: monthTitleFontSize,
+                  textDayFontSize: Math.max(14, daySize * 0.22),
+                  textDayHeaderFontSize: 14,
                   ...({
                     "stylesheet.day.basic": {
                       base: {
-                        width: 70,
-                        height: 70,
+                        width: daySize,
+                        height: daySize,
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: 20,
+                        borderRadius: Math.min(20, daySize * 0.28),
                         borderWidth: 1,
                         borderColor: themes.white,
                       },
@@ -806,11 +855,46 @@ export default function CalendarScreen() {
                         flexDirection: "row",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        paddingHorizontal: 20,
+                        paddingHorizontal: 8,
                         color: themes.white,
                       },
                     },
                   } as any),
+                }}
+                enableSwipeMonths={true}
+                hideArrows={true}
+                onMonthChange={(month) => {
+                  if (month?.dateString) {
+                    const d = new Date(month.dateString + "T00:00:00");
+                    d.setDate(1);
+                    setVisibleMonth(d.toISOString().split("T")[0]);
+                  }
+                }}
+                renderHeader={() => {
+                  const d = new Date(visibleMonth + "T00:00:00");
+                  const monthYear = d.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  });
+                  return (
+                    <View style={styles.monthNavRow}>
+                      <TouchableOpacity
+                        style={styles.monthNavButton}
+                        onPress={goToPrevMonth}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.monthNavButtonText}>‹ Prev</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.monthTitle}>{monthYear}</Text>
+                      <TouchableOpacity
+                        style={styles.monthNavButton}
+                        onPress={goToNextMonth}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.monthNavButtonText}>Next ›</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
                 }}
                 onDayPress={handleSelectDate}
               />

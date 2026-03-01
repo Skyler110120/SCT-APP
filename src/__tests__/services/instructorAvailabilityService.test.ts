@@ -26,12 +26,13 @@ jest.mock("@react-native-async-storage/async-storage", () => ({
 import { apiFetch } from "../../services/api";
 const mockApiFetch = apiFetch as jest.MockedFunction<typeof apiFetch>;
 
+/** Sessions are fixed 2-hour slots; availability end_time = start_time + 2h */
 const mockAvailability = {
   id: 1,
   company_id: 5,
   instructor_id: 10,
   start_time: "09:00",
-  end_time: "17:00",
+  end_time: "11:00",
   day_of_week: 1,
   status: "available",
   start_date: "2026-03-01",
@@ -113,10 +114,11 @@ describe("instructorAvailabilityService.getAvailabilityForCalendar", () => {
 // ---------------------------------------------------------------------------
 
 describe("instructorAvailabilityService.createAvailability", () => {
+  /** UI sends start_time + end_time (start + 2h); sessions are fixed 2-hour slots */
   const createRequest = {
     day_of_week: 1,
     start_time: "09:00",
-    end_time: "17:00",
+    end_time: "11:00",
     start_date: "2026-03-01",
     end_date: "2026-06-30",
   };
@@ -161,8 +163,8 @@ describe("instructorAvailabilityService.createAvailability", () => {
 // ---------------------------------------------------------------------------
 
 describe("instructorAvailabilityService.updateAvailability", () => {
-  it("sends PATCH request with update data", async () => {
-    const update = { start_time: "10:00", end_time: "18:00" };
+  it("sends PATCH request with update data (end_time = start_time + 2h)", async () => {
+    const update = { start_time: "10:00", end_time: "12:00" };
     mockApiFetch.mockResolvedValueOnce({ ...mockAvailability, ...update });
 
     const result = await instructorAvailabilityService.updateAvailability(1, update);

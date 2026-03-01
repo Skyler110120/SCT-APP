@@ -8,6 +8,7 @@ import {
   GunType,
 } from "@/src/types/course.types";
 import { FontAwesome } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {
@@ -22,6 +23,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { materialService } from "@/src/services/materialService";
+import * as FileSystem from "expo-file-system";
+import {
+  MAX_PDF_SCRIPT_SIZE_BYTES,
+  formatBytes,
+} from "@/src/constants/uploadLimits";
 
 interface CourseFormProps {
   visible: boolean;
@@ -32,6 +39,8 @@ interface CourseFormProps {
   onUpdateCourse?: (data: CourseUpdateRequest) => Promise<void>;
   /** When creating, default display order is existingCourseCount + 1 (append at end). */
   existingCourseCount?: number;
+  /** In edit mode, called when user taps "Add video" so parent can open VideoForm for this course. */
+  onOpenAddVideo?: (course: CourseAdminView) => void;
 }
 
 export default function CourseForm({
@@ -42,6 +51,7 @@ export default function CourseForm({
   onCreateCourse,
   onUpdateCourse,
   existingCourseCount = 0,
+  onOpenAddVideo,
 }: CourseFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -52,7 +62,11 @@ export default function CourseForm({
   const [orderIndex, setOrderIndex] = useState("1");
   const [isActive, setIsActive] = useState(true);
   const [pdfS3Key, setPdfS3Key] = useState("");
+  const [pdfFilename, setPdfFilename] = useState<string | null>(null);
   const [instructorScriptS3Key, setInstructorScriptS3Key] = useState("");
+  const [instructorScriptFilename, setInstructorScriptFilename] = useState<string | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [uploadingScript, setUploadingScript] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const isEditMode = course !== null && course !== undefined;
@@ -67,7 +81,9 @@ export default function CourseForm({
         setOrderIndex(course.order_index.toString());
         setIsActive(course.is_active);
         setPdfS3Key(course.pdf_s3_key || "");
+        setPdfFilename(course.pdf_filename || null);
         setInstructorScriptS3Key(course.instructor_script_s3_key || "");
+        setInstructorScriptFilename(course.instructor_script_filename || null);
       } else {
         setTitle("");
         setDescription("");
@@ -76,7 +92,9 @@ export default function CourseForm({
         setOrderIndex(String((existingCourseCount ?? 0) + 1));
         setIsActive(true);
         setPdfS3Key("");
+        setPdfFilename(null);
         setInstructorScriptS3Key("");
+        setInstructorScriptFilename(null);
       }
       setErrors({});
     }
@@ -96,29 +114,116 @@ export default function CourseForm({
       newErrors.orderIndex = "Order must be a positive integer";
     }
 
-    if (pdfS3Key && !isValidS3Key(pdfS3Key.trim())) {
-      newErrors.pdfS3Key = "Invalid S3 key format";
-    }
-
-    if (instructorScriptS3Key && !isValidS3Key(instructorScriptS3Key.trim())) {
-      newErrors.instructorScriptS3Key = "Invalid S3 key format";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const isValidS3Key = (key: string) => {
-    if (!key.trim()) return true;
+  const handleUploadPdf = async () => {
+    if (!course?.id) return;
+    setUploadingPdf(true);
+    try {
+      const pickResult = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+      if (pickResult.canceled) {
+        setUploadingPdf(false);
+        return;
+      }
+      const file = pickResult.assets[0];
+      const fileInfo = await FileSystem.getInfoAsync(file.uri, { size: true });
+      const size = (fileInfo as { size?: number }).size;
+      if (typeof size === "number" && size > MAX_PDF_SCRIPT_SIZE_BYTES) {
+        Alert.alert(
+          "File too large",
+          `PDF must be under ${formatBytes(MAX_PDF_SCRIPT_SIZE_BYTES)}. This file is ${formatBytes(size)}.`
+        );
+        setUploadingPdf(false);
+        return;
+      }
+      const urlRes = await materialService.requestUploadUrl({
+        course_id: course.id,
+        material_type: "course_pdf",
+        filename: file.name,
+        content_type: "application/pdf",
+      });
+      if (!urlRes.success || !urlRes.data) {
+        Alert.alert("Error", urlRes.error || "Failed to get upload URL");
+        setUploadingPdf(false);
+        return;
+      }
+      const uploadRes = await materialService.uploadFileToPresignedUrl(
+        urlRes.data.upload_url,
+        file.uri,
+        "application/pdf"
+      );
+      if (!uploadRes.success) {
+        Alert.alert("Upload failed", uploadRes.error || "Please try again.");
+        setUploadingPdf(false);
+        return;
+      }
+      setPdfS3Key(urlRes.data.s3_key);
+      setPdfFilename(file.name);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setUploadingPdf(false);
+    }
+  };
 
-    if (key.startsWith("/")) return false; // No leading slash
-    if (key.endsWith("/")) return false; // No trailing slash
-    if (key.includes(".")) return false; // Should have file extension
-    if (key.includes("//")) return false; // No double slashes
-    if (key.includes(" ")) return false; // No spaces
-    if (key.length > 500) return false; // length limit
-
-    return true;
+  const handleUploadScript = async () => {
+    if (!course?.id) return;
+    setUploadingScript(true);
+    try {
+      const pickResult = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+      if (pickResult.canceled) {
+        setUploadingScript(false);
+        return;
+      }
+      const file = pickResult.assets[0];
+      const fileInfo = await FileSystem.getInfoAsync(file.uri, { size: true });
+      const size = (fileInfo as { size?: number }).size;
+      if (typeof size === "number" && size > MAX_PDF_SCRIPT_SIZE_BYTES) {
+        Alert.alert(
+          "File too large",
+          `Script must be under ${formatBytes(MAX_PDF_SCRIPT_SIZE_BYTES)}. This file is ${formatBytes(size)}.`
+        );
+        setUploadingScript(false);
+        return;
+      }
+      const urlRes = await materialService.requestUploadUrl({
+        course_id: course.id,
+        material_type: "instructor_script",
+        filename: file.name,
+        content_type: "application/pdf",
+      });
+      if (!urlRes.success || !urlRes.data) {
+        Alert.alert("Error", urlRes.error || "Failed to get upload URL");
+        setUploadingScript(false);
+        return;
+      }
+      const uploadRes = await materialService.uploadFileToPresignedUrl(
+        urlRes.data.upload_url,
+        file.uri,
+        "application/pdf"
+      );
+      if (!uploadRes.success) {
+        Alert.alert("Upload failed", uploadRes.error || "Please try again.");
+        setUploadingScript(false);
+        return;
+      }
+      setInstructorScriptS3Key(urlRes.data.s3_key);
+      setInstructorScriptFilename(file.name);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Upload failed. Please try again.");
+    } finally {
+      setUploadingScript(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -141,6 +246,10 @@ export default function CourseForm({
           is_active: isActive,
           pdf_s3_key: pdfS3Key.trim() || undefined,
           instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
+          pdf_filename: pdfFilename || undefined,
+          instructor_script_filename: instructorScriptFilename || undefined,
+          pdf_content_type: pdfS3Key ? "application/pdf" : undefined,
+          instructor_script_content_type: instructorScriptS3Key ? "application/pdf" : undefined,
         };
 
         console.log("📚 Updating course:", updateData);
@@ -152,8 +261,10 @@ export default function CourseForm({
           required_gun_type: requiredGunType,
           difficulty_level: difficultyLevel,
           order_index: parseInt(orderIndex),
-          pdf_s3_key: pdfS3Key.trim(),
-          instructor_script_s3_key: instructorScriptS3Key.trim(),
+          pdf_s3_key: pdfS3Key.trim() || undefined,
+          instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
+          pdf_filename: pdfFilename || undefined,
+          instructor_script_filename: instructorScriptFilename || undefined,
         };
         console.log("📚 Creating course:", createData);
         await onCreateCourse(createData);
@@ -273,50 +384,111 @@ export default function CourseForm({
               </View>
 
               <View style={styles.createSection}>
-                <Text style={styles.modalLabel}>Course PDF S3 Key</Text>
-                <TextInput
-                  style={[
-                    styles.searchInput,
-                    errors.pdfS3Key && { borderColor: "#FF4444" },
-                  ]}
-                  value={pdfS3Key}
-                  onChangeText={setPdfS3Key}
-                  placeholder="coursematerials/pdfs/basic-pistol-training.pdf"
-                  placeholderTextColor={themes.white}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {errors.pdfS3Key && (
-                  <Text style={styles.warningText}>{errors.pdfS3Key}</Text>
+                <Text style={styles.modalLabel}>Course PDF</Text>
+                {isEditMode && course ? (
+                  <>
+                    <Text style={styles.inputDescription}>
+                      {pdfS3Key
+                        ? `Current file: ${pdfFilename || "Course PDF"}`
+                        : "No PDF uploaded."}
+                    </Text>
+                    <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                      <TouchableOpacity
+                        style={[styles.confirmButton, { flex: 1 }]}
+                        onPress={handleUploadPdf}
+                        disabled={uploadingPdf}
+                      >
+                        {uploadingPdf ? (
+                          <ActivityIndicator size="small" color={themes.white} />
+                        ) : (
+                          <Text style={styles.buttonText}>
+                            {pdfS3Key ? "Replace PDF" : "Upload course PDF"}
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                      {pdfS3Key && (
+                        <TouchableOpacity
+                          style={[styles.cancelButton, { flex: 1 }]}
+                          onPress={() => {
+                            setPdfS3Key("");
+                            setPdfFilename(null);
+                          }}
+                          disabled={uploadingPdf}
+                        >
+                          <Text style={styles.buttonText}>Remove</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.inputDescription}>
+                    Save the course first, then add a PDF from the edit screen.
+                  </Text>
                 )}
-                <Text style={styles.inputDescription}>
-                  Enter the S3 Course Pdf key here
-                </Text>
               </View>
 
               <View style={styles.createSection}>
-                <Text style={styles.modalLabel}>Instructor Script S3 Key</Text>
-                <TextInput
-                  style={[
-                    styles.searchInput,
-                    errors.instructorScriptS3Key && { borderColor: "#FF4444" },
-                  ]}
-                  value={instructorScriptS3Key}
-                  onChangeText={setInstructorScriptS3Key}
-                  placeholder="coursematerials/scripts/script.pdf"
-                  placeholderTextColor={themes.white}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {errors.instructorScriptS3Key && (
-                  <Text style={styles.warningText}>
-                    {errors.instructorScriptS3Key}
+                <Text style={styles.modalLabel}>Instructor Script</Text>
+                {isEditMode && course ? (
+                  <>
+                    <Text style={styles.inputDescription}>
+                      {instructorScriptS3Key
+                        ? `Current file: ${instructorScriptFilename || "Instructor Script"}`
+                        : "No script uploaded."}
+                    </Text>
+                    <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                      <TouchableOpacity
+                        style={[styles.confirmButton, { flex: 1 }]}
+                        onPress={handleUploadScript}
+                        disabled={uploadingScript}
+                      >
+                        {uploadingScript ? (
+                          <ActivityIndicator size="small" color={themes.white} />
+                        ) : (
+                          <Text style={styles.buttonText}>
+                            {instructorScriptS3Key ? "Replace script" : "Upload instructor script"}
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                      {instructorScriptS3Key && (
+                        <TouchableOpacity
+                          style={[styles.cancelButton, { flex: 1 }]}
+                          onPress={() => {
+                            setInstructorScriptS3Key("");
+                            setInstructorScriptFilename(null);
+                          }}
+                          disabled={uploadingScript}
+                        >
+                          <Text style={styles.buttonText}>Remove</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.inputDescription}>
+                    Save the course first, then add the script from the edit screen.
                   </Text>
                 )}
-                <Text style={styles.inputDescription}>
-                  Enter the S3 Instructor Script key here
-                </Text>
               </View>
+
+              {isEditMode && course && (
+                <View style={styles.createSection}>
+                  <Text style={styles.modalLabel}>Videos</Text>
+                  <Text style={styles.inputDescription}>
+                    {course.videos?.length
+                      ? `${course.videos.length} video${course.videos.length === 1 ? "" : "s"} in this course.`
+                      : "No videos yet."}
+                    {" "}Add a video here or use "Manage Videos" from the main screen to edit later.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.confirmButton, { marginTop: 8 }]}
+                    onPress={() => onOpenAddVideo?.(course)}
+                    disabled={isSubmitting}
+                  >
+                    <Text style={styles.buttonText}>Add video</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
               {isEditMode && materialStatus && (
                 <View style={styles.createSection}>

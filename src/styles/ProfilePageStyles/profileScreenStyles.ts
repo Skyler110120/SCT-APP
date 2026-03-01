@@ -1,14 +1,22 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+
+const { width: windowWidth } = Dimensions.get("window");
+
+const isNarrow = windowWidth < 400;
+const horizontalPadding = 20;
+const contentWidth = windowWidth - horizontalPadding * 2;
 
 export const profileScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "column",
+    maxWidth: "100%",
   },
   safeArea: {
     flex: 1,
     backgroundColor: "transparent",
+    maxWidth: "100%",
   },
   profileContentContainer: {
     flex: 1,
@@ -16,61 +24,75 @@ export const profileScreenStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
     gap: 30,
-    paddingHorizontal: 20,
+    paddingHorizontal: horizontalPadding,
+    width: "100%",
+    maxWidth: contentWidth,
+    alignSelf: "center",
   },
   profileName: {
-    fontSize: 64,
+    fontSize: isNarrow ? 26 : 64,
     fontFamily: "Chakra-BoldItalic",
-    color:  themes.vegasGold,
+    color: themes.vegasGold,
     textAlign: "center",
     borderWidth: 1,
     padding: 10,
+    paddingHorizontal: 16,
+    maxWidth: "100%",
   },
   profilePictureContainer: {
-    width: 300,
-    height: 300,
+    width: Math.min(300, contentWidth - 40),
+    height: Math.min(300, contentWidth - 40),
     alignSelf: "center",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 150,
     borderWidth: 1,
-    borderColor: themes. vegasGold,
+    borderColor: themes.vegasGold,
   },
-  profileBioContainer:  {
+  profileBioContainer: {
     flexDirection: "column",
     justifyContent: "flex-start",
-    width: 700,
+    width: "100%",
+    maxWidth: Math.min(700, contentWidth),
     alignSelf: "center",
     borderRadius: 30,
     borderWidth: 1,
     borderColor: themes.vegasGold,
   },
   profileBioText: {
-    fontSize:  24,
+    fontSize: isNarrow ? 16 : 24,
     fontFamily: "Chakra-Italic",
     color: themes.white,
     paddingLeft: 20,
+    paddingRight: 20,
     paddingBottom: 10,
     paddingTop: 10,
     borderBottomColor: themes.vegasGold,
     borderBottomWidth: 1,
+    flexWrap: "wrap",
   },
   profileBioTextBottom: {
-    fontSize: 24,
+    fontSize: isNarrow ? 16 : 24,
     fontFamily: "Chakra-Italic",
     color: themes.white,
     paddingLeft: 20,
+    paddingRight: 20,
     paddingBottom: 10,
     paddingTop: 10,
   },
   buttonContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 20,
+    justifyContent: "center",
+    width: "100%",
+    maxWidth: contentWidth,
   },
   button: {
     padding: 10,
     borderRadius: 30,
-    width: 300,
+    minWidth: Math.min(300, (contentWidth - 20) / 2),
+    width: isNarrow ? "100%" : Math.min(300, (contentWidth - 20) / 2),
     height: 100,
     justifyContent: "center",
     alignSelf: "center",
@@ -78,7 +100,7 @@ export const profileScreenStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: 24,
+    fontSize: isNarrow ? 18 : 24,
     fontFamily: "Chakra-BoldItalic",
     color: themes.white,
   },

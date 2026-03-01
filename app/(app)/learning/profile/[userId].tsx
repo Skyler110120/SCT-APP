@@ -269,8 +269,14 @@ export default function UserProfilePage() {
       <SafeAreaView style={styles.safeArea}>
         <BackgroundGradient>
           <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
+            style={{ flex: 1, maxWidth: "100%" }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: "center",
+              width: "100%",
+            }}
             showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
           >
             <Text style={styles.profileName}>{getDisplayName()}</Text>
 

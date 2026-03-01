@@ -15,13 +15,17 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   pageScrollContent: {
     paddingBottom: 24,
+    paddingHorizontal: 20,
   },
   calendarContainer: {
+    width: "100%",
+    alignSelf: "stretch" as const,
     borderRadius: 20,
     overflow: "hidden",
-    margin: 16,
+    marginVertical: 16,
+    marginHorizontal: 0,
     borderWidth: 2,
-    borderColor: themes. white,
+    borderColor: themes.white,
   },
   scheduleContainer: {
     borderTopLeftRadius: 100,
@@ -35,7 +39,7 @@ export const calendarScreenStyles = StyleSheet.create({
     paddingLeft: 16,
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: themes. vegasGold,
+    borderColor: themes.vegasGold,
   },
   scheduleList: {
     minHeight: 220,
@@ -62,7 +66,7 @@ export const calendarScreenStyles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: themes.black,
-    borderColor: themes. vegasGold,
+    borderColor: themes.vegasGold,
   },
   buttonContainer: {
     flexDirection:  "row",
@@ -107,7 +111,7 @@ export const calendarScreenStyles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     backgroundColor: themes.black,
-    borderColor: themes. vegasGold,
+    borderColor: themes.vegasGold,
   },
   addButtonText: {
     fontSize: 32,
@@ -213,5 +217,32 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   scrollContentContainer: {
     paddingBottom: 96,
+  },
+  monthNavRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    minHeight: 52,
+  },
+  monthNavButton: {
+    minWidth: 56,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  monthNavButtonText: {
+    fontSize: 18,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  monthTitle: {
+    fontSize: 22,
+    fontFamily: "Chakra-BoldItalic",
+    color: themes.vegasGold,
+    flex: 1,
+    textAlign: "center",
   },
 });
