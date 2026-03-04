@@ -53,6 +53,8 @@ export interface SessionDetailed extends Session {
 export interface DirectBookingRequest extends SessionBase {
     instructor_id: number;
     student_id?: number;
+    /** Course week 1–24 for prescheduling; defaults to current week if omitted. */
+    week_number?: number;
 }
 
 export interface SessionUpdateRequest {

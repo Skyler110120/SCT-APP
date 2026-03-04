@@ -194,6 +194,29 @@ export const calendarScreenStyles = StyleSheet.create({
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
+  instructorFilterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 12,
+  },
+  instructorFilterLabel: {
+    fontSize: 22,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+  instructorFilterPickerWrap: {
+    flex: 1,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    borderRadius: 10,
+    backgroundColor: themes.black,
+    justifyContent: "center",
+  },
+  instructorFilterPicker: {
+    color: themes.white,
+  },
   sectionSubtitle: {
     marginBottom: 12,
     fontSize: 28,

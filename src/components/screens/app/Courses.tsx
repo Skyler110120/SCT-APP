@@ -170,6 +170,33 @@ export default function Courses() {
     }
   };
 
+  /** Company Admin: fetch all courses via admin endpoint (companies get access to all courses). */
+  const fetchAdminCourses = async () => {
+    try {
+      const response = await courseService.getCoursesForAdmin();
+
+      if (response.success && response.data) {
+        const list = Array.isArray(response.data) ? response.data : [response.data];
+        const courseData: CourseView[] = list.map((course: any) => ({
+          ...course,
+          viewType: "instructor" as const,
+        }));
+
+        setCourses(courseData);
+        if (courseData.length > 0 && !selectedCourse) {
+          setSelectedCourse(courseData[0]);
+        }
+      } else {
+        setCourses([]);
+        setError(response.error || "Failed to load company courses.");
+      }
+    } catch (error) {
+      console.error("Error fetching admin courses:", error);
+      setCourses([]);
+      setError("Unable to load company courses. Please try again later.");
+    }
+  };
+
   const fetchCourses = async () => {
     setIsLoadingCourses(true);
     setError(null);
@@ -177,6 +204,8 @@ export default function Courses() {
     try {
       if (isStudent) {
         await fetchStudentCourse();
+      } else if (isAdmin) {
+        await fetchAdminCourses();
       } else {
         await fetchInstructorCourses();
       }

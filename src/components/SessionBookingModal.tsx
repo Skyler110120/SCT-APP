@@ -7,8 +7,8 @@ import {
     DirectBookingRequest,
     SessionDetailed,
 } from "@/src/types/sessions.types";
-import { formatTimeString } from "@/src/utils/dateTimeUtils";
-import React, { useState } from "react";
+import { formatTimeString, toLocalISOString } from "@/src/utils/dateTimeUtils";
+import React, { useState, useEffect } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -18,6 +18,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { courseService } from "@/src/services/courseService";
 
 interface SessionBookingModalProps {
   visible: boolean;
@@ -39,6 +41,29 @@ export default function SessionBookingModal({
   const { user } = useAuth();
   const [selectedStartTime, setSelectedStartTime] = useState<string>("");
   const [isBooking, setIsBooking] = useState<boolean>(false);
+  const [currentWeek, setCurrentWeek] = useState<number | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<number>(1);
+
+  useEffect(() => {
+    if (!visible) {
+      setCurrentWeek(null);
+      setSelectedWeek(1);
+      return;
+    }
+    courseService.getMyEnrolledCourse().then((res) => {
+      if (res.success && res.data?.current_week != null) {
+        const cw = res.data.current_week;
+        setCurrentWeek(cw);
+        setSelectedWeek(cw);
+      } else {
+        setCurrentWeek(null);
+        setSelectedWeek(1);
+      }
+    }).catch(() => {
+      setCurrentWeek(null);
+      setSelectedWeek(1);
+    });
+  }, [visible]);
 
   const generateTimeSlots = () => {
     if (!availability) return [];
@@ -119,12 +144,18 @@ export default function SessionBookingModal({
     setIsBooking(true);
     try {
       const endTime = calculateEndTime(selectedStartTime);
+      const [y, m, d] = selectedDate.split("-").map(Number);
+      const [startH, startMin] = selectedStartTime.split(":").map(Number);
+      const [endH, endMin] = endTime.split(":").map(Number);
+      const startDateObj = new Date(y, m - 1, d, startH, startMin, 0);
+      const endDateObj = new Date(y, m - 1, d, endH, endMin, 0);
       const bookingData: DirectBookingRequest = {
         instructor_id: instructorId,
         title: `Training Session`,
         description: `Scheduled training session`,
-        start_time: `${selectedDate}T${selectedStartTime}:00`,
-        end_time: `${selectedDate}T${endTime}:00`,
+        start_time: toLocalISOString(startDateObj),
+        end_time: toLocalISOString(endDateObj),
+        ...(currentWeek != null && { week_number: selectedWeek }),
       };
 
       const response = await sessionService.bookDirectSession(bookingData);
@@ -141,6 +172,10 @@ export default function SessionBookingModal({
                 "Time Not Available",
                 "This time slot is no longer available. Please select a different time."
             );
+        } else if (errorMessage.includes("one session per course week") || errorMessage.includes("already have a session for week")) {
+            Alert.alert("Booking Error", errorMessage);
+        } else if (errorMessage.includes("must complete or have") && errorMessage.includes("scheduled before booking")) {
+            Alert.alert("Book in Order", errorMessage);
         } else {
             Alert.alert("Booking Error", errorMessage);
         }
@@ -160,6 +195,21 @@ export default function SessionBookingModal({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Book Training Session</Text>
+          {currentWeek != null && (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={styles.modalText}>Course week (for prescheduling):</Text>
+              <Picker
+                selectedValue={selectedWeek}
+                onValueChange={(v) => setSelectedWeek(Number(v))}
+                style={{ color: themes.white }}
+                itemStyle={{ color: themes.white }}
+              >
+                {Array.from({ length: 24 }, (_, i) => i + 1).map((w) => (
+                  <Picker.Item key={w} label={`Week ${w}${w === currentWeek ? " (current)" : ""}`} value={w} />
+                ))}
+              </Picker>
+            </View>
+          )}
           <Text style={styles.modalText}>
             Available: {formatTimeString(availability?.start_time || "")} - {formatTimeString(availability?.end_time || "")}
           </Text>

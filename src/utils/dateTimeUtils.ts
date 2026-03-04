@@ -1,3 +1,18 @@
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Return ISO string for a Date using local date/time and timezone offset
+ * (e.g. "2025-03-05T09:00:00-05:00"). Use when sending booking slots so the
+ * backend can validate against instructor availability (which is in local time).
+ */
+export function toLocalISOString(date: Date): string {
+  const offsetMin = -date.getTimezoneOffset();
+  const sign = offsetMin >= 0 ? "+" : "-";
+  const offsetHours = Math.floor(Math.abs(offsetMin) / 60);
+  const offsetMins = Math.abs(offsetMin) % 60;
+  const offsetStr = `${sign}${pad2(offsetHours)}:${pad2(offsetMins)}`;
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}${offsetStr}`;
+}
 
 export const formatTimeString = (timeString: string): string => {
   if (!timeString || typeof timeString !== "string") {

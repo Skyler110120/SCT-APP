@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { Calendar } from "react-native-calendars";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -122,6 +123,9 @@ export default function CalendarScreen() {
     useState<SessionDetailed | null>(null);
   const [isCancellingSession, setIsCancellingSession] =
     useState<boolean>(false);
+  const [instructorFilterId, setInstructorFilterId] = useState<number | null>(
+    null
+  );
 
   const [error, setError] = useState<string | null>(null);
 
@@ -457,8 +461,11 @@ export default function CalendarScreen() {
     return new Date(year, month - 1, day);
   };
 
+  /** Backend uses Python weekday: Monday=0, Sunday=6. JS getDay() is Sunday=0, Saturday=6. */
+  const toBackendDayOfWeek = (date: Date) => (date.getDay() + 6) % 7;
+
   const selectedDateObject = getDateObject(selectedDate);
-  const selectedDayOfWeek = selectedDateObject.getDay();
+  const selectedDayOfWeek = toBackendDayOfWeek(selectedDateObject);
   const getAvailabilitiesForSelectedDate = () => {
     return availabilities.filter((availability) => {
       if (availability.day_of_week !== selectedDayOfWeek) {
@@ -482,6 +489,31 @@ export default function CalendarScreen() {
     });
   };
   const availabilitiesForSelectedDate = getAvailabilitiesForSelectedDate();
+
+  const instructorsFromAvailability = React.useMemo(() => {
+    const seen = new Map<number, string>();
+    availabilities.forEach((a) => {
+      if (a.instructor_id && !seen.has(a.instructor_id)) {
+        seen.set(
+          a.instructor_id,
+          a.instructor_name ?? `Instructor ${a.instructor_id}`
+        );
+      }
+    });
+    return Array.from(seen.entries(), ([id, name]) => ({ id, name })).sort(
+      (a, b) => a.name.localeCompare(b.name)
+    );
+  }, [availabilities]);
+
+  const showInstructorFilter =
+    user?.role === UserRole.STUDENT && instructorsFromAvailability.length > 1;
+
+  const displayAvailabilitiesForSelectedDate =
+    instructorFilterId == null
+      ? availabilitiesForSelectedDate
+      : availabilitiesForSelectedDate.filter(
+          (a) => a.instructor_id === instructorFilterId
+        );
 
   useEffect(() => {
     if (user) {
@@ -994,7 +1026,7 @@ export default function CalendarScreen() {
 
                     {eventsForSelectedDate.length === 0 &&
                       sessionsForSelectedDate.length === 0 &&
-                      availabilitiesForSelectedDate.length === 0 && (
+                      displayAvailabilitiesForSelectedDate.length === 0 && (
                         <Text style={styles.noAvailabilityText}>
                           No schedule items for this date.
                         </Text>
@@ -1015,13 +1047,46 @@ export default function CalendarScreen() {
 
                     {availabilities.length > 0 && (
                       <>
+                        {showInstructorFilter && (
+                          <View style={styles.instructorFilterRow}>
+                            <Text style={styles.instructorFilterLabel}>
+                              Filter by instructor
+                            </Text>
+                            <View style={styles.instructorFilterPickerWrap}>
+                              <Picker
+                                selectedValue={
+                                  instructorFilterId ?? "all"
+                                }
+                                onValueChange={(value) =>
+                                  setInstructorFilterId(
+                                    value === "all" ? null : (value as number)
+                                  )
+                                }
+                                style={styles.instructorFilterPicker}
+                                dropdownIconColor={themes.vegasGold}
+                              >
+                                <Picker.Item
+                                  label="All instructors"
+                                  value="all"
+                                />
+                                {instructorsFromAvailability.map(({ id, name }) => (
+                                  <Picker.Item
+                                    key={id}
+                                    label={name}
+                                    value={id}
+                                  />
+                                ))}
+                              </Picker>
+                            </View>
+                          </View>
+                        )}
                         <Text style={styles.sectionSubtitle}>
                           {user?.role === UserRole.INSTRUCTOR
                             ? "Your Availability"
                             : "Instructor's Availability"}
                         </Text>
-                        {availabilitiesForSelectedDate.length > 0 ? (
-                          availabilitiesForSelectedDate.map((availability) => (
+                        {displayAvailabilitiesForSelectedDate.length > 0 ? (
+                          displayAvailabilitiesForSelectedDate.map((availability) => (
                             <TouchableOpacity
                               key={availability.id}
                               style={[
@@ -1084,13 +1149,13 @@ export default function CalendarScreen() {
                             No availability for{" "}
                             {
                               [
-                                "Sunday",
                                 "Monday",
                                 "Tuesday",
                                 "Wednesday",
                                 "Thursday",
                                 "Friday",
                                 "Saturday",
+                                "Sunday",
                               ][selectedDayOfWeek]
                             }{" "}
                             {formatDateString(selectedDate)}
@@ -1140,6 +1205,7 @@ export default function CalendarScreen() {
             visible={showSessionBookingModal}
             availability={selectedAvailabilityForBooking}
             selectedDate={selectedDate}
+            instructorId={selectedAvailabilityForBooking?.instructor_id ?? 0}
             onClose={() => {
               setShowSessionBookingModal(false);
               setSelectedAvailabilityForBooking(null);
