@@ -14,6 +14,7 @@ import {
   Alert,
   Modal,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -54,6 +55,7 @@ export default function VideoForm({
   const [videoContentType, setVideoContentType] = useState<string | null>(null);
   const [orderIndex, setOrderIndex] = useState("1");
   const [weekNumber, setWeekNumber] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -78,6 +80,7 @@ export default function VideoForm({
         setVideoContentType(video.video_content_type || null);
         setOrderIndex(video.order_index.toString());
         setWeekNumber(video.week_number?.toString() || "");
+        setIsPublic(video.is_public ?? false);
       } else {
         setTitle("");
         setDescription("");
@@ -88,6 +91,7 @@ export default function VideoForm({
         setVideoContentType(null);
         setOrderIndex(getSuggestedOrderIndex());
         setWeekNumber("");
+        setIsPublic(false);
       }
       setErrors({});
     }
@@ -225,6 +229,7 @@ export default function VideoForm({
           video_url: videoUrl.trim(),
           order_index: order,
           week_number: week,
+          is_public: isPublic,
         };
         if (isEditMode && onUpdateVideo) {
           await onUpdateVideo({
@@ -245,6 +250,7 @@ export default function VideoForm({
           video_content_type: videoContentType || undefined,
           order_index: order,
           week_number: week,
+          is_public: isPublic,
         };
         if (isEditMode && onUpdateVideo) {
           await onUpdateVideo({
@@ -450,6 +456,21 @@ export default function VideoForm({
               )}
               <Text style={styles.inputDescription}>
                 Assign video to a specific week (1-24) or leave unassigned
+              </Text>
+            </View>
+
+            <View style={styles.createSection}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text style={styles.modalLabel}>Visible to students</Text>
+                <Switch
+                  value={isPublic}
+                  onValueChange={setIsPublic}
+                  trackColor={{ false: "#555", true: themes.vegasGold }}
+                  thumbColor={themes.white}
+                />
+              </View>
+              <Text style={styles.inputDescription}>
+                When on, enrolled students can view this video. When off, only instructors and admins can see it.
               </Text>
             </View>
           </ScrollView>

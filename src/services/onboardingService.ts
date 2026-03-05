@@ -21,6 +21,7 @@ import {
 const ONBOARDING_STORAGE_KEYS = {
   INVITE_CODE: "onboarding_invite_code",
   COMPANY_INFO: "onboarding_company_info",
+  SELECTED_ROLE: "onboarding_selected_role",
   SELECTED_INSTRUCTOR: "onboarding_selected_instructor",
   SELECTED_COURSE: "onboarding_selected_course",
   FORM_DATA: "onboarding_form_data",
@@ -138,6 +139,11 @@ export const onboardingService = {
     }
   },
 
+  /**
+   * Builds signup payload from stored onboarding data. Logic kept in sync with sct-web-app.
+   * - Role comes from invite (companyInfo.role) with fallback to stored selectedRole.
+   * - course_id is only set for STUDENT; admin/instructor signups send null.
+   */
   async createSignupDataFromOnboarding(
     registrationData: UserFormDataWithRegistration
   ): Promise<EnhancedSignupData | null> {
@@ -162,14 +168,20 @@ export const onboardingService = {
         return null;
       }
 
-      const courseId = selectedCourse?.id || registrationData.course_id || null;
-      // instructor_id is no longer required at signup — students book any available instructor
+      const courseId =
+        intendedRole === UserRole.STUDENT
+          ? selectedCourse?.id ??
+            registrationData.course_id ??
+            registrationData.courseId ??
+            null
+          : null;
+
       const signupData: EnhancedSignupData = {
         email: registrationData.email,
         password: registrationData.password,
         first_name: registrationData.first_name,
         last_name: registrationData.last_name,
-        role: companyInfo.role,
+        role: companyInfo.role ?? intendedRole,
         company_id: companyInfo.company_id,
         instructor_id: null,
         course_id: courseId,

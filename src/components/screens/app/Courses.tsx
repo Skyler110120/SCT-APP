@@ -531,8 +531,20 @@ export default function Courses() {
       );
     }
 
-    const hasPdfMaterial = Boolean(selectedCourse.pdf_s3_key?.trim());
+    const hasPdf = Boolean(selectedCourse.pdf_s3_key?.trim());
+    const pdfIsPublic = Boolean(selectedCourse.pdf_is_public);
+    const hasPdfMaterial = isStudent
+      ? hasPdf && pdfIsPublic
+      : hasPdf;
     const hasScriptMaterial = Boolean(selectedCourse.instructor_script_s3_key?.trim());
+
+    const instructorCourse = isInstructorCourse(selectedCourse);
+    const studentVideoCount = instructorCourse
+      ? selectedCourse.videos?.filter((v) => v.is_public).length ?? 0
+      : selectedCourse.videos?.length ?? 0;
+    const instructorOnlyVideoCount = instructorCourse
+      ? selectedCourse.videos?.filter((v) => !v.is_public).length ?? 0
+      : 0;
 
     return (
       <View style={styles.selectedCourseSection}>
@@ -544,6 +556,23 @@ export default function Courses() {
             <Text style={styles.selectedCourseDescription}>
               {selectedCourse.description || "No description available"}
             </Text>
+
+            {canViewInstructorScript && instructorCourse && (studentVideoCount > 0 || instructorOnlyVideoCount > 0 || hasPdf || hasScriptMaterial) && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={[styles.selectedCourseDescription, { fontSize: 12, opacity: 0.9 }]}>
+                  Student materials: {pdfIsPublic && hasPdf ? "PDF, " : ""}
+                  {studentVideoCount} video{studentVideoCount !== 1 ? "s" : ""}
+                  {(instructorOnlyVideoCount > 0 || hasScriptMaterial) && (
+                    <>
+                      {" • Instructor only: "}
+                      {[hasScriptMaterial && "Script", instructorOnlyVideoCount > 0 && `${instructorOnlyVideoCount} video${instructorOnlyVideoCount !== 1 ? "s" : ""}`]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </>
+                  )}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.selectedCourseMeta}>
               <View style={styles.metaBadge}>

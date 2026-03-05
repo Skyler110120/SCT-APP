@@ -24,6 +24,7 @@ const mockMaterialInfo = {
   course_id: 1,
   course_title: "Basic Pistol",
   has_pdf: true,
+  pdf_is_public: true,
   has_script: true,
   can_access_script: true,
 };
@@ -50,7 +51,18 @@ describe("materialService.getMaterialInfo", () => {
     const result = await materialService.getMaterialInfo(1);
     expect(result.success).toBe(true);
     expect(result.data).toEqual(mockMaterialInfo);
+    expect(result.data?.pdf_is_public).toBe(true);
     expect(mockApiFetch).toHaveBeenCalledWith("/materials/courses/1/info");
+  });
+
+  it("returns pdf_is_public false when PDF is instructor-only", async () => {
+    mockApiFetch.mockResolvedValueOnce({
+      ...mockMaterialInfo,
+      pdf_is_public: false,
+    });
+    const result = await materialService.getMaterialInfo(1);
+    expect(result.success).toBe(true);
+    expect(result.data?.pdf_is_public).toBe(false);
   });
 
   it("returns error on failure", async () => {

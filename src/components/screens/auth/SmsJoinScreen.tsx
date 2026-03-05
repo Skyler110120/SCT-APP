@@ -65,7 +65,7 @@ export default function SmsJoinScreen() {
         if (result.data.phone_e164) {
           setPhoneNumber(result.data.phone_e164);
         }
-        setStep("verify-phone");
+        setStep(result.data.requires_phone_verification ? "verify-phone" : "registration");
       } else {
         setErrorMessage("This invite link is invalid or has expired.");
         setStep("error");
@@ -158,17 +158,24 @@ export default function SmsJoinScreen() {
       Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
+    if (inviteData?.requires_phone_verification && !verificationSessionToken) {
+      Alert.alert("Error", "Phone verification required");
+      return;
+    }
 
     setIsRegistering(true);
     try {
-      const result = await smsInviteService.signupFromInvite({
+      const payload: Parameters<typeof smsInviteService.signupFromInvite>[0] = {
         invite_token: token!,
-        verification_session_token: verificationSessionToken,
         email: email.trim().toLowerCase(),
         password,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-      });
+      };
+      if (verificationSessionToken) {
+        payload.verification_session_token = verificationSessionToken;
+      }
+      const result = await smsInviteService.signupFromInvite(payload);
 
       if (result.success) {
         // Auto-login after successful registration
@@ -258,7 +265,7 @@ export default function SmsJoinScreen() {
             </View>
           )}
 
-          {step === "verify-phone" && (
+          {step === "verify-phone" && inviteData?.requires_phone_verification && (
             <View style={s.formWrap}>
               <Text style={s.stepLabel}>Step 1: Verify Your Phone</Text>
 
@@ -333,7 +340,9 @@ export default function SmsJoinScreen() {
 
           {step === "registration" && (
             <View style={s.formWrap}>
-              <Text style={s.stepLabel}>Step 2: Create Your Account</Text>
+              <Text style={s.stepLabel}>
+                {inviteData?.requires_phone_verification ? "Step 2: Create Your Account" : "Create Your Account"}
+              </Text>
 
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <TextInput

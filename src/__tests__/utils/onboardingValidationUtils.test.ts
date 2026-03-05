@@ -155,6 +155,21 @@ describe("isValidEnhancedSignupData", () => {
   it("returns false when invite_code is missing", () => {
     expect(isValidEnhancedSignupData({ ...valid, invite_code: "" })).toBe(false);
   });
+
+  it("returns false when role is missing", () => {
+    const { role, ...rest } = valid;
+    expect(isValidEnhancedSignupData(rest)).toBe(false);
+  });
+
+  it("returns true for admin signup (role present, course_id optional)", () => {
+    expect(
+      isValidEnhancedSignupData({
+        ...valid,
+        role: UserRole.ADMIN,
+        course_id: null,
+      })
+    ).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -24,6 +24,8 @@ export interface CourseVideo {
     video_content_type?: string | null;
     order_index: number;
     week_number?: number;
+    /** When true, students can see this video. Default false (instructor-only). */
+    is_public?: boolean;
     created_at?: string;
     updated_at?: string;
 }
@@ -47,6 +49,8 @@ export interface CourseStudentView {
     required_gun_type: string;
     difficulty_level: string;
     pdf_s3_key?: string | null;
+    /** When true, students can see the course PDF. */
+    pdf_is_public?: boolean;
     instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
@@ -61,6 +65,7 @@ export interface CourseInstructorView {
     required_gun_type: string;
     difficulty_level: string;
     pdf_s3_key?: string | null;
+    pdf_is_public?: boolean;
     instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
@@ -73,8 +78,9 @@ export interface CourseAdminView {
     viewType: 'admin';
     description?: string;
     required_gun_type: string;
-    difficulty_level: string
+    difficulty_level: string;
     pdf_s3_key?: string | null;
+    pdf_is_public?: boolean;
     instructor_script_s3_key?: string | null;
     pdf_filename?: string | null;
     instructor_script_filename?: string | null;
@@ -100,6 +106,8 @@ export interface CourseCreateRequest {
     instructor_script_filename?: string;
     pdf_content_type?: string;
     instructor_script_content_type?: string;
+    /** When true, students can see the course PDF. Default false. */
+    pdf_is_public?: boolean;
     order_index: number;
 }
 
@@ -114,6 +122,7 @@ export interface CourseUpdateRequest {
     instructor_script_filename?: string;
     pdf_content_type?: string;
     instructor_script_content_type?: string;
+    pdf_is_public?: boolean;
     is_active?: boolean;
     order_index?: number;
 }
@@ -127,6 +136,8 @@ export interface VideoCreateRequest {
     video_content_type?: string;
     order_index: number;
     week_number?: number;
+    /** When true, students can see this video. Default false (instructor-only). */
+    is_public?: boolean;
 }
 
 export interface VideoUpdateRequest {
@@ -138,6 +149,7 @@ export interface VideoUpdateRequest {
     video_content_type?: string | null;
     order_index?: number;
     week_number?: number;
+    is_public?: boolean;
 }
 
 export interface CourseResponse {

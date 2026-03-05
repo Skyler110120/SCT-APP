@@ -42,14 +42,14 @@ export default function AdminDashboard() {
   const [onboardingLink, setOnboardingLink] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
-  // SMS Invite state
-  const [smsPhone, setSmsPhone] = useState("");
-  const [smsRole, setSmsRole] = useState<string>("STUDENT");
-  const [smsCourseId, setSmsCourseId] = useState<number | null>(null);
+  // Email invite state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<string>("STUDENT");
+  const [inviteCourseId, setInviteCourseId] = useState<number | null>(null);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
-  const [smsInvites, setSmsInvites] = useState<SmsInviteListItem[]>([]);
-  const [isSendingSms, setIsSendingSms] = useState(false);
-  const [smsMessage, setSmsMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [emailInvites, setEmailInvites] = useState<SmsInviteListItem[]>([]);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     if (user?.company_id) {
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
         setCourses(coursesResponse.data);
       }
       if (smsResponse.success && smsResponse.data) {
-        setSmsInvites(smsResponse.data);
+        setEmailInvites(smsResponse.data);
       }
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -183,37 +183,37 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSendSmsInvite = async () => {
-    if (!company || !smsPhone.trim()) return;
+  const handleSendEmailInvite = async () => {
+    if (!company || !inviteEmail.trim()) return;
 
-    setIsSendingSms(true);
-    setSmsMessage(null);
+    setIsSendingInvite(true);
+    setInviteMessage(null);
 
     try {
       const result = await smsInviteService.createInvite(company.id, {
-        phone_number: smsPhone.trim(),
-        role: smsRole,
-        course_id: smsRole === "STUDENT" ? smsCourseId : null,
+        email: inviteEmail.trim(),
+        role: inviteRole,
+        course_id: inviteRole === "STUDENT" ? inviteCourseId : null,
       });
 
       if (result.success && result.data) {
-        setSmsMessage({ type: "success", text: `Invite sent to ${smsPhone.trim()}` });
-        setSmsPhone("");
+        setInviteMessage({ type: "success", text: `Invite sent to ${inviteEmail.trim()}` });
+        setInviteEmail("");
         const refreshed = await smsInviteService.listInvites(company.id);
         if (refreshed.success && refreshed.data) {
-          setSmsInvites(refreshed.data);
+          setEmailInvites(refreshed.data);
         }
       } else {
-        setSmsMessage({ type: "error", text: result.error || "Failed to send invite" });
+        setInviteMessage({ type: "error", text: result.error || "Failed to send invite" });
       }
     } catch {
-      setSmsMessage({ type: "error", text: "An error occurred while sending the invite" });
+      setInviteMessage({ type: "error", text: "An error occurred while sending the invite" });
     } finally {
-      setIsSendingSms(false);
+      setIsSendingInvite(false);
     }
   };
 
-  const SMS_ROLES = [
+  const INVITE_ROLES = [
     { label: "Student", value: "STUDENT" },
     { label: "Instructor", value: "INSTRUCTOR" },
     { label: "Admin", value: "ADMIN" },
@@ -318,41 +318,41 @@ export default function AdminDashboard() {
                 </Text>
               </TouchableOpacity>
             </View>
-            {/* SMS Invite Section */}
+            {/* Email Invite Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>SMS Invites</Text>
+              <Text style={styles.sectionTitle}>Email Invites</Text>
 
               <TextInput
                 style={styles.textInput}
-                placeholder="Phone number (e.g. +15551234567)"
+                placeholder="Email address"
                 placeholderTextColor="rgba(255,255,255,0.4)"
-                value={smsPhone}
+                value={inviteEmail}
                 onChangeText={(text) => {
-                  setSmsPhone(text);
-                  setSmsMessage(null);
+                  setInviteEmail(text);
+                  setInviteMessage(null);
                 }}
-                keyboardType="phone-pad"
+                keyboardType="email-address"
                 autoCapitalize="none"
               />
 
               <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 8 }}>
-                {SMS_ROLES.map((r) => (
+                {INVITE_ROLES.map((r) => (
                   <TouchableOpacity
                     key={r.value}
-                    onPress={() => setSmsRole(r.value)}
+                    onPress={() => setInviteRole(r.value)}
                     style={{
                       paddingHorizontal: 16,
                       paddingVertical: 8,
                       borderRadius: 20,
                       borderWidth: 1,
                       borderColor: themes.vegasGold,
-                      backgroundColor: smsRole === r.value ? themes.vegasGold : "transparent",
+                      backgroundColor: inviteRole === r.value ? themes.vegasGold : "transparent",
                     }}
                   >
                     <Text style={{
                       fontFamily: "Chakra-Bold",
                       fontSize: 14,
-                      color: smsRole === r.value ? themes.black : themes.vegasGold,
+                      color: inviteRole === r.value ? themes.black : themes.vegasGold,
                     }}>
                       {r.label}
                     </Text>
@@ -360,25 +360,25 @@ export default function AdminDashboard() {
                 ))}
               </View>
 
-              {smsRole === "STUDENT" && courses.length > 0 && (
+              {inviteRole === "STUDENT" && courses.length > 0 && (
                 <View style={{ marginTop: 8 }}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <TouchableOpacity
-                        onPress={() => setSmsCourseId(null)}
+                        onPress={() => setInviteCourseId(null)}
                         style={{
                           paddingHorizontal: 12,
                           paddingVertical: 6,
                           borderRadius: 16,
                           borderWidth: 1,
                           borderColor: themes.vegasGold,
-                          backgroundColor: smsCourseId === null ? themes.vegasGold : "transparent",
+                          backgroundColor: inviteCourseId === null ? themes.vegasGold : "transparent",
                         }}
                       >
                         <Text style={{
                           fontFamily: "Chakra-Regular",
                           fontSize: 13,
-                          color: smsCourseId === null ? themes.black : themes.white,
+                          color: inviteCourseId === null ? themes.black : themes.white,
                         }}>
                           No Course
                         </Text>
@@ -386,20 +386,20 @@ export default function AdminDashboard() {
                       {courses.map((c) => (
                         <TouchableOpacity
                           key={c.id}
-                          onPress={() => setSmsCourseId(c.id)}
+                          onPress={() => setInviteCourseId(c.id)}
                           style={{
                             paddingHorizontal: 12,
                             paddingVertical: 6,
                             borderRadius: 16,
                             borderWidth: 1,
                             borderColor: themes.vegasGold,
-                            backgroundColor: smsCourseId === c.id ? themes.vegasGold : "transparent",
+                            backgroundColor: inviteCourseId === c.id ? themes.vegasGold : "transparent",
                           }}
                         >
                           <Text style={{
                             fontFamily: "Chakra-Regular",
                             fontSize: 13,
-                            color: smsCourseId === c.id ? themes.black : themes.white,
+                            color: inviteCourseId === c.id ? themes.black : themes.white,
                           }}>
                             {c.title}
                           </Text>
@@ -410,31 +410,31 @@ export default function AdminDashboard() {
                 </View>
               )}
 
-              {smsMessage && (
+              {inviteMessage && (
                 <Text style={{
                   marginTop: 8,
                   fontFamily: "Chakra-Regular",
                   fontSize: 14,
                   textAlign: "center",
-                  color: smsMessage.type === "success" ? "#4CAF50" : "#FF4444",
+                  color: inviteMessage.type === "success" ? "#4CAF50" : "#FF4444",
                 }}>
-                  {smsMessage.text}
+                  {inviteMessage.text}
                 </Text>
               )}
 
               <TouchableOpacity
-                style={[styles.actionButton, { opacity: isSendingSms || !smsPhone.trim() ? 0.5 : 1 }]}
-                onPress={handleSendSmsInvite}
-                disabled={isSendingSms || !smsPhone.trim()}
+                style={[styles.actionButton, { opacity: isSendingInvite || !inviteEmail.trim() ? 0.5 : 1 }]}
+                onPress={handleSendEmailInvite}
+                disabled={isSendingInvite || !inviteEmail.trim()}
               >
-                {isSendingSms ? (
+                {isSendingInvite ? (
                   <ActivityIndicator size="small" color={themes.black} />
                 ) : (
-                  <Text style={styles.buttonText}>Send SMS Invite</Text>
+                  <Text style={styles.buttonText}>Send Email Invite</Text>
                 )}
               </TouchableOpacity>
 
-              {smsInvites.length > 0 && (
+              {emailInvites.length > 0 && (
                 <View style={{ marginTop: 12 }}>
                   <Text style={{
                     fontFamily: "Chakra-Bold",
@@ -444,7 +444,7 @@ export default function AdminDashboard() {
                   }}>
                     Recent Invites
                   </Text>
-                  {smsInvites.slice(0, 10).map((inv) => (
+                  {emailInvites.slice(0, 10).map((inv) => (
                     <View key={inv.id} style={{
                       flexDirection: "row",
                       justifyContent: "space-between",
@@ -454,7 +454,7 @@ export default function AdminDashboard() {
                       borderBottomColor: "rgba(197,179,88,0.2)",
                     }}>
                       <Text style={{ fontFamily: "Chakra-Regular", fontSize: 14, color: themes.white }}>
-                        {inv.target_phone_number}
+                        {inv.target_email ?? inv.target_phone_number ?? "—"}
                       </Text>
                       <Text style={{ fontFamily: "Chakra-Regular", fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
                         {inv.target_role} · {inv.invite_status}

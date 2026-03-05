@@ -31,10 +31,12 @@ export interface UserFormData {
 }
 export type PartialUserFormData = Partial<UserFormData>;
 
-export interface UserFormDataWithRegistration extends UserFormData{
+export interface UserFormDataWithRegistration extends UserFormData {
   companyInfo?: CompanyInfo;
   instructor_id?: number;
   course_id?: number;
+  /** Mobile Register passes courseId; createSignupDataFromOnboarding accepts either course_id or courseId */
+  courseId?: number;
 }
 
 export interface EnhancedSignupData {

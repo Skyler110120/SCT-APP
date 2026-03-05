@@ -175,6 +175,17 @@ describe("courseService.createCourse", () => {
     });
   });
 
+  it("sends pdf_is_public when provided", async () => {
+    mockApiFetch.mockResolvedValueOnce({ ...mockCourseAdminView, pdf_is_public: true });
+    const result = await courseService.createCourse({
+      ...courseData,
+      pdf_is_public: true,
+    });
+    expect(result.success).toBe(true);
+    const body = JSON.parse(mockApiFetch.mock.calls[0][1].body);
+    expect(body.pdf_is_public).toBe(true);
+  });
+
   it("returns error on failure", async () => {
     mockApiFetch.mockRejectedValueOnce(new Error("Duplicate title"));
     const result = await courseService.createCourse(courseData);
@@ -200,6 +211,14 @@ describe("courseService.updateCourse", () => {
       method: "PATCH",
       body: JSON.stringify(updateData),
     });
+  });
+
+  it("sends pdf_is_public when provided", async () => {
+    mockApiFetch.mockResolvedValueOnce({ ...mockCourseAdminView, pdf_is_public: false });
+    const result = await courseService.updateCourse(3, { pdf_is_public: false });
+    expect(result.success).toBe(true);
+    const body = JSON.parse(mockApiFetch.mock.calls[0][1].body);
+    expect(body.pdf_is_public).toBe(false);
   });
 
   it("returns error on failure", async () => {
@@ -255,6 +274,17 @@ describe("courseService.addVideoToCourse", () => {
     });
   });
 
+  it("sends is_public when provided", async () => {
+    mockApiFetch.mockResolvedValueOnce({ ...mockCourseVideo, is_public: true });
+    const result = await courseService.addVideoToCourse(2, {
+      ...videoData,
+      is_public: true,
+    });
+    expect(result.success).toBe(true);
+    const body = JSON.parse(mockApiFetch.mock.calls[0][1].body);
+    expect(body.is_public).toBe(true);
+  });
+
   it("returns error on failure", async () => {
     mockApiFetch.mockRejectedValueOnce(new Error("Invalid URL"));
     const result = await courseService.addVideoToCourse(2, videoData);
@@ -279,6 +309,14 @@ describe("courseService.updateVideo", () => {
       method: "PATCH",
       body: JSON.stringify(videoUpdate),
     });
+  });
+
+  it("sends is_public when provided", async () => {
+    mockApiFetch.mockResolvedValueOnce({ ...mockCourseVideo, is_public: false });
+    const result = await courseService.updateVideo(10, { is_public: false });
+    expect(result.success).toBe(true);
+    const body = JSON.parse(mockApiFetch.mock.calls[0][1].body);
+    expect(body.is_public).toBe(false);
   });
 
   it("returns error on failure", async () => {

@@ -85,6 +85,35 @@ describe("VideoForm", () => {
     expect(screen.getByText("Add Video")).toBeTruthy();
   });
 
+  it("shows Visible to students toggle and includes is_public in create payload", async () => {
+    render(
+      <VideoForm
+        visible
+        course={baseCourse}
+        isSubmitting={false}
+        onClose={mockOnClose}
+        onCreateVideo={mockOnCreateVideo}
+      />
+    );
+    expect(screen.getByText("Visible to students")).toBeTruthy();
+    expect(screen.getByText(/When on, enrolled students can view this video/)).toBeTruthy();
+    fireEvent.changeText(screen.getByPlaceholderText("Enter video title..."), "Intro");
+    fireEvent.changeText(
+      screen.getByPlaceholderText("https://youtube.com/watch?v=..."),
+      "https://example.com/v.mp4"
+    );
+    fireEvent.press(screen.getByText("Add Video"));
+    await Promise.resolve();
+    expect(mockOnCreateVideo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Intro",
+        video_url: "https://example.com/v.mp4",
+        order_index: 1,
+        is_public: false,
+      })
+    );
+  });
+
   it("switching to Upload file shows upload button and no URL input", () => {
     render(
       <VideoForm

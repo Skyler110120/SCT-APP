@@ -58,9 +58,10 @@ export default function RegisterScreen() {
   const lastProcessedCompanyRef = useRef<{ companyId: number; role: UserRole } | null>(null);
 
   const handleInviteCodeSuccess = async (company: CompanyInfo) => {
+    const resolvedRole = company.role || UserRole.STUDENT;
     setCompanyInfo(company);
-    setRole(company.role);
-    await onboardingService.saveSelectedRole(company.role);
+    setRole(resolvedRole);
+    await onboardingService.saveSelectedRole(resolvedRole);
   };
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { ApiResponse } from "./auth.types";
 
 export interface SmsInviteCreateRequest {
-  phone_number: string;
+  email: string;
   role: string;
   course_id?: number | null;
 }
@@ -16,7 +16,8 @@ export interface SmsInviteCreateResponse {
 
 export interface SmsInviteListItem {
   id: number;
-  target_phone_number: string;
+  target_phone_number?: string | null;
+  target_email?: string | null;
   target_role: string;
   invite_status: string;
   created_at: string;
@@ -29,6 +30,8 @@ export interface InviteTokenValidation {
   company_name?: string;
   role?: string;
   phone_e164?: string;
+  masked_email?: string | null;
+  masked_phone?: string | null;
   course_id?: number | null;
   requires_phone_verification?: boolean;
   error?: string;
@@ -61,7 +64,7 @@ export interface OtpVerifyResponse {
 
 export interface SignupFromInvitePayload {
   invite_token: string;
-  verification_session_token: string;
+  verification_session_token?: string | null;
   email: string;
   password: string;
   first_name: string;

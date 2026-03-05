@@ -3,7 +3,7 @@ import { videoManagementModalStyles as styles } from "@/src/styles/CoursePageSty
 import { CourseAdminView, CourseVideo } from "@/src/types/course.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
-import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface VideoManagementModalProps {
   visible: boolean;
@@ -22,6 +22,12 @@ export default function VideoManagementModal({
   onEditVideo,
   onDeleteVideo,
 }: VideoManagementModalProps) {
+  const sortedVideos = [...(course.videos || [])].sort(
+    (a, b) => a.order_index - b.order_index
+  );
+  const studentVideos = sortedVideos.filter((v) => v.is_public);
+  const instructorOnlyVideos = sortedVideos.filter((v) => !v.is_public);
+
   const renderVideoItem = ({ item: video }: { item: CourseVideo }) => {
     return (
       <View style={styles.row}>
@@ -41,6 +47,17 @@ export default function VideoManagementModal({
                 <Text style={styles.badgeText}>Week {video.week_number}</Text>
               </View>
             )}
+
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: video.is_public ? "#2a5a2a" : "#5a3a2a" },
+              ]}
+            >
+              <Text style={styles.badgeText}>
+                {video.is_public ? "Student" : "Instructor only"}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -66,6 +83,32 @@ export default function VideoManagementModal({
       </View>
     );
   };
+
+  const renderSection = (
+    title: string,
+    subtitle: string,
+    data: CourseVideo[]
+  ) => (
+    <View style={{ marginBottom: 20 }}>
+      <Text style={[styles.modalTitle, { fontSize: 16, marginBottom: 4 }]}>
+        {title}
+      </Text>
+      <Text style={[styles.inputDescription, { marginBottom: 8 }]}>{subtitle}</Text>
+      {data.length === 0 ? (
+        <Text style={[styles.inputDescription, { fontStyle: "italic" }]}>
+          None
+        </Text>
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderVideoItem}
+          keyExtractor={(item) => item.id.toString()}
+          scrollEnabled={false}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+      )}
+    </View>
+  );
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
@@ -111,7 +154,7 @@ export default function VideoManagementModal({
           </TouchableOpacity>
 
           <View style={[styles.tableContainer, { flex: 1 }]}>
-            {course.videos.length === 0 ? (
+            {sortedVideos.length === 0 ? (
               <View style={styles.emptyStateContainer}>
                 <FontAwesome
                   name="video-camera"
@@ -124,21 +167,27 @@ export default function VideoManagementModal({
                 </Text>
               </View>
             ) : (
-              <FlatList
-                data={course.videos.sort(
-                  (a, b) => a.order_index - b.order_index
-                )}
-                renderItem={renderVideoItem}
-                keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.listContent}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              <ScrollView
+                style={{ flex: 1 }}
                 showsVerticalScrollIndicator={false}
-              />
+                contentContainerStyle={styles.listContent}
+              >
+                {renderSection(
+                  "Student materials (visible to students)",
+                  "Videos marked public. Enrolled students can view these.",
+                  studentVideos
+                )}
+                {renderSection(
+                  "Instructor-only materials",
+                  "Videos not visible to students. Only instructors and admins can view these.",
+                  instructorOnlyVideos
+                )}
+              </ScrollView>
             )}
           </View>
           <View style={styles.footerInfo}>
             <Text style={styles.footerText}>
-                Videos are displayed to students in order. You can assign videos to specific weeks (1-24) or leave unassigned for general viewing
+              Toggle "Visible to students" when adding or editing a video to control who can see it. Students only see public videos; instructors and admins see all.
             </Text>
           </View>
         </View>

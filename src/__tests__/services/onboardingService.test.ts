@@ -139,7 +139,7 @@ describe("onboardingService.createSignupDataFromOnboarding", () => {
     expect(result).toBeNull();
   });
 
-  it("succeeds for non-student role without course", async () => {
+  it("succeeds for non-student role without course and sets course_id to null", async () => {
     await setupStorage({
       selectedRole: UserRole.ADMIN,
       companyInfo: { company_id: 1, company_name: "Range", role: UserRole.ADMIN },
@@ -154,9 +154,85 @@ describe("onboardingService.createSignupDataFromOnboarding", () => {
       confirm_password: "ValidPass1",
     });
 
-    // Admin doesn't need course
     expect(result).not.toBeNull();
     expect(result!.role).toBe(UserRole.ADMIN);
+    expect(result!.course_id).toBeNull();
+  });
+
+  it("uses role from companyInfo with fallback to intendedRole", async () => {
+    await setupStorage({
+      companyInfo: { company_id: 1, company_name: "Range", role: UserRole.INSTRUCTOR },
+      selectedRole: UserRole.STUDENT,
+      selectedCourse: { id: 2, title: "Course" },
+    });
+
+    const result = await onboardingService.createSignupDataFromOnboarding({
+      email: "u@test.com",
+      password: "ValidPass1",
+      first_name: "A",
+      last_name: "B",
+      confirm_password: "ValidPass1",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.role).toBe(UserRole.INSTRUCTOR);
+  });
+
+  it("uses intendedRole when companyInfo.role is missing", async () => {
+    await setupStorage({
+      companyInfo: { company_id: 1, company_name: "Range" } as any,
+      selectedRole: UserRole.ADMIN,
+      selectedCourse: undefined,
+    });
+
+    const result = await onboardingService.createSignupDataFromOnboarding({
+      email: "admin@test.com",
+      password: "ValidPass1",
+      first_name: "A",
+      last_name: "B",
+      confirm_password: "ValidPass1",
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.role).toBe(UserRole.ADMIN);
+    expect(result!.course_id).toBeNull();
+  });
+
+  it("uses registrationData.courseId as fallback when selectedCourse is in storage", async () => {
+    await setupStorage({
+      selectedRole: UserRole.STUDENT,
+      selectedCourse: { id: 2, title: "Pistol Basics" },
+    });
+
+    const result = await onboardingService.createSignupDataFromOnboarding({
+      email: "u@test.com",
+      password: "ValidPass1",
+      first_name: "A",
+      last_name: "B",
+      confirm_password: "ValidPass1",
+      courseId: 99,
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.course_id).toBe(2);
+  });
+
+  it("returns null when student has no course in storage even if registrationData.courseId is set", async () => {
+    await setupStorage({
+      selectedRole: UserRole.STUDENT,
+      selectedCourse: undefined,
+    });
+
+    const result = await onboardingService.createSignupDataFromOnboarding({
+      email: "u@test.com",
+      password: "ValidPass1",
+      first_name: "A",
+      last_name: "B",
+      confirm_password: "ValidPass1",
+      courseId: 99,
+    });
+
+    expect(result).toBeNull();
   });
 });
 

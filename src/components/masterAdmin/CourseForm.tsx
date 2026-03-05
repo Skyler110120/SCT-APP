@@ -18,6 +18,7 @@ import {
   Modal,
   Platform,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -65,6 +66,7 @@ export default function CourseForm({
   const [pdfFilename, setPdfFilename] = useState<string | null>(null);
   const [instructorScriptS3Key, setInstructorScriptS3Key] = useState("");
   const [instructorScriptFilename, setInstructorScriptFilename] = useState<string | null>(null);
+  const [pdfIsPublic, setPdfIsPublic] = useState(false);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [uploadingScript, setUploadingScript] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -82,6 +84,7 @@ export default function CourseForm({
         setIsActive(course.is_active);
         setPdfS3Key(course.pdf_s3_key || "");
         setPdfFilename(course.pdf_filename || null);
+        setPdfIsPublic(course.pdf_is_public ?? false);
         setInstructorScriptS3Key(course.instructor_script_s3_key || "");
         setInstructorScriptFilename(course.instructor_script_filename || null);
       } else {
@@ -93,6 +96,7 @@ export default function CourseForm({
         setIsActive(true);
         setPdfS3Key("");
         setPdfFilename(null);
+        setPdfIsPublic(false);
         setInstructorScriptS3Key("");
         setInstructorScriptFilename(null);
       }
@@ -250,6 +254,7 @@ export default function CourseForm({
           instructor_script_filename: instructorScriptFilename || undefined,
           pdf_content_type: pdfS3Key ? "application/pdf" : undefined,
           instructor_script_content_type: instructorScriptS3Key ? "application/pdf" : undefined,
+          pdf_is_public: pdfIsPublic,
         };
 
         console.log("📚 Updating course:", updateData);
@@ -265,6 +270,7 @@ export default function CourseForm({
           instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
           pdf_filename: pdfFilename || undefined,
           instructor_script_filename: instructorScriptFilename || undefined,
+          pdf_is_public: pdfIsPublic,
         };
         console.log("📚 Creating course:", createData);
         await onCreateCourse(createData);
@@ -419,6 +425,20 @@ export default function CourseForm({
                         </TouchableOpacity>
                       )}
                     </View>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+                      <Text style={[styles.inputDescription, { marginBottom: 0 }]}>
+                        Visible to students (public)
+                      </Text>
+                      <Switch
+                        value={pdfIsPublic}
+                        onValueChange={setPdfIsPublic}
+                        trackColor={{ false: "#555", true: themes.vegasGold }}
+                        thumbColor={themes.white}
+                      />
+                    </View>
+                    <Text style={[styles.inputDescription, { marginTop: 4 }]}>
+                      When on, enrolled students can view this PDF. When off, only instructors and admins can see it.
+                    </Text>
                   </>
                 ) : (
                   <Text style={styles.inputDescription}>

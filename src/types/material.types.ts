@@ -32,6 +32,8 @@ export interface MaterialInfoResponse {
     course_id: number;
     course_title: string;
     has_pdf: boolean;
+    /** When true, students can see the course PDF. */
+    pdf_is_public?: boolean;
     has_script: boolean;
     can_access_script: boolean;
 }

@@ -102,6 +102,37 @@ describe("CourseForm", () => {
     expect(screen.getByText("No script uploaded.")).toBeTruthy();
   });
 
+  it("in edit mode shows Visible to students (public) toggle for course PDF", () => {
+    const course: CourseAdminView = {
+      id: 1,
+      title: "Existing Course",
+      viewType: "admin",
+      description: "",
+      required_gun_type: "Handgun",
+      difficulty_level: "Beginner",
+      pdf_s3_key: null,
+      instructor_script_s3_key: null,
+      pdf_is_public: false,
+      total_weeks: 24,
+      is_active: true,
+      order_index: 1,
+      created_at: "",
+      updated_at: "",
+      videos: [],
+    };
+    render(
+      <CourseForm
+        visible
+        course={course}
+        isSubmitting={false}
+        onClose={mockOnClose}
+        onUpdateCourse={mockOnUpdateCourse}
+      />
+    );
+    expect(screen.getByText(/Visible to students \(public\)/)).toBeTruthy();
+    expect(screen.getByText(/When on, enrolled students can view this PDF/)).toBeTruthy();
+  });
+
   it("in edit mode with PDF and script shows current filename and Replace/Remove", () => {
     const course: CourseAdminView = {
       id: 1,
@@ -136,6 +167,42 @@ describe("CourseForm", () => {
     expect(screen.getByText("Replace script")).toBeTruthy();
     const removeButtons = screen.getAllByText("Remove");
     expect(removeButtons.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("calls onUpdateCourse with pdf_is_public in payload", async () => {
+    const course: CourseAdminView = {
+      id: 1,
+      title: "Existing Course",
+      viewType: "admin",
+      description: "",
+      required_gun_type: "Handgun",
+      difficulty_level: "Beginner",
+      pdf_s3_key: "courses/1/materials/pdf/abc.pdf",
+      instructor_script_s3_key: null,
+      pdf_is_public: false,
+      total_weeks: 24,
+      is_active: true,
+      order_index: 1,
+      created_at: "",
+      updated_at: "",
+      videos: [],
+    };
+    render(
+      <CourseForm
+        visible
+        course={course}
+        isSubmitting={false}
+        onClose={mockOnClose}
+        onUpdateCourse={mockOnUpdateCourse}
+      />
+    );
+    fireEvent.press(screen.getByText("Update Course"));
+    await Promise.resolve();
+    expect(mockOnUpdateCourse).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pdf_is_public: false,
+      })
+    );
   });
 
   it("calls onUpdateCourse with pdf_filename and instructor_script_filename when present", async () => {

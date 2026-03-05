@@ -69,6 +69,93 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
   const sortedVideos =
     course.videos?.sort((a, b) => a.order_index - b.order_index) || [];
 
+  const isInstructorView = course.viewType === "instructor";
+  const studentVideos = isInstructorView
+    ? sortedVideos.filter((v) => v.is_public)
+    : sortedVideos;
+  const instructorOnlyVideos = isInstructorView
+    ? sortedVideos.filter((v) => !v.is_public)
+    : [];
+
+  const renderVideoList = (videos: CourseVideo[], sectionLabel?: string) => (
+    <>
+      {sectionLabel && (
+        <Text
+          style={[
+            styles.modalSubtitle,
+            {
+              marginTop: sectionLabel ? 16 : 0,
+              marginBottom: 8,
+              fontSize: 13,
+              opacity: 0.9,
+            },
+          ]}
+        >
+          {sectionLabel}
+        </Text>
+      )}
+      {videos.map((video) => (
+        <TouchableOpacity
+          key={video.id}
+          style={styles.videoItem}
+          onPress={() => handleOpenVideo(video)}
+          activeOpacity={0.7}
+          disabled={loadingVideoId === video.id}
+        >
+          <View style={styles.videoIcon}>
+            {loadingVideoId === video.id ? (
+              <ActivityIndicator size="small" color={themes.vegasGold} />
+            ) : (
+              <FontAwesome
+                name="play-circle"
+                size={24}
+                color={themes.vegasGold}
+              />
+            )}
+          </View>
+
+          <View style={styles.videoContent}>
+            <Text style={styles.videoTitle}>{video.title}</Text>
+            {video.description && (
+              <Text style={styles.videoDescription} numberOfLines={2}>
+                {video.description}
+              </Text>
+            )}
+            <View style={styles.videoMeta}>
+              <Text style={styles.videoOrder}>
+                Video #{video.order_index}
+              </Text>
+              {video.week_number && (
+                <Text style={styles.videoWeek}>
+                  Week {video.week_number}
+                </Text>
+              )}
+              {isInstructorView && (
+                <Text
+                  style={[
+                    styles.videoWeek,
+                    {
+                      marginLeft: 8,
+                      color: video.is_public ? themes.vegasGold : themes.white + "99",
+                    },
+                  ]}
+                >
+                  {video.is_public ? "Student" : "Instructor only"}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <FontAwesome
+            name="external-link"
+            size={16}
+            color={themes.white + "80"}
+          />
+        </TouchableOpacity>
+      ))}
+    </>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -84,6 +171,9 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
             <Text style={styles.modalTitle}>{course.title}</Text>
             <Text style={styles.modalSubtitle}>
               {sortedVideos.length} Video{sortedVideos.length !== 1 ? "s" : ""}
+              {isInstructorView &&
+                instructorOnlyVideos.length > 0 &&
+                ` (${studentVideos.length} student, ${instructorOnlyVideos.length} instructor-only)`}
             </Text>
           </View>
           <View style={styles.closeButtonPlaceholder} />
@@ -104,53 +194,21 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
                 No videos have been added to this course yet.
               </Text>
             </View>
+          ) : isInstructorView && (studentVideos.length > 0 || instructorOnlyVideos.length > 0) ? (
+            <>
+              {studentVideos.length > 0 &&
+                renderVideoList(
+                  studentVideos,
+                  "Videos visible to students"
+                )}
+              {instructorOnlyVideos.length > 0 &&
+                renderVideoList(
+                  instructorOnlyVideos,
+                  "Instructor-only videos"
+                )}
+            </>
           ) : (
-            sortedVideos.map((video) => (
-              <TouchableOpacity
-                key={video.id}
-                style={styles.videoItem}
-                onPress={() => handleOpenVideo(video)}
-                activeOpacity={0.7}
-                disabled={loadingVideoId === video.id}
-              >
-                <View style={styles.videoIcon}>
-                  {loadingVideoId === video.id ? (
-                    <ActivityIndicator size="small" color={themes.vegasGold} />
-                  ) : (
-                    <FontAwesome
-                      name="play-circle"
-                      size={24}
-                      color={themes.vegasGold}
-                    />
-                  )}
-                </View>
-
-                <View style={styles.videoContent}>
-                  <Text style={styles.videoTitle}>{video.title}</Text>
-                  {video.description && (
-                    <Text style={styles.videoDescription} numberOfLines={2}>
-                      {video.description}
-                    </Text>
-                  )}
-                  <View style={styles.videoMeta}>
-                    <Text style={styles.videoOrder}>
-                      Video #{video.order_index}
-                    </Text>
-                    {video.week_number && (
-                      <Text style={styles.videoWeek}>
-                        Week {video.week_number}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-
-                <FontAwesome
-                  name="external-link"
-                  size={16}
-                  color={themes.white + "80"}
-                />
-              </TouchableOpacity>
-            ))
+            renderVideoList(sortedVideos)
           )}
         </ScrollView>
       </SafeAreaView>
