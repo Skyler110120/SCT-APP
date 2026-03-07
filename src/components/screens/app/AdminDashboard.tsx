@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   SafeAreaView,
   ScrollView,
   Text,
@@ -20,12 +19,12 @@ import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { companyService } from "@/src/services/companyService";
-import { smsInviteService } from "@/src/services/smsInviteService";
+import { onboardingInviteService } from "@/src/services/onboardingInviteService";
 import { courseService } from "@/src/services/courseService";
 import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
 import { CourseSummary } from "@/src/types/course.types";
-import { SmsInviteListItem } from "@/src/types/smsOnboarding.types";
+import { OnboardingInviteListItem } from "@/src/types/onboardingInvite.types";
 import { UserRole } from "@/src/types/enums";
 
 export default function AdminDashboard() {
@@ -39,15 +38,13 @@ export default function AdminDashboard() {
   const [isSubmittingCode, setIsSubmittingCode] = useState<boolean>(false);
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
     useState<boolean>(false);
-  const [onboardingLink, setOnboardingLink] = useState<string | null>(null);
-  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
   // Email invite state
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<string>("STUDENT");
   const [inviteCourseId, setInviteCourseId] = useState<number | null>(null);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
-  const [emailInvites, setEmailInvites] = useState<SmsInviteListItem[]>([]);
+  const [emailInvites, setEmailInvites] = useState<OnboardingInviteListItem[]>([]);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -62,10 +59,10 @@ export default function AdminDashboard() {
   const fetchCompanyData = async (companyId: number) => {
     setIsLoading(true);
     try {
-      const [companyResponse, coursesResponse, smsResponse] = await Promise.all([
+      const [companyResponse, coursesResponse, invitesResponse] = await Promise.all([
         companyService.getCompany(companyId),
         courseService.getCourseForSelection(),
-        smsInviteService.listInvites(companyId),
+        onboardingInviteService.listInvites(companyId),
       ]);
 
       if (companyResponse.success && companyResponse.data) {
@@ -77,8 +74,8 @@ export default function AdminDashboard() {
       if (coursesResponse.success && coursesResponse.data) {
         setCourses(coursesResponse.data);
       }
-      if (smsResponse.success && smsResponse.data) {
-        setEmailInvites(smsResponse.data);
+      if (invitesResponse.success && invitesResponse.data) {
+        setEmailInvites(invitesResponse.data);
       }
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -159,30 +156,6 @@ export default function AdminDashboard() {
     Alert.alert("Copied", "Invite code copied to clipboard");
   };
 
-  const handleGenerateQR = async () => {
-    if (!company) return;
-    setIsGeneratingQR(true);
-    try {
-      const response = await companyService.getOnboardingLink(company.id);
-      if (response.success && response.data) {
-        setOnboardingLink(response.data.join_url);
-      } else {
-        Alert.alert("Error", response.error || "Failed to generate QR code");
-      }
-    } catch (err) {
-      Alert.alert("Error", "An unexpected error occurred");
-    } finally {
-      setIsGeneratingQR(false);
-    }
-  };
-
-  const handleCopyLink = async () => {
-    if (onboardingLink) {
-      await Clipboard.setStringAsync(onboardingLink);
-      Alert.alert("Copied", "Onboarding link copied to clipboard");
-    }
-  };
-
   const handleSendEmailInvite = async () => {
     if (!company || !inviteEmail.trim()) return;
 
@@ -190,7 +163,7 @@ export default function AdminDashboard() {
     setInviteMessage(null);
 
     try {
-      const result = await smsInviteService.createInvite(company.id, {
+      const result = await onboardingInviteService.createInvite(company.id, {
         email: inviteEmail.trim(),
         role: inviteRole,
         course_id: inviteRole === "STUDENT" ? inviteCourseId : null,
@@ -199,7 +172,7 @@ export default function AdminDashboard() {
       if (result.success && result.data) {
         setInviteMessage({ type: "success", text: `Invite sent to ${inviteEmail.trim()}` });
         setInviteEmail("");
-        const refreshed = await smsInviteService.listInvites(company.id);
+        const refreshed = await onboardingInviteService.listInvites(company.id);
         if (refreshed.success && refreshed.data) {
           setEmailInvites(refreshed.data);
         }
@@ -218,9 +191,6 @@ export default function AdminDashboard() {
     { label: "Instructor", value: "INSTRUCTOR" },
     { label: "Admin", value: "ADMIN" },
   ];
-
-  const getQRCodeUrl = (text: string, size: number = 200) =>
-    `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
 
   return (
     <View style={styles.container}>
@@ -241,62 +211,6 @@ export default function AdminDashboard() {
                 Loading company data...
               </Text>
             )}
-            {/* QR Onboarding Section (TASK-ONB-003) */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Student Onboarding QR</Text>
-              {onboardingLink ? (
-                <View style={{ alignItems: "center", paddingVertical: 12 }}>
-                  <Image
-                    source={{ uri: getQRCodeUrl(onboardingLink, 250) }}
-                    style={{
-                      width: 200,
-                      height: 200,
-                      borderRadius: 8,
-                      backgroundColor: themes.white,
-                    }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      color: "rgba(255,255,255,0.6)",
-                      fontSize: 12,
-                      fontFamily: "Chakra-Regular",
-                      textAlign: "center",
-                      marginTop: 8,
-                    }}
-                  >
-                    Students scan this QR to sign up
-                  </Text>
-                  <TouchableOpacity
-                    style={[styles.actionButton, { marginTop: 8 }]}
-                    onPress={handleCopyLink}
-                  >
-                    <Text style={styles.buttonText}>Copy Link</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.actionButton, { marginTop: 4 }]}
-                    onPress={handleGenerateQR}
-                  >
-                    <Text style={styles.buttonText}>Regenerate</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={handleGenerateQR}
-                  disabled={!company || isGeneratingQR}
-                >
-                  {isGeneratingQR ? (
-                    <ActivityIndicator size="small" color={themes.black} />
-                  ) : (
-                    <Text style={styles.buttonText}>
-                      Generate QR Code
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </View>
-
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
                 Invite Codes
@@ -454,7 +368,7 @@ export default function AdminDashboard() {
                       borderBottomColor: "rgba(197,179,88,0.2)",
                     }}>
                       <Text style={{ fontFamily: "Chakra-Regular", fontSize: 14, color: themes.white }}>
-                        {inv.target_email ?? inv.target_phone_number ?? "—"}
+                        {inv.target_email ?? "—"}
                       </Text>
                       <Text style={{ fontFamily: "Chakra-Regular", fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
                         {inv.target_role} · {inv.invite_status}

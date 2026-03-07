@@ -54,6 +54,9 @@ const InviteCodeForm = ({
           <Text style={[inviteCodeForm.inputLabel, { marginLeft: 12 }]}>
             • Will allow a new user to join this company
           </Text>
+          <Text style={[inviteCodeForm.inputLabel, { marginTop: 8 }]}>
+            Choose the role for the new user:
+          </Text>
           <View style={inviteCodeForm.buttonContainer}>
             <TouchableOpacity
               style={inviteCodeForm.actionButton}
@@ -62,71 +65,54 @@ const InviteCodeForm = ({
             >
               <Text style={inviteCodeForm.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            {user?.role === UserRole.MASTER_ADMIN ? (
-              <TouchableOpacity
-                style={[
-                  inviteCodeForm.actionButton,
-                  isSubmitting && { opacity: 0.7 },
-                ]}
-                onPress={() => onSubmit(UserRole.STUDENT)}
-                disabled={isSubmitting}
-              >
+            <TouchableOpacity
+              style={[
+                inviteCodeForm.actionButton,
+                isSubmitting && { opacity: 0.7 },
+              ]}
+              onPress={() => onSubmit(UserRole.STUDENT)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color={themes.black} />
+              ) : (
                 <Text style={inviteCodeForm.buttonText}>
-                  Create Invite Code
+                  Student
                 </Text>
-              </TouchableOpacity>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={[
-                    inviteCodeForm.actionButton,
-                    isSubmitting && { opacity: 0.7 },
-                  ]}
-                  onPress={() => onSubmit(UserRole.STUDENT)}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator size="small" color={themes.black} />
-                  ) : (
-                    <Text style={inviteCodeForm.buttonText}>
-                      Create Student Invite Code
-                    </Text>
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    inviteCodeForm.actionButton,
-                    isSubmitting && { opacity: 0.7 },
-                  ]}
-                  onPress={() => onSubmit(UserRole.INSTRUCTOR)}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator size="small" color={themes.black} />
-                  ) : (
-                    <Text style={inviteCodeForm.buttonText}>
-                      Create Instructor Invite Code
-                    </Text>
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    inviteCodeForm.actionButton,
-                    isSubmitting && { opacity: 0.7 },
-                  ]}
-                  onPress={() => onSubmit(UserRole.ADMIN)}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <ActivityIndicator size="small" color={themes.black} />
-                  ) : (
-                    <Text style={inviteCodeForm.buttonText}>
-                      Create Admin Invite Code
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                inviteCodeForm.actionButton,
+                isSubmitting && { opacity: 0.7 },
+              ]}
+              onPress={() => onSubmit(UserRole.INSTRUCTOR)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color={themes.black} />
+              ) : (
+                <Text style={inviteCodeForm.buttonText}>
+                  Instructor
+                </Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                inviteCodeForm.actionButton,
+                isSubmitting && { opacity: 0.7 },
+              ]}
+              onPress={() => onSubmit(UserRole.ADMIN)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color={themes.black} />
+              ) : (
+                <Text style={inviteCodeForm.buttonText}>
+                  Admin
+                </Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </View>

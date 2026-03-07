@@ -15,7 +15,7 @@ export interface Session extends SessionBase {
     course_id?: number | null;
     enrollment_id?: number | null;
     status: SessionStatus;
-    /** Locked enrollment week for group sessions (all participants must share this week). */
+    /** Optional booking-week context captured from the original booker. */
     week_number?: number | null;
     created_at: string;
     updated_at: string;
@@ -53,7 +53,7 @@ export interface SessionDetailed extends Session {
 export interface DirectBookingRequest extends SessionBase {
     instructor_id: number;
     student_id?: number;
-    /** Course week 1–24 for prescheduling; defaults to current week if omitted. */
+    /** Optional booking-week context (not required for joining or booking). */
     week_number?: number;
 }
 
@@ -114,6 +114,20 @@ export interface SessionActionResponse {
     data?: SessionDetailed;
     message?: string;
     error?: string;
+}
+
+export interface SessionParticipantOut {
+    id: number;
+    session_id: number;
+    student_id: number;
+    enrollment_id: number | null;
+    student_name: string | null;
+    student_email: string | null;
+    current_week: number | null;
+    enrollment_status: string | null;
+    booked_week_number?: number | null;
+    booked_course_id?: number | null;
+    booked_course_title?: string | null;
 }
 
 export interface CalendarSessionsRequest {

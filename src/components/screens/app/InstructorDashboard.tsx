@@ -204,7 +204,7 @@ export default function InstructorDashboard() {
               >
                 <View style={styles.classTypeSection}>
                   <Text style={styles.classTypeText}>
-                    Week{"\n"}{session.enrollment_current_week ?? "—"}
+                    Week{"\n"}{session.week_number ?? session.enrollment_current_week ?? "—"}
                   </Text>
                 </View>
 
@@ -212,6 +212,12 @@ export default function InstructorDashboard() {
                   <Text style={styles.classTimeText}>
                     {formatTimeString(session.start_time)}{" "}
                     {session.student_name || "Student"}
+                  </Text>
+                  <Text style={styles.classTimeText}>
+                    {session.course_title || session.title || "Training Session"}
+                    {session.participant_count != null && session.participant_count > 1
+                      ? ` • ${session.participant_count} students`
+                      : ""}
                   </Text>
                 </View>
 

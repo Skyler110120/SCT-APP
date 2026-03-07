@@ -1,12 +1,12 @@
 import { ApiResponse } from "./auth.types";
 
-export interface SmsInviteCreateRequest {
+export interface OnboardingInviteCreateRequest {
   email: string;
   role: string;
   course_id?: number | null;
 }
 
-export interface SmsInviteCreateResponse {
+export interface OnboardingInviteCreateResponse {
   invite_id: number;
   status: string;
   web_join_url: string;
@@ -14,9 +14,8 @@ export interface SmsInviteCreateResponse {
   expires_in_days: number;
 }
 
-export interface SmsInviteListItem {
+export interface OnboardingInviteListItem {
   id: number;
-  target_phone_number?: string | null;
   target_email?: string | null;
   target_role: string;
   invite_status: string;
@@ -29,36 +28,9 @@ export interface InviteTokenValidation {
   company_id?: number;
   company_name?: string;
   role?: string;
-  phone_e164?: string;
   masked_email?: string | null;
-  masked_phone?: string | null;
   course_id?: number | null;
   requires_phone_verification?: boolean;
-  error?: string;
-}
-
-export interface OtpRequestPayload {
-  phone_number: string;
-  purpose?: string;
-  invite_token?: string;
-}
-
-export interface OtpResponse {
-  success: boolean;
-  cooldown_seconds: number;
-  masked_phone?: string;
-}
-
-export interface OtpVerifyPayload {
-  phone_number: string;
-  otp_code: string;
-  purpose?: string;
-  invite_token?: string;
-}
-
-export interface OtpVerifyResponse {
-  verified: boolean;
-  verification_session_token: string | null;
   error?: string;
 }
 
@@ -78,9 +50,7 @@ export interface SignupFromInviteResponse {
   role: string;
 }
 
-export type SmsInviteCreateApiResponse = ApiResponse<SmsInviteCreateResponse>;
-export type SmsInviteListApiResponse = ApiResponse<SmsInviteListItem[]>;
+export type OnboardingInviteCreateApiResponse = ApiResponse<OnboardingInviteCreateResponse>;
+export type OnboardingInviteListApiResponse = ApiResponse<OnboardingInviteListItem[]>;
 export type InviteTokenValidationApiResponse = ApiResponse<InviteTokenValidation>;
-export type OtpApiResponse = ApiResponse<OtpResponse>;
-export type OtpVerifyApiResponse = ApiResponse<OtpVerifyResponse>;
 export type SignupFromInviteApiResponse = ApiResponse<SignupFromInviteResponse>;

@@ -197,7 +197,7 @@ export default function SessionDetailsModal({
                       ? `${Math.floor(session.duration_minutes / 60)} hr ${
                           session.duration_minutes % 60
                         } min`
-                      : "2h"}
+                      : "1h"}
                   </Text>
                 </View>
               </View>

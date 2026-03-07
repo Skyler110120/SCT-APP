@@ -78,7 +78,7 @@ const InstructorStudentTable: React.FC<InstructorStudentTableProps> = ({
           />
           <Text style={styles.emptyStateText}>No students assigned</Text>
           <Text style={[styles.emptyStateText, { fontSize: 14, marginTop: 8 }]}>
-            Students will appear here when they're assigned to you.
+            Students will appear here once they book one of your sessions.
           </Text>
         </View>
       ) : (

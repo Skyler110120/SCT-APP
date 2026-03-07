@@ -747,7 +747,7 @@ export default function CalendarScreen() {
 
     const daysWithAvailability = dayOfWeek.filter(({ day }) => {
       return availabilities.some(
-        (availability) => availability.day_of_week === day
+        (availability) => availability.day_of_week === toBackendDayOfWeek(day)
       );
     });
 
@@ -755,7 +755,7 @@ export default function CalendarScreen() {
       <View style={styles.weeklyScheduleContainer}>
         {daysWithAvailability.map(({ day, name }) => {
           const dayAvailabilities = availabilities.filter(
-            (availability) => availability.day_of_week === day
+            (availability) => availability.day_of_week === toBackendDayOfWeek(day)
           );
           return (
             <View key={day} style={styles.dayScheduleContainer}>

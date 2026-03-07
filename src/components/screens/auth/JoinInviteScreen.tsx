@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,13 +17,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import Images from "@/src/assets/images";
 import { themes } from "@/src/context/themes";
-import { smsInviteService } from "@/src/services/smsInviteService";
+import { onboardingInviteService } from "@/src/services/onboardingInviteService";
 import { authService } from "@/src/services/authService";
-import type { InviteTokenValidation } from "@/src/types/smsOnboarding.types";
+import type { InviteTokenValidation } from "@/src/types/onboardingInvite.types";
 
-type Step = "validating" | "verify-phone" | "registration" | "error";
+type Step = "validating" | "registration" | "error";
 
-export default function SmsJoinScreen() {
+/** Email invite join flow: validate token → register (no OTP). */
+export default function JoinInviteScreen() {
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token: string }>();
 
@@ -31,16 +32,6 @@ export default function SmsJoinScreen() {
   const [inviteData, setInviteData] = useState<InviteTokenValidation | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Phone verification
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [isRequestingOtp, setIsRequestingOtp] = useState(false);
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const [verificationSessionToken, setVerificationSessionToken] = useState("");
-
-  // Registration form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -48,9 +39,6 @@ export default function SmsJoinScreen() {
   const [lastName, setLastName] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Validate invite token on mount
   useEffect(() => {
     if (!token) {
       setErrorMessage("No invite token provided.");
@@ -59,13 +47,10 @@ export default function SmsJoinScreen() {
     }
 
     (async () => {
-      const result = await smsInviteService.validateInviteToken(token);
+      const result = await onboardingInviteService.validateInviteToken(token);
       if (result.success && result.data?.valid) {
         setInviteData(result.data);
-        if (result.data.phone_e164) {
-          setPhoneNumber(result.data.phone_e164);
-        }
-        setStep(result.data.requires_phone_verification ? "verify-phone" : "registration");
+        setStep("registration");
       } else {
         setErrorMessage("This invite link is invalid or has expired.");
         setStep("error");
@@ -73,81 +58,13 @@ export default function SmsJoinScreen() {
     })();
   }, [token]);
 
-  // Cooldown timer
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const id = setInterval(() => {
-      setCooldown((prev) => {
-        if (prev <= 1) {
-          clearInterval(id);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    cooldownRef.current = id;
-    return () => clearInterval(id);
-  }, [cooldown]);
-
-  const handleRequestOtp = useCallback(async () => {
-    if (!phoneNumber.trim()) {
-      Alert.alert("Error", "Please enter your phone number");
-      return;
-    }
-
-    setIsRequestingOtp(true);
-    try {
-      const result = await smsInviteService.requestOtp({
-        phone_number: phoneNumber.trim(),
-        purpose: "onboarding_invite",
-        invite_token: token,
-      });
-
-      if (result.success && result.data?.success) {
-        setOtpSent(true);
-        setCooldown(result.data.cooldown_seconds || 30);
-      } else {
-        Alert.alert("Error", result.error || "Failed to send verification code");
-      }
-    } catch {
-      Alert.alert("Error", "Failed to send verification code");
-    } finally {
-      setIsRequestingOtp(false);
-    }
-  }, [phoneNumber, token]);
-
-  const handleVerifyOtp = useCallback(async () => {
-    if (!otpCode.trim() || otpCode.length < 6) {
-      Alert.alert("Error", "Please enter the 6-digit verification code");
-      return;
-    }
-
-    setIsVerifyingOtp(true);
-    try {
-      const result = await smsInviteService.verifyOtp({
-        phone_number: phoneNumber.trim(),
-        otp_code: otpCode.trim(),
-        purpose: "onboarding_invite",
-        invite_token: token,
-      });
-
-      if (result.success && result.data?.verified && result.data.verification_session_token) {
-        setVerificationSessionToken(result.data.verification_session_token);
-        setStep("registration");
-      } else {
-        Alert.alert("Verification Failed", result.data?.error || result.error || "Invalid code. Please try again.");
-        setOtpCode("");
-      }
-    } catch {
-      Alert.alert("Error", "Verification failed. Please try again.");
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  }, [otpCode, phoneNumber, token]);
-
   const handleSignup = useCallback(async () => {
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    if (!firstName.trim() || !lastName.trim()) {
+      Alert.alert("Error", "Please enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      Alert.alert("Error", "Please enter your email");
       return;
     }
     if (password !== confirmPassword) {
@@ -158,27 +75,18 @@ export default function SmsJoinScreen() {
       Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
-    if (inviteData?.requires_phone_verification && !verificationSessionToken) {
-      Alert.alert("Error", "Phone verification required");
-      return;
-    }
 
     setIsRegistering(true);
     try {
-      const payload: Parameters<typeof smsInviteService.signupFromInvite>[0] = {
+      const result = await onboardingInviteService.signupFromInvite({
         invite_token: token!,
         email: email.trim().toLowerCase(),
         password,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-      };
-      if (verificationSessionToken) {
-        payload.verification_session_token = verificationSessionToken;
-      }
-      const result = await smsInviteService.signupFromInvite(payload);
+      });
 
       if (result.success) {
-        // Auto-login after successful registration
         const loginResult = await authService.login({
           email: email.trim().toLowerCase(),
           password,
@@ -205,7 +113,7 @@ export default function SmsJoinScreen() {
     } finally {
       setIsRegistering(false);
     }
-  }, [token, verificationSessionToken, email, password, confirmPassword, firstName, lastName, inviteData, router]);
+  }, [token, email, password, confirmPassword, firstName, lastName, inviteData, router]);
 
   if (step === "validating") {
     return (
@@ -265,84 +173,9 @@ export default function SmsJoinScreen() {
             </View>
           )}
 
-          {step === "verify-phone" && inviteData?.requires_phone_verification && (
-            <View style={s.formWrap}>
-              <Text style={s.stepLabel}>Step 1: Verify Your Phone</Text>
-
-              <TextInput
-                style={s.input}
-                placeholder="Phone number (e.g. +15551234567)"
-                placeholderTextColor="rgba(197,179,88,0.5)"
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                keyboardType="phone-pad"
-                autoCapitalize="none"
-                editable={!inviteData?.phone_e164}
-              />
-
-              {!otpSent ? (
-                <TouchableOpacity
-                  style={[s.primaryButton, { opacity: isRequestingOtp ? 0.5 : 1 }]}
-                  onPress={handleRequestOtp}
-                  disabled={isRequestingOtp}
-                >
-                  {isRequestingOtp ? (
-                    <ActivityIndicator color={themes.white} />
-                  ) : (
-                    <Text style={s.primaryButtonText}>Send Verification Code</Text>
-                  )}
-                </TouchableOpacity>
-              ) : (
-                <>
-                  <Text style={s.helperText}>
-                    Enter the 6-digit code sent to {phoneNumber}
-                  </Text>
-
-                  <TextInput
-                    style={[s.input, { textAlign: "center", letterSpacing: 8, fontSize: 24 }]}
-                    placeholder="000000"
-                    placeholderTextColor="rgba(197,179,88,0.3)"
-                    value={otpCode}
-                    onChangeText={(t) => setOtpCode(t.replace(/\D/g, "").slice(0, 6))}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                  />
-
-                  <TouchableOpacity
-                    style={[s.primaryButton, { opacity: isVerifyingOtp || otpCode.length < 6 ? 0.5 : 1 }]}
-                    onPress={handleVerifyOtp}
-                    disabled={isVerifyingOtp || otpCode.length < 6}
-                  >
-                    {isVerifyingOtp ? (
-                      <ActivityIndicator color={themes.white} />
-                    ) : (
-                      <Text style={s.primaryButtonText}>Verify Code</Text>
-                    )}
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={handleRequestOtp}
-                    disabled={cooldown > 0 || isRequestingOtp}
-                    style={{ marginTop: 12, alignItems: "center" }}
-                  >
-                    <Text style={{
-                      fontFamily: "Chakra-Regular",
-                      fontSize: 14,
-                      color: cooldown > 0 ? "rgba(255,255,255,0.3)" : themes.vegasGold,
-                    }}>
-                      {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend Code"}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
-          )}
-
           {step === "registration" && (
             <View style={s.formWrap}>
-              <Text style={s.stepLabel}>
-                {inviteData?.requires_phone_verification ? "Step 2: Create Your Account" : "Create Your Account"}
-              </Text>
+              <Text style={s.stepLabel}>Create Your Account</Text>
 
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <TextInput
@@ -506,12 +339,6 @@ const s = StyleSheet.create({
     color: themes.vegasGold,
     fontSize: 16,
     fontFamily: "Chakra-Italic",
-  },
-  helperText: {
-    fontFamily: "Chakra-Regular",
-    fontSize: 14,
-    color: "rgba(255,255,255,0.7)",
-    textAlign: "center",
   },
   primaryButton: {
     width: "100%",

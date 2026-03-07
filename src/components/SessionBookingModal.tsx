@@ -1,5 +1,5 @@
-import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
+import { courseService } from "@/src/services/courseService";
 import { sessionService } from "@/src/services/sessionService";
 import { bookingModalStyles as styles } from "@/src/styles/CalendarPageStyles/StudentCalendar/bookingModalStyles";
 import { Availability } from "@/src/types/availability.types";
@@ -8,7 +8,7 @@ import {
     SessionDetailed,
 } from "@/src/types/sessions.types";
 import { formatTimeString, toLocalISOString } from "@/src/utils/dateTimeUtils";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -19,7 +19,6 @@ import {
     View,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { courseService } from "@/src/services/courseService";
 
 interface SessionBookingModalProps {
   visible: boolean;
@@ -38,7 +37,6 @@ export default function SessionBookingModal({
   onClose,
   onBookingSuccess,
 }: SessionBookingModalProps) {
-  const { user } = useAuth();
   const [selectedStartTime, setSelectedStartTime] = useState<string>("");
   const [isBooking, setIsBooking] = useState<boolean>(false);
   const [currentWeek, setCurrentWeek] = useState<number | null>(null);
@@ -77,8 +75,8 @@ export default function SessionBookingModal({
     const startTimeMinutes = startHour * 60 + startMinute;
     const endTimeMinutes = endHour * 60 + endMinute;
 
-    const SLOT_DURATION = 120;
-    const SLOT_INTERVAL = 120;
+    const SLOT_DURATION = 60;
+    const SLOT_INTERVAL = 60;
 
     for (
       let time = startTimeMinutes;
@@ -98,7 +96,7 @@ export default function SessionBookingModal({
 
   const calculateEndTime = (startTime: string) => {
     const [startHour, startMinute] = startTime.split(":").map(Number);
-    const endTimeMinutes = startHour * 60 + startMinute + 120;
+    const endTimeMinutes = startHour * 60 + startMinute + 60;
     const endHour = Math.floor(endTimeMinutes / 60);
     const endMinute = endTimeMinutes % 60;
     return `${endHour.toString().padStart(2, "0")}:${endMinute
@@ -172,10 +170,6 @@ export default function SessionBookingModal({
                 "Time Not Available",
                 "This time slot is no longer available. Please select a different time."
             );
-        } else if (errorMessage.includes("one session per course week") || errorMessage.includes("already have a session for week")) {
-            Alert.alert("Booking Error", errorMessage);
-        } else if (errorMessage.includes("must complete or have") && errorMessage.includes("scheduled before booking")) {
-            Alert.alert("Book in Order", errorMessage);
         } else {
             Alert.alert("Booking Error", errorMessage);
         }
@@ -197,7 +191,7 @@ export default function SessionBookingModal({
           <Text style={styles.modalTitle}>Book Training Session</Text>
           {currentWeek != null && (
             <View style={{ marginBottom: 12 }}>
-              <Text style={styles.modalText}>Course week (for prescheduling):</Text>
+              <Text style={styles.modalText}>Course week:</Text>
               <Picker
                 selectedValue={selectedWeek}
                 onValueChange={(v) => setSelectedWeek(Number(v))}
@@ -214,7 +208,7 @@ export default function SessionBookingModal({
             Available: {formatTimeString(availability?.start_time || "")} - {formatTimeString(availability?.end_time || "")}
           </Text>
           <Text style={[styles.modalText, { fontSize: 18, marginBottom: 20 }]}>
-            Select a 2-hour time slot:
+            Select a 1-hour time slot:
           </Text>
 
           <ScrollView style={[{ maxHeight: 300, marginBottom: 20 }]}>

@@ -38,8 +38,8 @@ type AvailabilityModalProps = {
   ) => void;
 };
 
-/** Session length is fixed at 2 hours; availability = one session slot. */
-const SESSION_DURATION_HOURS = 2;
+/** Session length is fixed at 1 hour; availability = one session slot. */
+const SESSION_DURATION_HOURS = 1;
 
 function addHoursToTimeString(timeStr: string, hours: number): string {
   const [h, m] = timeStr.split(":").map(Number);
@@ -59,6 +59,10 @@ const daysOfWeek = [
   { label: "Fri", value: 5 },
   { label: "Sat", value: 6 },
 ];
+
+/** Backend weekday format: Monday=0 ... Sunday=6 */
+const toBackendDayOfWeek = (jsDay: number) => (jsDay + 6) % 7;
+const toJsDayOfWeek = (backendDay: number) => (backendDay + 1) % 7;
 
 const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   visible,
@@ -107,7 +111,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   useEffect(() => {
     if (visible) {
       if (mode === "edit" && selectedAvailability) {
-        setSelectedDays([selectedAvailability.day_of_week]);
+        setSelectedDays([toJsDayOfWeek(selectedAvailability.day_of_week)]);
         const start = selectedAvailability.start_time;
         setFormData({
           start_time: start,
@@ -196,7 +200,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
           end_time: formData.end_time,
           start_date: formData.start_date,
           end_date: formData.end_date || undefined,
-          day_of_week: selectedDays[0],
+          day_of_week: toBackendDayOfWeek(selectedDays[0]),
         };
         onUpdate(selectedAvailability.id, updateAvailability);
       } else if (mode === "create" && onCreate) {
@@ -206,7 +210,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
             end_time: formData.end_time,
             start_date: formData.start_date,
             end_date: formData.end_date || undefined,
-            day_of_week: day,
+            day_of_week: toBackendDayOfWeek(day),
           };
           onCreate(newAvailability);
         });
@@ -246,7 +250,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 Are you sure you want to delete this availability
               </Text>
               <Text style={styles.modalText}>
-                {daysOfWeek[selectedAvailability.day_of_week].label}{" "}
+                {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}{" "}
                 {formateTimeString(selectedAvailability.start_time)} -{" "}
                 {formateTimeString(selectedAvailability.end_time)}
               </Text>
@@ -272,7 +276,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
               {mode === "edit" && selectedAvailability ? (
                 <Text style={styles.modalTitle}>
                   Edit Availability for{" "}
-                  {daysOfWeek[selectedAvailability.day_of_week].label}
+                  {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}
                 </Text>
               ) : (
                 <Text style={styles.modalTitle}>Set Availability</Text>
@@ -291,7 +295,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                       style={{ flexDirection: "row", alignItems: "center" }}
                     >
                       <Text style={styles.modalText}>
-                        {daysOfWeek[availability.day_of_week].label}:{" "}
+                        {daysOfWeek[toJsDayOfWeek(availability.day_of_week)].label}:{" "}
                         {formatTimeString(availability.start_time)} -{" "}
                         {formatTimeString(availability.end_time)} {" "}
                         {formatDateRange(availability.start_date, availability.end_date)}
@@ -310,7 +314,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                       { width: "10%", alignItems: "center" }]}
                   >
                     <Text style={styles.modalDayTextSelected}>
-                      {daysOfWeek[selectedAvailability.day_of_week].label}
+                      {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}
                     </Text>
                   </View>
                   <Text style={styles.modalText}>
