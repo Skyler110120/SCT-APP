@@ -130,7 +130,7 @@ export default function InstructorDashboard() {
     return (
       <View style={styles.container}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Welcome to Stone Cold Tactical</Text>
+          <Text style={styles.modalTitle}>Welcome to Skills and Capabilities Training</Text>
           <Text style={styles.labelText}>
             Please enter your company invite code to access all features.
           </Text>
