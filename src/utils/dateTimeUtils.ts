@@ -174,3 +174,23 @@ export const createLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day); // month is 0-indexed
 };
+
+/** Week is Sunday–Saturday. Returns { startDate, endDate } as YYYY-MM-DD for the given date's week. */
+export function getWeekBounds(date: Date): { startDate: string; endDate: string } {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diffToSunday = d.getDate() - day;
+  const sunday = new Date(d);
+  sunday.setDate(diffToSunday);
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  return {
+    startDate: formatDateForAPI(sunday),
+    endDate: formatDateForAPI(saturday),
+  };
+}
+
+/** True if the given date is a Wednesday (day 3). */
+export function isWednesday(date: Date): boolean {
+  return date.getDay() === 3;
+}

@@ -18,6 +18,9 @@ export interface SessionParticipant {
   student_email: string | null;
   current_week: number | null;
   enrollment_status: string | null;
+  booked_week_number?: number | null;
+  booked_course_id?: number | null;
+  booked_course_title?: string | null;
 }
 
 export interface SessionParticipantListResponse {

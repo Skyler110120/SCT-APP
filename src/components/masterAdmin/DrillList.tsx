@@ -1,17 +1,16 @@
 import { themes } from "@/src/context/themes";
 import { drillListStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillListStyles";
-import { CourseDrill } from "@/src/types/course.drills.types";
-import { DrillType } from "@/src/types/enums";
+import { Drill, FireType } from "@/src/types/course.drills.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 interface DrillListProps {
-  drills: CourseDrill[];
-  selectedDrill: CourseDrill | null;
-  onSelectDrill: (drill: CourseDrill) => void;
-  onEditDrill: (drill: CourseDrill) => void;
-  onDeleteDrill: (drill: CourseDrill) => void;
+  drills: Drill[];
+  selectedDrill: Drill | null;
+  onSelectDrill: (drill: Drill) => void;
+  onEditDrill: (drill: Drill) => void;
+  onDeleteDrill: (drill: Drill) => void;
   isLoading: boolean;
 }
 
@@ -21,30 +20,14 @@ const DrillList: React.FC<DrillListProps> = ({
   onSelectDrill,
   onEditDrill,
   onDeleteDrill,
-  isLoading,
 }) => {
-  const formatDrillType = (type: DrillType) => {
-    if (type === DrillType.TIME) return "Time-Based";
-    if (type === DrillType.SCORE) return "Score-Based";
-    if (type === DrillType.ACCURACY) return "Accuracy-Based";
+  const formatFireType = (type: FireType) => {
+    if (type === FireType.LIVE_FIRE) return "Live Fire";
+    if (type === FireType.DRY_FIRE) return "Dry Fire";
     return type;
   };
 
-  const formatStandard = (value: number, unit: string, type: DrillType) => {
-    if (type === DrillType.TIME) {
-      return `≤ ${value} ${unit}`;
-    } else if (type === DrillType.SCORE || type === DrillType.ACCURACY) {
-      return `≥ ${value} ${unit}`;
-    } else {
-      return `${value} ${unit}`;
-    }
-  };
-
-  const formatStatus = (isActive: boolean) => {
-    return isActive ? "Active" : "Inactive";
-  };
-
-  const renderItem = ({ item }: { item: CourseDrill }) => {
+  const renderItem = ({ item }: { item: Drill }) => {
     const isSelected = selectedDrill?.id === item.id;
 
     return (
@@ -62,30 +45,32 @@ const DrillList: React.FC<DrillListProps> = ({
         activeOpacity={0.7}
       >
         <View style={styles.info}>
-          <Text style={styles.name}>{item.drill_name}</Text>
-          {item.description && (
-            <Text style={styles.description}>{item.description}</Text>
+          <Text style={styles.name}>{item.name}</Text>
+          {item.purpose && (
+            <Text style={styles.description} numberOfLines={2}>{item.purpose}</Text>
           )}
 
           <View style={styles.details}>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {formatDrillType(item.drill_type)}
-              </Text>
+              <Text style={styles.badgeText}>{formatFireType(item.fire_type)}</Text>
             </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                Standard:{" "}
-                {formatStandard(
-                  item.standard_value,
-                  item.standard_unit,
-                  item.drill_type
-                )}
-              </Text>
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Order: {item.display_order}</Text>
-            </View>
+            {item.is_cte && (
+              <View style={[styles.badge, { borderColor: "#FFD700" }]}>
+                <Text style={[styles.badgeText, { color: "#FFD700" }]}>CTE</Text>
+              </View>
+            )}
+            {item.passing_standard && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>Std: {item.passing_standard}</Text>
+              </View>
+            )}
+            {item.fundamentals.length > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {item.fundamentals.map((f) => f.name).join(", ")}
+                </Text>
+              </View>
+            )}
             <View
               style={[
                 styles.badge,
@@ -103,7 +88,7 @@ const DrillList: React.FC<DrillListProps> = ({
                   { color: item.is_active ? themes.vegasGold : "#FF4444" },
                 ]}
               >
-                {formatStatus(item.is_active)}
+                {item.is_active ? "Active" : "Inactive"}
               </Text>
             </View>
           </View>
@@ -126,7 +111,7 @@ const DrillList: React.FC<DrillListProps> = ({
           >
             <FontAwesome name="trash" size={16} color="#FF4444" />
             <Text style={[styles.actionText, styles.removeText]}>
-              Delete Drill
+              Deactivate
             </Text>
           </TouchableOpacity>
         </View>
@@ -136,31 +121,31 @@ const DrillList: React.FC<DrillListProps> = ({
 
   return (
     <View style={styles.tableContainer}>
-        <Text style={styles.tableSectionTitle}>
-            Course Drills ({drills.length})
-        </Text>
+      <Text style={styles.tableSectionTitle}>
+        Platform Drills ({drills.length})
+      </Text>
 
-        {drills.length === 0 ? (
-            <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>
-                    No drills found for this course
-                </Text>
-                <Text style={[styles.emptyStateText, { marginTop: 8, opacity: 0.7 }]}>
-                    Create your first drill to get started
-                </Text>
-            </View>
-        ) : (
-            <FlatList
-                data={drills}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString()}
-                style={{flex: 1}}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                extraData={selectedDrill?.id}
-            />
-        )}
+      {drills.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>No drills found</Text>
+          <Text
+            style={[styles.emptyStateText, { marginTop: 8, opacity: 0.7 }]}
+          >
+            Create your first drill to get started
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={drills}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          style={{ flex: 1 }}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          extraData={selectedDrill?.id}
+        />
+      )}
     </View>
   );
 };

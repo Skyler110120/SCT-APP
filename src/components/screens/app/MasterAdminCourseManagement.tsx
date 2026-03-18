@@ -24,6 +24,7 @@ import {
 
 import CourseForm from "@/src/components/masterAdmin/CourseForm";
 import CourseList from "@/src/components/masterAdmin/CourseList";
+import CourseStructureBuilderModal from "@/src/components/masterAdmin/CourseStructureBuilderModal";
 import DrillManagement from "@/src/components/masterAdmin/DrillManagement";
 import VideoForm from "@/src/components/masterAdmin/VideoForm";
 import VideoManagementModal from "@/src/components/masterAdmin/VideoManagementModal";
@@ -41,6 +42,7 @@ export default function MasterAdminCourseManagement() {
   const [isSubmittingCourse, setIsSubmittingCourse] = useState<boolean>(false);
   const [isSubmittingVideo, setIsSubmittingVideo] = useState<boolean>(false);
   const [courseModalVisible, setCourseModalVisible] = useState<boolean>(false);
+  const [courseStructureBuilderVisible, setCourseStructureBuilderVisible] = useState<boolean>(false);
   const [drillManagementModalVisible, setDrillManagementModalVisible] = useState<boolean>(false);
   const [videoModalVisible, setVideoModalVisible] = useState<boolean>(false);
   const [videoManagementModalVisible, setVideoManagementModalVisible] =
@@ -88,14 +90,21 @@ export default function MasterAdminCourseManagement() {
     setSelectedCourse(course);
   };
 
+  const handleBuildCourseStructurePress = () => {
+    if (!selectedCourse) {
+      Alert.alert("Error", "Please select a course first");
+      return;
+    }
+    setCourseStructureBuilderVisible(true);
+  };
+
   const handleManageDrillsPress = () => {
     if (!selectedCourse) {
       Alert.alert("Error", "Please select a course first");
       return;
     }
-    console.log(`Opening drill management for course: ${selectedCourse.title}`)
     setDrillManagementModalVisible(true);
-  }
+  };
 
   const handleCreateCourse = async (data: CourseCreateRequest) => {
     setIsSubmittingCourse(true);
@@ -448,6 +457,14 @@ export default function MasterAdminCourseManagement() {
 
               <TouchableOpacity
                 style={[styles.actionButton, !selectedCourse && { opacity: 0.5 }]}
+                onPress={handleBuildCourseStructurePress}
+                disabled={!selectedCourse}
+              >
+                <Text style={styles.buttonText}>Build course structure</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, !selectedCourse && { opacity: 0.5 }]}
                 onPress={handleManageDrillsPress}
                 disabled={!selectedCourse}
               >
@@ -505,6 +522,14 @@ export default function MasterAdminCourseManagement() {
           />
         )}
 
+        {selectedCourse && (
+          <CourseStructureBuilderModal
+            visible={courseStructureBuilderVisible}
+            course={selectedCourse}
+            onClose={() => setCourseStructureBuilderVisible(false)}
+            onOpenPlatformDrills={() => setDrillManagementModalVisible(true)}
+          />
+        )}
         {selectedCourse && (
           <DrillManagement
             visible={drillManagementModalVisible}

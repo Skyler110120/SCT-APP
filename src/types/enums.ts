@@ -17,10 +17,16 @@ export enum EnrollmentStatus {
     DROPPED = 'dropped'
 }
 
+/** @deprecated Use FireType from course.drills.types instead */
 export enum DrillType {
     TIME = "TIME",
     SCORE = "SCORE",
     ACCURACY = "ACCURACY"
+}
+
+export enum FireType {
+    DRY_FIRE = "DRY_FIRE",
+    LIVE_FIRE = "LIVE_FIRE",
 }
 
 export enum SleepQuality {

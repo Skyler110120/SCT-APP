@@ -32,7 +32,15 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/splash-icon.png",
+          "color": "#D4AF37",
+          "sounds": []
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

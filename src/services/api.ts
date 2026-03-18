@@ -57,7 +57,8 @@ function normalizeApiPath(path: string, method?: string): string {
     '/companies', '/users', '/courses', '/events',
     '/instructors', '/auth', '/profiles', '/onboarding',
     '/sessions', '/session-forms', '/test-session-forms',
-    '/availability', '/materials', '/course-drills',
+    '/availability', '/materials', '/drills',
+    '/technical-fundamentals',
   ];
   
   // Check if this is a root-level endpoint without trailing slash

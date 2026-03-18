@@ -13,11 +13,11 @@ import { drillManagementStyles as styles } from "@/src/styles/CoursePageStyles/M
 import { themes } from "@/src/context/themes";
 import { CourseAdminView } from "@/src/types/course.types";
 import {
-  CourseDrill,
-  CreateCourseDrillRequest,
-  UpdateCourseDrillRequest,
+  Drill,
+  DrillCreate,
+  DrillUpdate,
 } from "@/src/types/course.drills.types";
-import { courseDrillService } from "@/src/services/courseDrillService";
+import { drillService } from "@/src/services/courseDrillService";
 import DrillList from "./DrillList";
 import DrillForm from "./DrillForm";
 
@@ -34,12 +34,12 @@ export default function DrillManagment({
   course,
   onClose,
 }: DrillManagementProps) {
-  const [drills, setDrills] = useState<CourseDrill[]>([]);
-  const [selectedDrill, setSelectedDrill] = useState<CourseDrill | null>(null);
+  const [drills, setDrills] = useState<Drill[]>([]);
+  const [selectedDrill, setSelectedDrill] = useState<Drill | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showDrillForm, setShowDrillForm] = useState<boolean>(false);
-  const [editingDrill, setEditingDrill] = useState<CourseDrill | null>(null);
+  const [editingDrill, setEditingDrill] = useState<Drill | null>(null);
   const [showModal, setShowModal] = useState<boolean>(true);
 
   useEffect(() => {
@@ -56,13 +56,9 @@ export default function DrillManagment({
   }, [visible, course]);
 
   const loadDrills = async () => {
-    if (!course) return;
-
     setIsLoading(true);
     try {
-      console.log(`Loading drills for course:" ${course.title}`);
-      const result = await courseDrillService.getCourseDrills(course.id);
-
+      const result = await drillService.getDrills();
       if (result.success && result.data) {
         setDrills(result.data);
       } else {
@@ -77,12 +73,10 @@ export default function DrillManagment({
     }
   };
 
-  const handleCreateDrill = async (drillData: CreateCourseDrillRequest) => {
+  const handleCreateDrill = async (drillData: DrillCreate) => {
     setIsSubmitting(true);
     try {
-      console.log("Creating drill:", drillData);
-      const result = await courseDrillService.createCourseDrill(drillData);
-
+      const result = await drillService.createDrill(drillData);
       if (result.success) {
         Alert.alert("Success", result.message || "Drill created successfully");
         setShowDrillForm(false);
@@ -101,16 +95,11 @@ export default function DrillManagment({
 
   const handleUpdateDrill = async (
     drillId: number,
-    drillData: UpdateCourseDrillRequest
+    drillData: DrillUpdate
   ) => {
     setIsSubmitting(true);
     try {
-      console.log("Updating drill:", { drillId, drillData });
-      const result = await courseDrillService.updateCourseDrill(
-        drillId,
-        drillData
-      );
-
+      const result = await drillService.updateDrill(drillId, drillData);
       if (result.success) {
         Alert.alert("Success", result.message || "Drill updated successfully");
         setShowDrillForm(false);
@@ -128,15 +117,14 @@ export default function DrillManagment({
     }
   };
 
-  const handleDeleteDrill = (drill: CourseDrill) => {
+  const handleDeleteDrill = (drill: Drill) => {
     Alert.alert(
       "Delete Drill",
-      `Are you sure you want to delete "${drill.drill_name}"?\n\n` +
-        `This action cannot be undone.`,
+      `Are you sure you want to deactivate "${drill.name}"?\n\nThis will hide it from new class assignments.`,
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Delete Drill",
+          text: "Deactivate",
           style: "destructive",
           onPress: () => confirmDeleteDrill(drill),
         },
@@ -144,37 +132,30 @@ export default function DrillManagment({
     );
   };
 
-  const confirmDeleteDrill = async (drill: CourseDrill) => {
+  const confirmDeleteDrill = async (drill: Drill) => {
     setIsSubmitting(true);
     try {
-      console.log("Deleting drill:", drill.drill_name);
-
-      const result = await courseDrillService.deleteCourseDrill(drill.id);
-
+      const result = await drillService.deleteDrill(drill.id);
       if (result.success) {
-        Alert.alert("Success", result.message || "Drill deleted successfully");
+        Alert.alert("Success", result.message || "Drill deactivated");
         setSelectedDrill(null);
         await loadDrills();
       } else {
-        console.error("Failed to delete drill:", result.error);
         Alert.alert("Error", result.error || "Failed to delete drill");
       }
     } catch (error) {
-      console.error("Error deleting drill:", error);
       Alert.alert("Error", "Failed to delete drill");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleEditDrill = (drill: CourseDrill) => {
-    console.log("Editing drill:", drill.drill_name);
+  const handleEditDrill = (drill: Drill) => {
     setEditingDrill(drill);
     setShowDrillForm(true);
   };
 
   const handleAddDrill = () => {
-    console.log("Adding new drill");
     setEditingDrill(null);
     setShowDrillForm(true);
     setShowModal(false);
@@ -196,8 +177,10 @@ export default function DrillManagment({
             <View style={styles.drillModalContent}>
               <View style={styles.drillModalHeader}>
                 <View style={{ flex: 1, alignItems: "center" }}>
-                  <Text style={styles.drillModalTitle}>Manage Drills</Text>
-                  <Text style={styles.drillModalLabel}>{course.title}</Text>
+                  <Text style={styles.drillModalTitle}>Platform Drills</Text>
+                  <Text style={styles.drillModalLabel}>
+                    Manage drills for all courses
+                  </Text>
                 </View>
                 <TouchableOpacity
                   onPress={onClose}
@@ -248,7 +231,6 @@ export default function DrillManagment({
 
       <DrillForm
         visible={showDrillForm}
-        courseId={course.id}
         drill={editingDrill}
         isSubmitting={isSubmitting}
         onClose={handleCloseDrillForm}

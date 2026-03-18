@@ -4,11 +4,15 @@ import { themes } from "@/src/context/themes";
 import { detailModalStyles as styles } from "@/src/styles/CalendarPageStyles/detailModalStyles";
 import { SessionDetailed } from "@/src/types/sessions.types";
 import { formatDateString, formatTimeString } from "@/src/utils/dateTimeUtils";
-import React from "react";
+import { drillService } from "@/src/services/courseDrillService";
+import { sessionFormService, SessionParticipant } from "@/src/services/sessionFormService";
+import { ClassWithDrills } from "@/src/types/course.drills.types";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Modal,
+  ScrollView,
   Text,
   TouchableOpacity,
   View
@@ -34,6 +38,95 @@ export default function SessionDetailsModal({
   isCancelling,
 }: SessionDetailsModalProps) {
   const { user } = useAuth();
+  const [participants, setParticipants] = useState<SessionParticipant[]>([]);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
+  const [participantClasses, setParticipantClasses] = useState<Array<{
+    participant: SessionParticipant & { student_name?: string | null };
+    courseId: number;
+    weekNumber: number;
+    classWithDrills: ClassWithDrills | null;
+    loading: boolean;
+  }>>([]);
+
+  const isInstructor = user?.role === UserRole.INSTRUCTOR;
+  const weekNumber = session?.week_number ?? session?.enrollment_current_week ?? null;
+  const courseId = session?.course_id ?? null;
+
+  useEffect(() => {
+    if (!visible || !session?.id || !isInstructor) {
+      setParticipants([]);
+      return;
+    }
+    setParticipantsLoading(true);
+    sessionFormService
+      .getSessionParticipants(session.id)
+      .then((res) => {
+        if (res.success && res.data) setParticipants(res.data);
+        else setParticipants([]);
+      })
+      .catch(() => setParticipants([]))
+      .finally(() => setParticipantsLoading(false));
+  }, [visible, session?.id, isInstructor]);
+
+  useEffect(() => {
+    if (!visible || !isInstructor || !session) {
+      setParticipantClasses([]);
+      return;
+    }
+    if (participantsLoading) {
+      setParticipantClasses([]);
+      return;
+    }
+    const cId = session.course_id ?? null;
+    const wNum = session.week_number ?? session.enrollment_current_week ?? null;
+
+    if (participants.length === 0) {
+      if (cId != null && wNum != null) {
+        setParticipantClasses([{
+          participant: { id: 0, session_id: session.id, student_id: 0, enrollment_id: null, student_name: session.student_name ?? "Student", student_email: null, current_week: wNum, enrollment_status: null, booked_week_number: wNum, booked_course_id: cId, booked_course_title: session.course_title },
+          courseId: cId,
+          weekNumber: wNum,
+          classWithDrills: null,
+          loading: true,
+        }]);
+        drillService.getClassByWeek(cId, wNum).then((res) => {
+          setParticipantClasses((prev) => prev.map((p) =>
+            p.participant.id === 0 && p.courseId === cId && p.weekNumber === wNum
+              ? { ...p, classWithDrills: res.success ? res.data ?? null : null, loading: false }
+              : p
+          ));
+        }).catch(() => {
+          setParticipantClasses((prev) => prev.map((p) =>
+            p.participant.id === 0 ? { ...p, classWithDrills: null, loading: false } : p
+          ));
+        });
+      } else setParticipantClasses([]);
+      return;
+    }
+
+    const entries = participants.map((p) => ({
+      participant: p,
+      courseId: p.booked_course_id ?? cId ?? 0,
+      weekNumber: p.booked_week_number ?? p.current_week ?? wNum ?? 0,
+    })).filter((e) => e.courseId > 0 && e.weekNumber > 0);
+
+    setParticipantClasses(entries.map((e) => ({ ...e, classWithDrills: null, loading: true })));
+
+    entries.forEach((entry, idx) => {
+      drillService
+        .getClassByWeek(entry.courseId, entry.weekNumber)
+        .then((res) => {
+          setParticipantClasses((prev) => prev.map((p, i) =>
+            i === idx ? { ...p, classWithDrills: res.success ? res.data ?? null : null, loading: false } : p
+          ));
+        })
+        .catch(() => {
+          setParticipantClasses((prev) => prev.map((p, i) =>
+            i === idx ? { ...p, classWithDrills: null, loading: false } : p
+          ));
+        });
+    });
+  }, [visible, isInstructor, session, participants, participantsLoading]);
 
   const handleCancel = () => {
     if (!session) return;
@@ -53,7 +146,6 @@ export default function SessionDetailsModal({
 
   if (!session) return null;
 
-  const isInstructor = user?.role === UserRole.INSTRUCTOR;
   const canBeCancelled = session.can_be_cancelled;
   const canBeStarted = session.can_be_completed && isInstructor;
 
@@ -243,6 +335,88 @@ export default function SessionDetailsModal({
                       {session.enrollment_progress_percentage && 
                         ` (${session.enrollment_progress_percentage}%)`}</Text>
                   </View>
+                )}
+              </View>
+            )}
+
+            {isInstructor && (participantClasses.length > 0 || (courseId != null && weekNumber != null && !participantsLoading)) && (
+              <View style={[styles.infoCardTertiary, { marginTop: 12 }]}>
+                <Text style={[styles.infoLabel, { marginBottom: 8 }]}>Class & drills (session prep)</Text>
+                {participantClasses.length === 0 && (courseId == null || weekNumber == null) ? (
+                  <Text style={styles.infoValueTertiary}>No course or week for this session.</Text>
+                ) : (
+                  participantClasses.map((pc, idx) => (
+                    <View key={`${pc.participant.student_id}-${pc.courseId}-${pc.weekNumber}-${idx}`} style={{ marginBottom: 16 }}>
+                      <Text style={[styles.infoValueSecondary, { marginBottom: 6, color: themes.vegasGold }]}>
+                        {pc.participant.student_name || `Student #${pc.participant.student_id}`} — Week {pc.weekNumber}
+                      </Text>
+                      {pc.loading ? (
+                        <View style={{ paddingVertical: 12, alignItems: "center" }}>
+                          <ActivityIndicator size="small" color={themes.vegasGold} />
+                        </View>
+                      ) : pc.classWithDrills ? (
+                        <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
+                          <Text style={[styles.infoValueSecondary, { marginBottom: 4 }]}>
+                            {pc.classWithDrills.title || `Week ${pc.classWithDrills.week_index}`}
+                          </Text>
+                          {pc.classWithDrills.endstate != null && pc.classWithDrills.endstate !== "" && (
+                            <Text style={[styles.infoValueTertiary, { marginBottom: 6 }]}>
+                              End state: {pc.classWithDrills.endstate}
+                            </Text>
+                          )}
+                          {pc.classWithDrills.round_count != null && (
+                            <Text style={[styles.infoValueTertiary, { marginBottom: 8 }]}>
+                              Round count: {pc.classWithDrills.round_count}
+                            </Text>
+                          )}
+                          <Text style={[styles.infoLabel, { marginTop: 8, marginBottom: 4 }]}>Drills</Text>
+                          {(pc.classWithDrills.class_drills ?? [])
+                            .sort((a, b) => a.display_order - b.display_order)
+                            .map((cd) => (
+                              <View
+                                key={cd.id}
+                                style={{
+                                  padding: 10,
+                                  marginBottom: 6,
+                                  borderRadius: 8,
+                                  borderWidth: 1,
+                                  borderColor: themes.vegasGold,
+                                  backgroundColor: "rgba(0,0,0,0.3)",
+                                }}
+                              >
+                                <Text style={{ fontFamily: "Chakra-Bold", fontSize: 14, color: themes.white }}>
+                                  {cd.drill.name}
+                                  {cd.is_homework ? " (Homework)" : ""}
+                                  {cd.duration_minutes != null ? ` · ${cd.duration_minutes} min` : ""}
+                                </Text>
+                                {cd.drill.purpose ? (
+                                  <Text style={[styles.infoValueTertiary, { marginTop: 4 }]} numberOfLines={2}>
+                                    {cd.drill.purpose}
+                                  </Text>
+                                ) : null}
+                                {(cd.drill.target_spec || cd.drill.target_count) && (
+                                  <Text style={[styles.infoValueTertiary, { marginTop: 2, fontSize: 12 }]}>
+                                    Target: {[cd.drill.target_spec, cd.drill.target_count != null ? `×${cd.drill.target_count}` : null].filter(Boolean).join(" ")}
+                                  </Text>
+                                )}
+                                {cd.drill.commands ? (
+                                  <Text style={[styles.infoValueTertiary, { marginTop: 2, fontSize: 12 }]} numberOfLines={2}>
+                                    Commands: {cd.drill.commands}
+                                  </Text>
+                                ) : null}
+                                {cd.drill.instructor_notes ? (
+                                  <Text style={[styles.infoValueTertiary, { marginTop: 2, fontSize: 12, fontStyle: "italic" }]} numberOfLines={2}>
+                                    Notes: {cd.drill.instructor_notes}
+                                  </Text>
+                                ) : null}
+                              </View>
+                            ))}
+                        </ScrollView>
+                      ) : (
+                        <Text style={styles.infoValueTertiary}>No class found for this week.</Text>
+                      )}
+                    </View>
+                  ))
                 )}
               </View>
             )}

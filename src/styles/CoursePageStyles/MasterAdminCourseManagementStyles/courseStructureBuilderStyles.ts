@@ -1,0 +1,245 @@
+import { Dimensions, StyleSheet } from "react-native";
+import { themes } from "@/src/context/themes";
+
+const { width } = Dimensions.get("window");
+
+export const courseStructureBuilderStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: themes.background,
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  backButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+  },
+  title: {
+    fontSize: 18,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+    flex: 1,
+    textAlign: "center",
+  },
+  closeButton: {
+    padding: 8,
+    minWidth: 44,
+    alignItems: "flex-end",
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+  },
+  // Level 1: Timeline
+  timelineRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  monthCard: {
+    width: (width - 32 - 24) / 2,
+    minWidth: 140,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black + "80",
+  },
+  monthCardTitle: {
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+    marginBottom: 4,
+  },
+  monthCardSubtitle: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    opacity: 0.8,
+  },
+  addMonthButton: {
+    width: (width - 32 - 24) / 2,
+    minWidth: 140,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: themes.vegasGold,
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addMonthButtonText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+  },
+  // Level 2: Month view (classes list)
+  classRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 14,
+    marginBottom: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black + "60",
+  },
+  classRowInfo: {
+    flex: 1,
+  },
+  classRowTitle: {
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  classRowMeta: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+  classRowActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  addClassButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 14,
+    marginTop: 8,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: themes.vegasGold,
+  },
+  addClassButtonText: {
+    fontSize: 15,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+    marginLeft: 8,
+  },
+  // Level 3: Class detail
+  classDetailSection: {
+    marginBottom: 20,
+  },
+  classDetailLabel: {
+    fontSize: 12,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  classDetailValue: {
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    lineHeight: 20,
+  },
+  classDetailValueMultiline: {
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    lineHeight: 20,
+    minHeight: 40,
+  },
+  drillCard: {
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black + "40",
+  },
+  drillCardName: {
+    fontSize: 15,
+    fontFamily: "Chakra-Bold",
+    color: themes.white,
+  },
+  drillCardMeta: {
+    fontSize: 12,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    opacity: 0.8,
+    marginTop: 4,
+  },
+  drillCardActions: {
+    flexDirection: "row",
+    marginTop: 8,
+    alignItems: "center",
+  },
+  addDrillButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 12,
+    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: themes.black + "60",
+  },
+  addDrillButtonText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+    marginLeft: 6,
+  },
+  platformDrillsLink: {
+    marginTop: 16,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    alignItems: "center",
+  },
+  platformDrillsLinkText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Medium",
+    color: themes.vegasGold,
+  },
+  emptyState: {
+    padding: 24,
+    alignItems: "center",
+  },
+  emptyStateText: {
+    fontSize: 15,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+    opacity: 0.8,
+    textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    fontFamily: "Chakra-Regular",
+    color: themes.white,
+  },
+});

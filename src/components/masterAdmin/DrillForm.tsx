@@ -1,11 +1,11 @@
 import { themes } from "@/src/context/themes";
 import { drillFormStyles as styles } from "@/src/styles/CoursePageStyles/MasterAdminCourseManagementStyles/drillFormStyles";
 import {
-  CourseDrill,
-  CreateCourseDrillRequest,
-  UpdateCourseDrillRequest,
+  Drill,
+  DrillCreate,
+  DrillUpdate,
+  FireType,
 } from "@/src/types/course.drills.types";
-import { DrillType } from "@/src/types/enums";
 import { Picker } from "@react-native-picker/picker";
 import React, { useEffect, useState } from "react";
 import {
@@ -21,30 +21,32 @@ import {
 
 interface DrillFormProps {
   visible: boolean;
-  courseId: number;
-  drill?: CourseDrill | null;
+  drill?: Drill | null;
   isSubmitting: boolean;
   onClose: () => void;
-  onCreateDrill?: (data: CreateCourseDrillRequest) => Promise<void>;
-  onUpdateDrill?: (id: number, data: UpdateCourseDrillRequest) => Promise<void>;
+  onCreateDrill?: (data: DrillCreate) => Promise<void>;
+  onUpdateDrill?: (id: number, data: DrillUpdate) => Promise<void>;
 }
 
 export default function DrillForm({
   visible,
-  courseId,
   drill,
   isSubmitting,
   onClose,
   onCreateDrill,
   onUpdateDrill,
 }: DrillFormProps) {
-  const [drillName, setDrillName] = useState("");
-  const [drillType, setDrillType] = useState(DrillType.SCORE);
-  const [standardValue, setStandardValue] = useState("");
-  const [standardUnit, setStandardUnit] = useState("");
+  const [name, setName] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [fireType, setFireType] = useState<FireType>(FireType.LIVE_FIRE);
+  const [commands, setCommands] = useState("");
+  const [instructorNotes, setInstructorNotes] = useState("");
+  const [isCte, setIsCte] = useState(false);
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState("");
+  const [passingStandard, setPassingStandard] = useState("");
   const [displayOrder, setDisplayOrder] = useState("1");
-  const [description, setDescription] = useState("");
-  const [isActive, setIsActive] = useState(true);
+  const [distanceYards, setDistanceYards] = useState("");
+  const [targetSpec, setTargetSpec] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const isEditMode = drill !== null && drill !== undefined;
@@ -52,21 +54,29 @@ export default function DrillForm({
   useEffect(() => {
     if (visible) {
       if (isEditMode && drill) {
-        setDrillName(drill.drill_name);
-        setDrillType(drill.drill_type);
-        setStandardValue(drill.standard_value.toString());
-        setStandardUnit(drill.standard_unit);
+        setName(drill.name);
+        setPurpose(drill.purpose);
+        setFireType(drill.fire_type);
+        setCommands(drill.commands);
+        setInstructorNotes(drill.instructor_notes || "");
+        setIsCte(drill.is_cte);
+        setTimeLimitSeconds(drill.time_limit_seconds?.toString() || "");
+        setPassingStandard(drill.passing_standard || "");
         setDisplayOrder(drill.display_order.toString());
-        setDescription(drill.description || "");
-        setIsActive(drill.is_active);
+        setDistanceYards(drill.distance_yards?.toString() || "");
+        setTargetSpec(drill.target_spec || "");
       } else {
-        setDrillName("");
-        setDrillType(DrillType.SCORE);
-        setStandardValue("");
-        setStandardUnit("");
+        setName("");
+        setPurpose("");
+        setFireType(FireType.LIVE_FIRE);
+        setCommands("");
+        setInstructorNotes("");
+        setIsCte(false);
+        setTimeLimitSeconds("");
+        setPassingStandard("");
         setDisplayOrder("1");
-        setDescription("");
-        setIsActive(true);
+        setDistanceYards("");
+        setTargetSpec("");
       }
       setErrors({});
     }
@@ -74,103 +84,56 @@ export default function DrillForm({
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
-    if (!drillName.trim()) {
-      newErrors.drillName = "Drill name is required.";
-    } else if (drillName.trim().length < 3) {
-      newErrors.drillName = "Drill name must be at least 3 characters.";
-    }
-
-    const standardNum = parseFloat(standardValue);
-    if (isNaN(standardNum) || standardNum < 0) {
-      newErrors.standardValue = "Standard value must be a positive number.";
-    }
-
-    if (!standardUnit.trim()) {
-      newErrors.standardUnit = "Standard unit is required.";
-    }
-
+    if (!name.trim()) newErrors.name = "Name is required.";
+    if (!purpose.trim()) newErrors.purpose = "Purpose is required.";
+    if (!commands.trim()) newErrors.commands = "Commands are required.";
     const orderNum = parseInt(displayOrder);
-    if (isNaN(orderNum) || orderNum < 1) {
-      newErrors.displayOrder = "Display order must be a positive integer.";
-    }
-
+    if (isNaN(orderNum) || orderNum < 1) newErrors.displayOrder = "Must be a positive integer.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const getUnitPlaceHolder = () => {
-    if (drillType === DrillType.TIME) {
-      return "seconds";
-    } else if (drillType === DrillType.SCORE) {
-      return "percentage";
-    } else if (drillType === DrillType.ACCURACY) {
-      return "percentage";
-    } else {
-      return "units";
-    }
-  };
-
-  const getValuePlaceHolder = () => {
-    if (drillType === DrillType.TIME) {
-      return "7.5";
-    } else if (drillType === DrillType.SCORE) {
-      return "70";
-    } else if (drillType === DrillType.ACCURACY) {
-      return "85";
-    } else {
-      return "0";
-    }
-  };
-
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Alert.alert(
-        "Validation Error",
-        "Please correct the errors and try again."
-      );
+      Alert.alert("Validation Error", "Please correct the errors.");
       return;
     }
 
     try {
       if (isEditMode && onUpdateDrill && drill) {
-        const updateData: UpdateCourseDrillRequest = {
-          drill_name: drillName.trim(),
-          drill_type: drillType,
-          standard_value: parseFloat(standardValue),
-          standard_unit: standardUnit.trim(),
+        const updateData: DrillUpdate = {
+          name: name.trim(),
+          purpose: purpose.trim(),
+          fire_type: fireType,
+          commands: commands.trim(),
+          instructor_notes: instructorNotes.trim() || undefined,
+          is_cte: isCte,
+          time_limit_seconds: timeLimitSeconds ? parseInt(timeLimitSeconds) : undefined,
+          passing_standard: passingStandard.trim() || undefined,
           display_order: parseInt(displayOrder),
-          description: description.trim(),
-          is_active: isActive,
+          distance_yards: distanceYards ? parseInt(distanceYards) : undefined,
+          target_spec: targetSpec.trim() || undefined,
         };
-
-        console.log("Updating drill:", updateData);
         await onUpdateDrill(drill.id, updateData);
       } else if (!isEditMode && onCreateDrill) {
-        const createData: CreateCourseDrillRequest = {
-          course_id: courseId,
-          drill_name: drillName.trim(),
-          drill_type: drillType,
-          standard_value: parseFloat(standardValue),
-          standard_unit: standardUnit.trim(),
+        const createData: DrillCreate = {
+          name: name.trim(),
+          purpose: purpose.trim(),
+          fire_type: fireType,
+          commands: commands.trim(),
+          instructor_notes: instructorNotes.trim() || undefined,
+          is_cte: isCte,
+          time_limit_seconds: timeLimitSeconds ? parseInt(timeLimitSeconds) : undefined,
+          passing_standard: passingStandard.trim() || undefined,
           display_order: parseInt(displayOrder),
-          description: description.trim(),
+          distance_yards: distanceYards ? parseInt(distanceYards) : undefined,
+          target_spec: targetSpec.trim() || undefined,
         };
-
-        console.log("Creating drill:", createData);
         await onCreateDrill(createData);
       }
     } catch (error) {
-      console.error("Drill form submission error:", error);
       Alert.alert("Error", "An unexpected error occurred");
     }
-  };
-
-  const getDrillTypeDisplayName = (type: DrillType) => {
-    if (type === DrillType.TIME) return "Time-Based";
-    if (type === DrillType.SCORE) return "Score-Based";
-    if (type === DrillType.ACCURACY) return "Accuracy-Based";
-    return type;
   };
 
   return (
@@ -183,93 +146,142 @@ export default function DrillForm({
 
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Drill Name</Text>
+              <Text style={styles.modalLabel}>Drill Name *</Text>
               <TextInput
-                style={[
-                  styles.searchInput,
-                  errors.drillName && { borderColor: "#FF4444" },
-                ]}
-                value={drillName}
-                onChangeText={setDrillName}
-                placeholder="e.g., Bull Standard, Bill Drill"
+                style={[styles.searchInput, errors.name && { borderColor: "#FF4444" }]}
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g., Bill Drill, Wall Drill"
                 placeholderTextColor={themes.white}
-                maxLength={100}
+                maxLength={200}
               />
-              {errors.drillName && (
-                <Text style={styles.warningText}>{errors.drillName}</Text>
-              )}
+              {errors.name && <Text style={styles.warningText}>{errors.name}</Text>}
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Drill Type</Text>
+              <Text style={styles.modalLabel}>Fire Type</Text>
               <View style={styles.modalPickerContainer}>
                 <Picker
-                  selectedValue={drillType}
-                  onValueChange={(itemValue) => setDrillType(itemValue)}
+                  selectedValue={fireType}
+                  onValueChange={(val) => setFireType(val)}
                   style={styles.modalPicker}
                   dropdownIconColor={themes.vegasGold}
                 >
-                  {Object.values(DrillType).map((type) => (
-                    <Picker.Item
-                      key={type}
-                      label={getDrillTypeDisplayName(type)}
-                      value={type}
-                    />
-                  ))}
+                  <Picker.Item label="Live Fire" value={FireType.LIVE_FIRE} />
+                  <Picker.Item label="Dry Fire" value={FireType.DRY_FIRE} />
                 </Picker>
               </View>
-              <Text style={styles.inputDescription}>
-                Time: Lower is better * Score: Higher is better * Accuracy:
-                Higher is better
-              </Text>
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Standard Value</Text>
+              <Text style={styles.modalLabel}>Purpose *</Text>
               <TextInput
-                style={[
-                  styles.searchInput,
-                  errors.standardValue && { borderColor: "#FF4444" },
-                ]}
-                value={standardValue}
-                onChangeText={setStandardValue}
-                placeholder={getValuePlaceHolder()}
+                style={[styles.searchInput, errors.purpose && { borderColor: "#FF4444" }]}
+                value={purpose}
+                onChangeText={setPurpose}
+                placeholder="What this drill trains"
+                placeholderTextColor={themes.white}
+                multiline
+                numberOfLines={2}
+              />
+              {errors.purpose && <Text style={styles.warningText}>{errors.purpose}</Text>}
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Commands *</Text>
+              <TextInput
+                style={[styles.searchInput, errors.commands && { borderColor: "#FF4444" }]}
+                value={commands}
+                onChangeText={setCommands}
+                placeholder="Step-by-step execution commands"
+                placeholderTextColor={themes.white}
+                multiline
+                numberOfLines={3}
+              />
+              {errors.commands && <Text style={styles.warningText}>{errors.commands}</Text>}
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Instructor Notes</Text>
+              <TextInput
+                style={styles.searchInput}
+                value={instructorNotes}
+                onChangeText={setInstructorNotes}
+                placeholder="Optional coaching notes"
+                placeholderTextColor={themes.white}
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>Distance (yards)</Text>
+              <TextInput
+                style={styles.searchInput}
+                value={distanceYards}
+                onChangeText={setDistanceYards}
+                placeholder="7"
                 placeholderTextColor={themes.white}
                 keyboardType="numeric"
               />
-              {errors.standardValue && (
-                <Text style={styles.warningText}>{errors.standardValue}</Text>
-              )}
-              <Text style={styles.inputDescription}>
-                The benchmark value for this drill.
-              </Text>
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Standard Unit</Text>
+              <Text style={styles.modalLabel}>Target Spec</Text>
               <TextInput
-                style={[
-                  styles.searchInput,
-                  errors.standardUnit && { borderColor: "#FF4444" },
-                ]}
-                value={standardUnit}
-                onChangeText={setStandardUnit}
-                placeholder={getUnitPlaceHolder()}
+                style={styles.searchInput}
+                value={targetSpec}
+                onChangeText={setTargetSpec}
+                placeholder='e.g., IPSC, 3" dot'
                 placeholderTextColor={themes.white}
-                maxLength={20}
               />
-              {errors.standardUnit && (
-                <Text style={styles.warningText}>{errors.standardUnit}</Text>
-              )}
             </View>
+
+            <View style={styles.createSection}>
+              <Text style={styles.modalLabel}>CTE (Performance Test) Drill</Text>
+              <View style={styles.modalPickerContainer}>
+                <Picker
+                  selectedValue={isCte}
+                  onValueChange={(val) => setIsCte(val)}
+                  style={styles.modalPicker}
+                  dropdownIconColor={themes.vegasGold}
+                >
+                  <Picker.Item label="No" value={false} />
+                  <Picker.Item label="Yes" value={true} />
+                </Picker>
+              </View>
+            </View>
+
+            {isCte && (
+              <>
+                <View style={styles.createSection}>
+                  <Text style={styles.modalLabel}>Time Limit (seconds)</Text>
+                  <TextInput
+                    style={styles.searchInput}
+                    value={timeLimitSeconds}
+                    onChangeText={setTimeLimitSeconds}
+                    placeholder="e.g., 7"
+                    placeholderTextColor={themes.white}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={styles.createSection}>
+                  <Text style={styles.modalLabel}>Passing Standard</Text>
+                  <TextInput
+                    style={styles.searchInput}
+                    value={passingStandard}
+                    onChangeText={setPassingStandard}
+                    placeholder="e.g., 3.5 seconds, 45 points"
+                    placeholderTextColor={themes.white}
+                  />
+                </View>
+              </>
+            )}
 
             <View style={styles.createSection}>
               <Text style={styles.modalLabel}>Display Order</Text>
               <TextInput
-                style={[
-                  styles.searchInput,
-                  errors.displayOrder && { borderColor: "#FF4444" },
-                ]}
+                style={[styles.searchInput, errors.displayOrder && { borderColor: "#FF4444" }]}
                 value={displayOrder}
                 onChangeText={setDisplayOrder}
                 placeholder="1"
@@ -277,47 +289,8 @@ export default function DrillForm({
                 keyboardType="numeric"
                 maxLength={2}
               />
-              {errors.displayOrder && (
-                <Text style={styles.warningText}>{errors.displayOrder}</Text>
-              )}
-              <Text style={styles.inputDescription}>
-                Order in which drills will appear during test session (1-99)
-              </Text>
+              {errors.displayOrder && <Text style={styles.warningText}>{errors.displayOrder}</Text>}
             </View>
-
-            <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Description</Text>
-              <TextInput
-                style={styles.searchInput}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Optional description for the drill."
-                placeholderTextColor={themes.white}
-                multiline
-                numberOfLines={3}
-                maxLength={1000}
-              />
-            </View>
-
-            {isEditMode && (
-              <View style={styles.createSection}>
-                <Text style={styles.modalLabel}>Drill Status</Text>
-                <View style={styles.modalPickerContainer}>
-                  <Picker
-                    selectedValue={isActive}
-                    onValueChange={(itemValue) => setIsActive(itemValue)}
-                    style={styles.modalPicker}
-                    dropdownIconColor={themes.vegasGold}
-                  >
-                    <Picker.Item label="Active" value={true} />
-                    <Picker.Item label="Inactive" value={false} />
-                  </Picker>
-                </View>
-                <Text style={styles.inputDescription}>
-                  Inactive drills are hidden during test sessions
-                </Text>
-              </View>
-            )}
           </ScrollView>
 
           <View style={styles.buttonContainer}>
