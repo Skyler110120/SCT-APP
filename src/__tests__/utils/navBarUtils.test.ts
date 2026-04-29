@@ -6,30 +6,36 @@ import { getNavItemsForRole } from "../../utils/navBarUtils";
 import { UserRole } from "../../types/enums";
 
 describe("navBarUtils.getNavItemsForRole", () => {
-  it("returns MasterAdmin nav: Home (system), Courses (system)", () => {
+  it("returns MasterAdmin nav: Home, Users, Courses, Profile", () => {
     const items = getNavItemsForRole(UserRole.MASTER_ADMIN);
-    expect(items).toHaveLength(2);
+    expect(items).toHaveLength(4);
     expect(items[0]).toEqual({ name: "Home", route: "/system/dashboard" });
-    expect(items[1]).toEqual({ name: "Courses", route: "/system/courses" });
+    expect(items[1]).toEqual({ name: "Users", route: "/system/users" });
+    expect(items[2]).toEqual({ name: "Courses", route: "/system/courses" });
+    expect(items[3]).toEqual({ name: "Profile", route: "/system/profile" });
     expect(items.every((i) => i.route.startsWith("/system/"))).toBe(true);
   });
 
-  it("returns Admin nav: Home, Calendar, Users, Courses", () => {
+  it("returns Admin nav: Home, Calendar, Users, Courses, Payments, Profile", () => {
     const items = getNavItemsForRole(UserRole.ADMIN);
-    expect(items).toHaveLength(4);
+    expect(items).toHaveLength(6);
     expect(items.map((i) => i.name)).toEqual([
       "Home",
       "Calendar",
       "Users",
       "Courses",
+      "Payments",
+      "Profile",
     ]);
     expect(items[0].route).toBe("/company/management/dashboard");
     expect(items[1].route).toBe("/company/calendar");
     expect(items[2].route).toBe("/company/management/users");
     expect(items[3].route).toBe("/company/courses");
+    expect(items[4].route).toBe("/company/management/payments");
+    expect(items[5].route).toBe("/company/management/profile");
   });
 
-  it("returns Instructor nav: Home, Calendar, Students, Courses, Profile", () => {
+  it("returns Instructor nav without users when no permissions", () => {
     const items = getNavItemsForRole(UserRole.INSTRUCTOR);
     expect(items).toHaveLength(5);
     expect(items.map((i) => i.name)).toEqual([
@@ -42,6 +48,21 @@ describe("navBarUtils.getNavItemsForRole", () => {
     expect(items[0].route).toBe("/learning/dashboard");
     expect(items[2].route).toBe("/learning/students");
     expect(items[4].route).toBe("/learning/profile");
+  });
+
+  it("returns Instructor nav with users when permissions allow", () => {
+    const items = getNavItemsForRole(UserRole.INSTRUCTOR, {
+      can_manage_others_permissions: true,
+    } as any);
+    expect(items.map((i) => i.name)).toEqual([
+      "Home",
+      "Calendar",
+      "Students",
+      "Users",
+      "Courses",
+      "Profile",
+    ]);
+    expect(items[3].route).toBe("/company/management/users");
   });
 
   it("returns Student nav: Home, Calendar, Courses, Profile (no Users, no Students)", () => {

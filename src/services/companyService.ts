@@ -1,9 +1,9 @@
-import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
 import {
   Company,
   CreateCompanyRequest,
+  UpdateCompanyRequest,
   InviteCode,
   CreateInviteCodeRequest,
   CompanyResponse,
@@ -11,7 +11,6 @@ import {
   InviteCodeResponse,
   InviteCodeListResponse,
 } from "../types/company.types";
-import { InviteCodeValidationRequest } from "../types/onboarding.types";
 
 export const companyService = {
   /**
@@ -79,6 +78,34 @@ export const companyService = {
       return {
         success: false,
         error: "An error occurred while creating the company",
+      };
+    }
+  },
+
+  /**
+   * Update an existing company
+   * @param companyID - ID of the company to update
+   * @param companyData - partial company payload
+   * @returns updated company data or error message
+   */
+  async updateCompany(
+    companyID: number,
+    companyData: UpdateCompanyRequest
+  ): Promise<CompanyResponse> {
+    try {
+      const data: Company = await apiFetch<Company>(`/companies/${companyID}`, {
+        method: "PATCH",
+        body: JSON.stringify(companyData),
+      });
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error("Error updating company:", error);
+      return {
+        success: false,
+        error: "An error occurred while updating the company",
       };
     }
   },

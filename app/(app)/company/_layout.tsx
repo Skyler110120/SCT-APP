@@ -4,10 +4,11 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
+import { logger } from "@/src/utils/logger";
 
 export default function CompanyLayout() {
   const { user, isLoading } = useAuth();
-  console.log("🏢 Company Layout Guard - Company Features Access for:", user?.email);
+  logger.debug("Company layout guard check");
 
   if (isLoading) {
     return (
@@ -31,7 +32,7 @@ export default function CompanyLayout() {
   }
 
   if (!user) {
-    console.log("Company Layout: No user, redirecting to login");
+    logger.debug("Company layout: no user, redirecting to login");
     return <Redirect href="/login" />;
   }
   const hasCompanyAccess = [
@@ -41,11 +42,11 @@ export default function CompanyLayout() {
   ].includes(user.role);
 
   if (!hasCompanyAccess) {
-    console.log(`Company Layout: Access denied for role ${user.role}, redirecting to dashboard`);
+    logger.debug(`Company layout: access denied for role ${user.role}`);
     return <Redirect href="/dashboard" />;
   }
 
-  console.log(`✅ Company Layout: Company access granted for ${user.role}`);
+  logger.debug(`Company layout: access granted for ${user.role}`);
 
   return (
     <View style={{ flex: 1 }}>

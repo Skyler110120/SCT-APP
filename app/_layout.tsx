@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { View, ActivityIndicator } from 'react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
+import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
 import { themes } from '@/src/context/themes';
 
 export default function RootLayout() {
@@ -27,6 +28,7 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
           <Slot />
+          <GlobalErrorReporter />
       </AuthProvider>
     </ErrorBoundary>
   );

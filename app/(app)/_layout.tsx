@@ -8,6 +8,7 @@ import {
   requestNotificationPermissions,
   checkAndNotifyWednesdayBookingReminder,
 } from '@/src/services/bookingReminderNotifications';
+import { logger } from '@/src/utils/logger';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
@@ -46,7 +47,7 @@ export default function AppLayout() {
     })();
   }, [user]);
 
-  console.log('App Layout - Authentication Check for:', user?.email);
+  logger.debug('App Layout authentication check');
 
   if (isLoading) {
     return (
@@ -70,11 +71,11 @@ export default function AppLayout() {
   }
 
   if (!user) {
-    console.log('App Layout: No authenticated user, redirecting to login');
+    logger.debug('App Layout: no authenticated user, redirecting to login');
     return <Redirect href="/login" />;
   }
 
-  console.log('App Layout: Authenticated user, allowing access to app');
+  logger.debug('App Layout: authenticated user, allowing access to app');
 
   return (
     <View style={{ flex: 1 }}>

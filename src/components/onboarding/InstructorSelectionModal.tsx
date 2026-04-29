@@ -97,7 +97,7 @@ export const InstructorSelectionModal: React.FC<
     <View style={styles.emptyStateContainer}>
       <Text style={styles.emptyStateTitle}>No Instructors Available</Text>
       <Text style={styles.emptyStateDescription}>
-        {companyInfo.company_name} doesn't have any instructors yet. Contact
+        {companyInfo.company_name} does not have any instructors yet. Contact
         your administrator to set up instructors before continuing.
       </Text>
       <TouchableOpacity style={styles.retryButton} onPress={onRetry}>

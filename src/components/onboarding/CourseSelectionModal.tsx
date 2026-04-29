@@ -86,7 +86,7 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
       <FontAwesome name="graduation-cap" size={48} color={themes.vegasGold} />
       <Text style={styles.emptyStateTitle}>No Course Available</Text>
       <Text style={styles.emptyStateDescription}>
-        {companyInfo.company_name} doesn't have any active training courses yet.
+        {companyInfo.company_name} does not have any active training courses yet.
         Contact your administrator to set up courses before continuing.
       </Text>
       <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
@@ -197,7 +197,7 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
       <Text style={styles.courseListTitle}>Choose Your Training Course</Text>
 
       <Text style={styles.courseListDescription}>
-        Select the training course you'd like to enroll in at{" "}
+        Select the training course you would like to enroll in at{" "}
         {companyInfo.company_name}
       </Text>
 

@@ -29,6 +29,7 @@ const mockUser = {
   instructor_id: null,
   has_completed_onboarding: true,
   is_active: true,
+  is_approved: true,
 };
 
 const mockUserList = [mockUser];
@@ -191,6 +192,30 @@ describe("userService.updateUserRole", () => {
     const result = await userService.updateUserRole(1, UserRole.INSTRUCTOR);
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe("userService.approveUserAccount", () => {
+  it("calls POST /users/:id/approve and returns updated user", async () => {
+    const approvedUser = { ...mockUser, role: UserRole.INSTRUCTOR, is_approved: true };
+    mockApiFetch.mockResolvedValueOnce(approvedUser);
+
+    const result = await userService.approveUserAccount(9);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(approvedUser);
+    expect(mockApiFetch).toHaveBeenCalledWith("/users/9/approve", {
+      method: "POST",
+    });
+  });
+
+  it("returns error when approve call fails", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("Forbidden"));
+
+    const result = await userService.approveUserAccount(9);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("An error occurred while approving the user account");
   });
 });
 

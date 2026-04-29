@@ -4,10 +4,11 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
+import { logger } from "@/src/utils/logger";
 
 export default function CompanyManagementLayout() {
   const { user, isLoading } = useAuth();
-  console.log("🔧 Company Management Layout - Admin Access Check for:", user?.email);
+  logger.debug("Company management layout guard check");
 
   if (isLoading) {
     return (
@@ -31,18 +32,22 @@ export default function CompanyManagementLayout() {
   }
 
   if (!user) {
-    console.log("Management Layout: No user, redirecting to login");
+    logger.debug("Management layout: no user, redirecting to login");
     return <Redirect href="/login" />;
   }
 
   const isCompanyAdmin = user.role === UserRole.ADMIN;
+  const instructorCanManageUsers =
+    user.role === UserRole.INSTRUCTOR &&
+    !!(user.can_manage_others_permissions || user.can_set_others_session_capacity);
+  const hasManagementAccess = isCompanyAdmin || instructorCanManageUsers;
 
-  if (!isCompanyAdmin) {
-    console.log(`Management Layout: Access denied for role ${user.role}, redirecting to company calendar`);
+  if (!hasManagementAccess) {
+    logger.debug(`Management layout: access denied for role ${user.role}`);
     return <Redirect href="/company/calendar" />;
   }
 
-  console.log(`Management Layout: Admin access granted for ${user.role}`);
+  logger.debug(`Management layout: admin access granted for ${user.role}`);
 
   return (
     <View style={{ flex: 1 }}>

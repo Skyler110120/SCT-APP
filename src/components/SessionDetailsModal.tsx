@@ -25,6 +25,7 @@ interface SessionDetailsModalProps {
   onCancel: (sessionId: number) => void;
   onReviewMaterials: () => void;
   onBeginSession?: (sessionId: number) => void;
+  onCheckIn?: (sessionId: number) => void;
   isCancelling: boolean;
 }
 
@@ -35,6 +36,7 @@ export default function SessionDetailsModal({
   onCancel,
   onReviewMaterials,
   onBeginSession,
+  onCheckIn,
   isCancelling,
 }: SessionDetailsModalProps) {
   const { user } = useAuth();
@@ -164,9 +166,11 @@ export default function SessionDetailsModal({
     <View style={styles.columnLayout}>
       <TouchableOpacity
         style={styles.sessionButtonPrimary}
-        onPress={onReviewMaterials}
+        onPress={() => (onCheckIn ? onCheckIn(session.id) : onReviewMaterials())}
       >
-        <Text style={styles.sessionButtonTextPrimary}>Review Materials</Text>
+        <Text style={styles.sessionButtonTextPrimary}>
+          {onCheckIn ? "Check In" : "Review Materials"}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.rowLayout}>

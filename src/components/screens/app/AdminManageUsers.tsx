@@ -33,7 +33,7 @@ export default function AdminManageUsers() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionType, setActionType] = useState<"removal" | "role">("role");
+  const [actionType, setActionType] = useState<"removal" | "role" | "approve">("role");
   const [newRole, setNewRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -102,6 +102,12 @@ export default function AdminManageUsers() {
     setModalVisible(true);
   };
 
+  const handleApproveAction = (user: User) => {
+    setSelectedUser(user);
+    setActionType("approve");
+    setModalVisible(true);
+  };
+
   const handleConfirmAction = async () => {
     if (!selectedUser) return;
 
@@ -142,6 +148,17 @@ export default function AdminManageUsers() {
           );
         } else {
           Alert.alert("Error", response.error || "Failed to remove user");
+        }
+      } else if (actionType === "approve") {
+        const response = await userService.approveUserAccount(selectedUser.id);
+        if (response.success && response.data) {
+          setUsers(users.map((u) => (u.id === selectedUser.id ? response.data! : u)));
+          Alert.alert(
+            "Success",
+            `${selectedUser.first_name}'s account has been approved`
+          );
+        } else {
+          Alert.alert("Error", response.error || "Failed to approve user account");
         }
       }
     } catch (error) {
@@ -201,6 +218,7 @@ export default function AdminManageUsers() {
                   users={filteredUsers}
                   onRemoveAction={handleRemoveAction}
                   onRoleAction={handleRoleAction}
+                  onApproveAction={handleApproveAction}
                 />
               )}
 

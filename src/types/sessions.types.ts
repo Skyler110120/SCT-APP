@@ -48,6 +48,10 @@ export interface SessionDetailed extends Session {
     enrollment_progress_percentage?: number;
     enrollment_status?: string;
     enrollment_instructor_notes?: string;
+    is_test_session_required?: boolean;
+    course_total_weeks?: number | null;
+    final_month_initial_test_passed?: boolean | null;
+    student_profile_picture?: string | null;
 }
 
 export interface DirectBookingRequest extends SessionBase {

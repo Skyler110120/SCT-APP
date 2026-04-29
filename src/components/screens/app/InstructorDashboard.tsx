@@ -4,7 +4,9 @@ import { themes } from "@/src/context/themes";
 import { instructorDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/InstructorDashboardStyles/instructorDashboardStyles";
 import { sessionService } from "@/src/services/sessionService";
 import { SessionDetailed } from "@/src/types/sessions.types";
+import { UserRole } from "@/src/types/enums";
 import { formatTimeString } from "@/src/utils/dateTimeUtils";
+import { isTestSessionRequired } from "@/src/utils/sessionRules";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -120,8 +122,25 @@ export default function InstructorDashboard() {
   };
 
   const handleSessionPress = (session: SessionDetailed) => {
+    if (user?.role === UserRole.STUDENT) {
+      router.push({
+        pathname: "/company/session-check-in",
+        params: { sessionId: session.id.toString() },
+      });
+      return;
+    }
+
+    const weekNumber = session.week_number ?? session.enrollment_current_week;
+    const useTestSession =
+      session.is_test_session_required ??
+      isTestSessionRequired(
+        weekNumber,
+        session.course_total_weeks,
+        session.final_month_initial_test_passed
+      );
+
     router.push({
-      pathname: "/company/session-form",
+      pathname: useTestSession ? "/company/test-session-form" : "/company/session-form",
       params: { sessionId: session.id.toString() },
     });
   };

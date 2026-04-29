@@ -2,6 +2,5 @@ import InstructorDashboard from '@/src/components/screens/app/InstructorDashboar
 import React from 'react';
 
 export default function InstructorDashboardPage() {
-    console.log('Instructor Dashboard Route');
-    return <InstructorDashboard />;
+  return <InstructorDashboard />;
 }

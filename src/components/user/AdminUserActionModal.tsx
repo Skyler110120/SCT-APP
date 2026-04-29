@@ -8,7 +8,7 @@ import { Modal, Text, TouchableOpacity, View } from "react-native";
 interface UserActionModalProps {
   visible: boolean;
   user: User | null;
-  action: "removal" | "role";
+  action: "removal" | "role" | "approve";
   newRole: UserRole | null;
   setNewRole: (role: UserRole) => void;
   onConfirm: () => void;
@@ -34,12 +34,15 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
   if (!user) return null;
 
   const isRemovalAction = action === "removal";
+  const isApproveAction = action === "approve";
 
   const modalTitle = isRemovalAction
     ? "Remove User from Company"
+    : isApproveAction
+    ? "Approve Account Access"
     : "Update Role";
 
-  const confirmButtonText = isRemovalAction ? "Remove User" : "Update Role";
+  const confirmButtonText = isRemovalAction ? "Remove User" : isApproveAction ? "Approve Access" : "Update Role";
 
   const confirmButtonStyle = isRemovalAction
     ? styles.removalButton
@@ -70,6 +73,15 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
                 </Text>
                 <Text style={styles.warningText}>
                   This action will revoke all access to company resources
+                </Text>
+              </>
+            ) : isApproveAction ? (
+              <>
+                <Text style={styles.confirmationText}>
+                  Approve this account so they can log in?
+                </Text>
+                <Text style={styles.warningText}>
+                  This applies to pending instructor/admin invite signups.
                 </Text>
               </>
             ) : (
@@ -106,7 +118,7 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
             <TouchableOpacity
               style={confirmButtonStyle}
               onPress={onConfirm}
-              disabled={!isRemovalAction && newRole === user.role}
+              disabled={!isRemovalAction && !isApproveAction && newRole === user.role}
             >
               <Text style={styles.buttonText}>{confirmButtonText}</Text>
             </TouchableOpacity>

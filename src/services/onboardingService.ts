@@ -17,6 +17,7 @@ import { UserRole } from "../types/enums";
 import {
   isValidEnhancedSignupData,
 } from "../utils/onboardingValidationUtils";
+import { logger } from "../utils/logger";
 
 const ONBOARDING_STORAGE_KEYS = {
   INVITE_CODE: "onboarding_invite_code",
@@ -24,6 +25,7 @@ const ONBOARDING_STORAGE_KEYS = {
   SELECTED_ROLE: "onboarding_selected_role",
   SELECTED_INSTRUCTOR: "onboarding_selected_instructor",
   SELECTED_COURSE: "onboarding_selected_course",
+  SELECTED_CADENCE: "onboarding_selected_cadence",
   FORM_DATA: "onboarding_form_data",
   CURRENT_STEP: "onboarding_current_step",
 };
@@ -50,7 +52,7 @@ export const onboardingService = {
         data,
       };
     } catch (error) {
-      console.error("Invite code validation error:", error);
+      logger.error("Invite code validation error:", error);
       return {
         success: false,
         error: "An error occurred while validating the invite code",
@@ -65,18 +67,18 @@ export const onboardingService = {
    */
   async getCompanyInstructors(companyId: number): Promise<InstructorsResponse> {
     try {
-      console.log("Getching instructors for company:", companyId);
+      logger.debug("Fetching instructors for company");
 
       const data = await apiFetch(`/users/instructors/company/${companyId}`);
 
-      console.log(`Found ${data.length} instructors`);
+      logger.debug(`Found ${data.length} instructors`);
 
       return {
         success: true,
         data: data as InstructorOption[],
       };
     } catch (error) {
-      console.error("Get instructors error:", error);
+      logger.error("Get instructors error:", error);
       return {
         success: false,
         error: "An error occurred while fetching instructors",
@@ -93,8 +95,7 @@ export const onboardingService = {
     signupData: EnhancedSignupData
   ): Promise<EnhancedSignupResponse> {
     try {
-      console.log("Attempting enhanced signup for:", signupData.email);
-      console.log("Signup data:", signupData);
+      logger.debug("Attempting enhanced signup");
 
       if (!isValidEnhancedSignupData(signupData)) {
         return {
@@ -108,7 +109,7 @@ export const onboardingService = {
         body: JSON.stringify(signupData),
       });
 
-      console.log("Enhanced signup successful for:", signupData.email);
+      logger.debug("Enhanced signup successful");
       await this.clearOnboardingData();
 
       return {
@@ -131,7 +132,7 @@ export const onboardingService = {
           };
         }
       }
-      console.error("Enhanced signup error:", error);
+      logger.error("Enhanced signup error:", error);
       return {
         success: false,
         error: "Error occurred during account creation",
@@ -148,23 +149,24 @@ export const onboardingService = {
     registrationData: UserFormDataWithRegistration
   ): Promise<EnhancedSignupData | null> {
     try {
-      console.log("Assembling signup data from onboarding flow");
+      logger.debug("Assembling signup data from onboarding flow");
 
-      const [inviteCode, companyInfo, intendedRole, selectedCourse] =
+      const [inviteCode, companyInfo, intendedRole, selectedCourse, selectedCadence] =
         await Promise.all([
           this.getStoredInviteCode(),
           this.getStoredCompanyInfo(),
           this.getStoredSelectedRole(),
           this.getStoredSelectedCourse(),
+          this.getOnboardingData("selectedCadence"),
         ]);
 
       if (!inviteCode || !companyInfo || !intendedRole) {
-        console.error("Missing required onboarding context");
+        logger.error("Missing required onboarding context");
         return null;
       }
 
       if (intendedRole === UserRole.STUDENT && !selectedCourse) {
-        console.error("Student role requires course selection");
+        logger.error("Student role requires course selection");
         return null;
       }
 
@@ -185,13 +187,17 @@ export const onboardingService = {
         company_id: companyInfo.company_id,
         instructor_id: null,
         course_id: courseId,
+        program_cadence:
+          registrationData.program_cadence ||
+          selectedCadence ||
+          undefined,
         invite_code: inviteCode,
       };
 
-      console.log("Signup data assembled successfully");
+      logger.debug("Signup data assembled successfully");
       return signupData;
     } catch (error) {
-      console.error("Create signup data error:", error);
+      logger.error("Create signup data error:", error);
       return null;
     }
   },
@@ -213,7 +219,7 @@ export const onboardingService = {
         data,
       };
     } catch (error) {
-      console.error("Complete legacy onboarding error:", error);
+      logger.error("Complete legacy onboarding error:", error);
       return {
         success: false,
         error: "Network error occurred during onboarding",
@@ -230,9 +236,9 @@ export const onboardingService = {
     try {
       const storageKey = `onboarding_${key}`;
       await AsyncStorage.setItem(storageKey, JSON.stringify(data));
-      console.log(`Onboarding data saved saved:`, key);
+      logger.debug(`Onboarding data saved: ${key}`);
     } catch (error) {
-      console.error("Save onboarding data error:", error);
+      logger.error("Save onboarding data error:", error);
     }
   },
 
@@ -247,7 +253,7 @@ export const onboardingService = {
       const data = await AsyncStorage.getItem(storageKey);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error("Get onboarding data error:", error);
+      logger.error("Get onboarding data error:", error);
       return null;
     }
   },
@@ -264,13 +270,14 @@ export const onboardingService = {
         "onboarding_selected_role",
         "onboarding_selected_instructor",
         "onboarding_selected_course",
+        "onboarding_selected_cadence",
         "onboarding_form_data",
       ];
 
       await AsyncStorage.multiRemove(keysToRemove);
-      console.log("All onboarding data cleared");
+      logger.debug("All onboarding data cleared");
     } catch (error) {
-      console.error("Clear onboarding data error:", error);
+      logger.error("Clear onboarding data error:", error);
     }
   },
 
@@ -336,15 +343,15 @@ export const onboardingService = {
       ]);
 
       if (!inviteCode || !companyInfo || !selectedRole || !formData) {
-        console.log("Missing basic onboarding data");
+        logger.debug("Missing basic onboarding data");
         return false;
       }
 
       // Students no longer need an instructor at signup
-      console.log("Onboarding data is complete");
+      logger.debug("Onboarding data is complete");
       return true;
     } catch (error) {
-      console.error("Check onboarding data completeness error:", error);
+      logger.error("Check onboarding data completeness error:", error);
       return false;
     }
   },
@@ -401,7 +408,7 @@ export const onboardingService = {
 
       return progress;
     } catch (error) {
-      console.error('💥 Get onboarding progress error:', error);
+      logger.error("Get onboarding progress error:", error);
       return {
         hasInviteCode: false,
         hasCompanyInfo: false,

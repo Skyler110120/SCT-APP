@@ -44,6 +44,7 @@ import {
   formatDateString,
   formatTimeString
 } from "@/src/utils/dateTimeUtils";
+import { isTestSessionRequired } from "@/src/utils/sessionRules";
 
 interface Session {
   id: number;
@@ -594,9 +595,28 @@ export default function CalendarScreen() {
   };
 
   const handleBeginSession = (sessionId: number) => {
+    const selectedSession = sessions.find((session) => session.id === sessionId);
+    const weekNumber =
+      selectedSession?.week_number ?? selectedSession?.enrollment_current_week;
+    const useTestSession =
+      selectedSession?.is_test_session_required ??
+      isTestSessionRequired(
+        weekNumber,
+        selectedSession?.course_total_weeks,
+        selectedSession?.final_month_initial_test_passed
+      );
+
     router.push({
-      pathname: "/company/session-form",
+      pathname: useTestSession ? "/company/test-session-form" : "/company/session-form",
       params: { sessionId: sessionId.toString() },
+    });
+    setShowSessionDetailsModal(false);
+  };
+
+  const handleCheckIn = (sessionId: number) => {
+    router.push({
+      pathname: "/company/session-check-in",
+      params: { sessionId: String(sessionId) },
     });
     setShowSessionDetailsModal(false);
   };
@@ -710,7 +730,7 @@ export default function CalendarScreen() {
             renderAvailabilityByDay()
           ) : (
             <Text style={styles.noAvailabilityText}>
-              No availability set. Click "Add Availability" to create one.
+              No availability set. Tap Add Availability to create one.
             </Text>
           )}
           {selectedAvailabilityForActions && (
@@ -1039,7 +1059,7 @@ export default function CalendarScreen() {
                             Your Availability
                           </Text>
                           <Text style={styles.noAvailabilityText}>
-                            No availability set. Click "Manage Availability" to
+                            No availability set. Tap Manage Availability to
                             create your schedule.
                           </Text>
                         </>
@@ -1163,7 +1183,7 @@ export default function CalendarScreen() {
                         )}
                         {user?.role === UserRole.INSTRUCTOR && (
                           <Text style={styles.hintText}>
-                            Click "Manage Availability" to see your full weekly
+                            Tap Manage Availability to see your full weekly
                             schedule
                           </Text>
                         )}
@@ -1226,6 +1246,7 @@ export default function CalendarScreen() {
           onBeginSession={
             user?.role === UserRole.INSTRUCTOR ? handleBeginSession : undefined
           }
+          onCheckIn={user?.role === UserRole.STUDENT ? handleCheckIn : undefined}
           isCancelling={isCancellingSession}
         />
         <BottomNavBar />

@@ -498,7 +498,7 @@ export default function CourseForm({
                     {course.videos?.length
                       ? `${course.videos.length} video${course.videos.length === 1 ? "" : "s"} in this course.`
                       : "No videos yet."}
-                    {" "}Add a video here or use "Manage Videos" from the main screen to edit later.
+                    {" "}Add a video here or use the Manage Videos screen to edit later.
                   </Text>
                   <TouchableOpacity
                     style={[styles.confirmButton, { marginTop: 8 }]}

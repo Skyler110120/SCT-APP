@@ -4,14 +4,12 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
+import { logger } from "@/src/utils/logger";
 
 export default function SystemLayout() {
   const { user, isLoading } = useAuth();
 
-  console.log(
-    "System Layout Guard - Platform Management Access for:",
-    user?.email
-  );
+  logger.debug("System layout guard check");
 
   if (isLoading) {
     return (
@@ -39,20 +37,18 @@ export default function SystemLayout() {
   }
 
   if (!user) {
-    console.log("System Layout: No user, redirection to login");
+    logger.debug("System layout: no user, redirecting to login");
     return <Redirect href="/login" />;
   }
 
   const isMasterAdmin = user.role === UserRole.MASTER_ADMIN;
 
   if (!isMasterAdmin) {
-    console.log(
-      `System Layout: Access denied for role ${user.role}, redirecting to dashboard`
-    );
+    logger.debug(`System layout: access denied for role ${user.role}`);
     return <Redirect href="/dashboard" />;
   }
 
-  console.log(`System Layout: Platform access granted for ${user.role}`);
+  logger.debug(`System layout: platform access granted for ${user.role}`);
 
   return (
     <View style={{ flex: 1 }}>

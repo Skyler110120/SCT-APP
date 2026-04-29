@@ -33,6 +33,10 @@ const iconMap: Record<string, { icon: number; activeIcon: number }> = {
     icon: Images.navIcons.profile.profileIcon,
     activeIcon: Images.navIcons.profile.profileIconActive,
   },
+  payments: {
+    icon: Images.navIcons.courses.courseIcon,
+    activeIcon: Images.navIcons.courses.courseIconActive,
+  },
 };
 
 function getIconForNavItem(name: string) {
@@ -48,7 +52,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
-  const navConfig = getNavConfig(user?.role);
+  const navConfig = getNavConfig(user?.role, user);
   const navItems = navConfig.map((item) => ({
     ...item,
     ...getIconForNavItem(item.name),

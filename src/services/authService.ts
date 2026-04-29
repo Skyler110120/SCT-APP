@@ -4,16 +4,13 @@ import {
   LoginResponse,
   UserInfo,
   UserResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  MessageResponse,
 } from "../types/auth.types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
 import { apiFetch } from "./api";
-
-const STORAGE_KEYS = {
-  AUTH_TOKEN: "auth_token",
-  TOKEN_DATA: "token_data",
-  USER_DATA: "user_data",
-} as const;
+import { authStorage } from "./authStorage";
+import { logger } from "../utils/logger";
 
 export const authService = {
   /**
@@ -23,7 +20,7 @@ export const authService = {
    */
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
-      console.log("Attempting login for:", credentials.email);
+      logger.debug("Attempting login");
 
       const formData = new FormData();
       formData.append("username", credentials.email.toLowerCase());
@@ -37,23 +34,17 @@ export const authService = {
         }
       });
 
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.AUTH_TOKEN,
-        tokenData.access_token
-      );
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.TOKEN_DATA,
-        JSON.stringify(tokenData)
-      );
+      await authStorage.setAuthToken(tokenData.access_token);
+      await authStorage.setTokenData(JSON.stringify(tokenData));
 
-      console.log("Login successful for:", credentials.email);
+      logger.debug("Login successful");
 
       return {
         success: true,
         data: tokenData,
       };
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       return {
         success: false,
         error: "An error occurred during login",
@@ -67,8 +58,7 @@ export const authService = {
    */
   async getCurrentUser(token?: string): Promise<UserResponse> {
     try {
-      const authToken =
-        token || (await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN));
+      const authToken = token || (await authStorage.getAuthToken());
 
       if (!authToken) {
         return {
@@ -76,21 +66,18 @@ export const authService = {
           error: "No authentication token found",
         };
       }
-      console.log("Fetching current user profile");
+      logger.debug("Fetching current user profile");
 
       const userData = await apiFetch("/auth/me");
 
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.USER_DATA,
-        JSON.stringify(userData)
-      );
+      await authStorage.setUserData(JSON.stringify(userData));
 
       return {
         success: true,
         data: userData,
       };
     } catch (error) {
-      console.error("Get current user error:", error);
+      logger.error("Get current user error:", error);
       return {
         success: false,
         error: "An error occurred while fetching user profile",
@@ -103,7 +90,7 @@ export const authService = {
    */
   async refreshUserInfo(): Promise<LoginResponse> {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const token = await authStorage.getAuthToken();
 
       if (!token) {
         return {
@@ -112,26 +99,20 @@ export const authService = {
         };
       }
 
-      console.log("Refreshing user information");
+      logger.debug("Refreshing user information");
 
       const tokenData = await apiFetch<TokenResponse>(`/auth/refresh`);
 
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.AUTH_TOKEN,
-        tokenData.access_token
-      );
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.TOKEN_DATA,
-        JSON.stringify(tokenData)
-      );
+      await authStorage.setAuthToken(tokenData.access_token);
+      await authStorage.setTokenData(JSON.stringify(tokenData));
 
-      console.log("User information refreshed successfully");
+      logger.debug("User information refreshed successfully");
       return {
         success: true,
         data: tokenData,
       };
     } catch (error) {
-      console.error("Refresh user info error:", error);
+      logger.error("Refresh user info error:", error);
       return {
         success: false,
         error: "An error occurred while refreshing user information",
@@ -144,29 +125,28 @@ export const authService = {
    */
   async checkAuth(): Promise<{ token: string; user: UserInfo } | null> {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const token = await authStorage.getAuthToken();
 
       if (!token) {
-        console.log("No authentication token found");
+        logger.debug("No authentication token found");
         return null;
       }
 
       const user = await this.getCurrentUser(token);
 
       if (!user.success || !user.data) {
-        console.log("Token validation failed");
+        logger.debug("Token validation failed");
         await this.clearAuthData();
         return null;
       }
 
-      console.log("Auth check successful");
+      logger.debug("Auth check successful");
       return {
         token,
         user: user.data,
       };
     } catch (error) {
-      console.error("Check auth error:", error);
-      this.checkAuth;
+      logger.error("Check auth error:", error);
       return null;
     }
   },
@@ -177,18 +157,16 @@ export const authService = {
    */
   async getStoredToken(): Promise<string | null> {
     try {
-      return await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      return await authStorage.getAuthToken();
     } catch (error) {
-      console.error("Get stored token error:", error);
+      logger.error("Get stored token error:", error);
       return null;
     }
   },
 
   async getStoredTokenData(): Promise<TokenResponse | null> {
     try {
-      const tokenDataString = await AsyncStorage.getItem(
-        STORAGE_KEYS.TOKEN_DATA
-      );
+      const tokenDataString = await authStorage.getTokenDataJson();
 
       if (!tokenDataString) {
         return null;
@@ -196,7 +174,7 @@ export const authService = {
 
       return JSON.parse(tokenDataString) as TokenResponse;
     } catch (error) {
-      console.error("Get stored token data error:", error);
+      logger.error("Get stored token data error:", error);
       return null;
     }
   },
@@ -206,14 +184,10 @@ export const authService = {
    */
   async clearAuthData(): Promise<void> {
     try {
-      await AsyncStorage.multiRemove([
-        STORAGE_KEYS.AUTH_TOKEN,
-        STORAGE_KEYS.TOKEN_DATA,
-        STORAGE_KEYS.USER_DATA,
-      ]);
-      console.log("Authentication data cleared");
+      await authStorage.clearAuthData();
+      logger.debug("Authentication data cleared");
     } catch (error) {
-      console.error("Clear auth data error:", error);
+      logger.error("Clear auth data error:", error);
     }
   },
 
@@ -222,14 +196,12 @@ export const authService = {
    * @returns Promise that resolves when logout is complete
    */
   async logout(): Promise<void> {
-    console.log("logging out user");
-    await this.clearAuthData();
     try {
-      console.log("logging out user");
+      logger.debug("Logging out user");
       await this.clearAuthData();
-      console.log("User logged out successfully");
+      logger.debug("User logged out successfully");
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error:", error);
     }
   },
 
@@ -239,11 +211,91 @@ export const authService = {
    */
   async hasStoredToken(): Promise<boolean> {
     try {
-      const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const token = await authStorage.getAuthToken();
       return !!token;
     } catch (error) {
-      console.error("Check auth error:", error);
+      logger.error("Check auth error:", error);
       return false;
+    }
+  },
+
+  /**
+   * Request a password-reset email.
+   */
+  async requestPasswordReset(payload: ForgotPasswordRequest): Promise<MessageResponse> {
+    try {
+      const data = await apiFetch<{ message?: string }>(`/auth/forgot-password`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          Authorization: "",
+        },
+      });
+      return {
+        success: true,
+        message: data.message,
+      };
+    } catch (error) {
+      logger.error("Forgot password request failed:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to request password reset",
+      };
+    }
+  },
+
+  /**
+   * Validate a password-reset token.
+   */
+  async validatePasswordResetToken(
+    token: string
+  ): Promise<{ success: boolean; valid: boolean; error?: string }> {
+    try {
+      const data = await apiFetch<{ valid: boolean }>(
+        `/auth/reset-password/validate?token=${encodeURIComponent(token)}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: "",
+          },
+        }
+      );
+      return {
+        success: true,
+        valid: Boolean(data.valid),
+      };
+    } catch (error) {
+      logger.error("Reset token validation failed:", error);
+      return {
+        success: false,
+        valid: false,
+        error: error instanceof Error ? error.message : "Failed to validate reset token",
+      };
+    }
+  },
+
+  /**
+   * Reset password with a reset token.
+   */
+  async resetPassword(payload: ResetPasswordRequest): Promise<MessageResponse> {
+    try {
+      const data = await apiFetch<{ message?: string }>(`/auth/reset-password`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          Authorization: "",
+        },
+      });
+      return {
+        success: true,
+        message: data.message,
+      };
+    } catch (error) {
+      logger.error("Reset password failed:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to reset password",
+      };
     }
   },
 

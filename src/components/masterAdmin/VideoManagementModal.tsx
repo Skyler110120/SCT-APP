@@ -187,7 +187,7 @@ export default function VideoManagementModal({
           </View>
           <View style={styles.footerInfo}>
             <Text style={styles.footerText}>
-              Toggle "Visible to students" when adding or editing a video to control who can see it. Students only see public videos; instructors and admins see all.
+              Toggle the visible-to-students option when adding or editing a video to control who can see it. Students only see public videos; instructors and admins see all.
             </Text>
           </View>
         </View>

@@ -10,6 +10,7 @@ export enum EnrollmentPhase {
     NORMAL = 'NORMAL',
     MAKEUP_FREE = 'MAKEUP_FREE',
     MAKEUP_PAID = 'MAKEUP_PAID',
+    POST_SUBSCRIPTION = 'POST_SUBSCRIPTION',
 }
 
 export interface StudentEnrollment {

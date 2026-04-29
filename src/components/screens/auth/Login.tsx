@@ -123,7 +123,7 @@ export default function LoginScreen() {
                     <Text style={styles.logInButtonText}>LOG IN</Text>
                   )}
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/forgot-password')}>
                   <Text style={styles.forgotPasswordText}>
                     Forgot Password?
                   </Text>

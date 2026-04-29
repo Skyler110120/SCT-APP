@@ -9,12 +9,14 @@ interface UserTableProps {
   users: User[];
   onRemoveAction: (user: User) => void;
   onRoleAction: (user: User) => void;
+  onApproveAction: (user: User) => void;
 }
 
 const UserTable: React.FC<UserTableProps> = ({
   users,
   onRemoveAction,
   onRoleAction,
+  onApproveAction,
 }) => {
   const formatName = (user: User) => {
     return `${user.first_name} ${user.last_name}`.trim();
@@ -35,10 +37,24 @@ const UserTable: React.FC<UserTableProps> = ({
               {item.role.charAt(0).toUpperCase() + item.role.slice(1)}
             </Text>
           </View>
+          {(item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
+            <View style={styles.pendingBadge}>
+              <Text style={styles.pendingBadgeText}>Pending Approval</Text>
+            </View>
+          )}
         </View>
       </View>
 
       <View style={styles.userActions}>
+        {(item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => onApproveAction(item)}
+          >
+            <FontAwesome name="check-circle" size={20} color={themes.vegasGold} />
+            <Text style={styles.actionText}>Approve Access</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onRoleAction(item)}

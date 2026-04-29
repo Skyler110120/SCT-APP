@@ -21,7 +21,7 @@ import { onboardingInviteService } from "@/src/services/onboardingInviteService"
 import { authService } from "@/src/services/authService";
 import type { InviteTokenValidation } from "@/src/types/onboardingInvite.types";
 
-type Step = "validating" | "registration" | "error";
+type Step = "validating" | "cadence-selection" | "registration" | "error";
 
 /** Email invite join flow: validate token → register (no OTP). */
 export default function JoinInviteScreen() {
@@ -38,6 +38,7 @@ export default function JoinInviteScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const [selectedCadence, setSelectedCadence] = useState<"WEEKLY" | "BIWEEKLY" | null>(null);
 
   useEffect(() => {
     if (!token) {
@@ -50,7 +51,11 @@ export default function JoinInviteScreen() {
       const result = await onboardingInviteService.validateInviteToken(token);
       if (result.success && result.data?.valid) {
         setInviteData(result.data);
-        setStep("registration");
+        if ((result.data.role || "").toUpperCase() === "STUDENT") {
+          setStep("cadence-selection");
+        } else {
+          setStep("registration");
+        }
       } else {
         setErrorMessage("This invite link is invalid or has expired.");
         setStep("error");
@@ -75,6 +80,10 @@ export default function JoinInviteScreen() {
       Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
+    if ((inviteData?.role || "").toUpperCase() === "STUDENT" && !selectedCadence) {
+      Alert.alert("Error", "Please select your program cadence");
+      return;
+    }
 
     setIsRegistering(true);
     try {
@@ -84,6 +93,10 @@ export default function JoinInviteScreen() {
         password,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
+        program_cadence:
+          (inviteData?.role || "").toUpperCase() === "STUDENT"
+            ? selectedCadence || undefined
+            : undefined,
       });
 
       if (result.success) {
@@ -170,6 +183,49 @@ export default function JoinInviteScreen() {
               <Text style={s.welcomeSub}>
                 as {inviteData.role?.toLowerCase() || "a member"}
               </Text>
+            </View>
+          )}
+
+          {step === "cadence-selection" && (
+            <View style={s.formWrap}>
+              <Text style={s.stepLabel}>Choose Your Program Plan</Text>
+              <Text style={s.warningText}>
+                This choice is final for this enrollment and cannot be changed later.
+              </Text>
+              <TouchableOpacity
+                style={[
+                  s.cadenceCard,
+                  selectedCadence === "WEEKLY" && s.cadenceCardSelected,
+                ]}
+                onPress={() => setSelectedCadence("WEEKLY")}
+              >
+                <Text style={s.cadenceTitle}>Weekly Plan</Text>
+                <Text style={s.cadenceText}>24 classes over 6 months</Text>
+                <Text style={s.cadenceText}>$200/month, 1 grace month, then $50/class</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  s.cadenceCard,
+                  selectedCadence === "BIWEEKLY" && s.cadenceCardSelected,
+                ]}
+                onPress={() => setSelectedCadence("BIWEEKLY")}
+              >
+                <Text style={s.cadenceTitle}>Bi-Weekly Plan</Text>
+                <Text style={s.cadenceText}>24 classes over 12 months</Text>
+                <Text style={s.cadenceText}>$100/month, 2 grace months, then $50/class</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={s.primaryButton}
+                onPress={() => {
+                  if (!selectedCadence) {
+                    Alert.alert("Select Plan", "Please select weekly or bi-weekly to continue.");
+                    return;
+                  }
+                  setStep("registration");
+                }}
+              >
+                <Text style={s.primaryButtonText}>I UNDERSTAND THIS CANNOT BE CHANGED</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -327,6 +383,32 @@ const s = StyleSheet.create({
     color: themes.vegasGold,
     textAlign: "center",
     marginBottom: 4,
+  },
+  warningText: {
+    color: themes.white,
+    fontFamily: "Chakra-Regular",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  cadenceCard: {
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    borderRadius: 10,
+    padding: 12,
+    gap: 4,
+  },
+  cadenceCardSelected: {
+    backgroundColor: "rgba(197,179,88,0.15)",
+  },
+  cadenceTitle: {
+    color: themes.white,
+    fontFamily: "Chakra-Bold",
+    fontSize: 16,
+  },
+  cadenceText: {
+    color: themes.white,
+    fontFamily: "Chakra-Regular",
+    fontSize: 13,
   },
   input: {
     width: "100%",

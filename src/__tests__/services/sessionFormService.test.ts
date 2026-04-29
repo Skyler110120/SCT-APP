@@ -224,3 +224,37 @@ describe("sessionFormService.getSessionParticipants", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("sessionFormService.getSessionWorkflow", () => {
+  it("returns workflow for a session", async () => {
+    const workflow = {
+      session_id: 10,
+      participants: [{ student_id: 20, pretraining_status: "NOT_STARTED" }],
+    };
+    mockApiFetch.mockResolvedValueOnce(workflow);
+    const result = await sessionFormService.getSessionWorkflow(10);
+    expect(result.success).toBe(true);
+    expect(result.data?.session_id).toBe(10);
+    expect(mockApiFetch).toHaveBeenCalledWith("/session-forms/session/10/workflow");
+  });
+});
+
+describe("sessionFormService.submitPretraining", () => {
+  it("submits student check-in payload", async () => {
+    const payload = {
+      sleep_hours: 8,
+      has_eaten: true,
+      motivation_before: 7,
+    };
+    mockApiFetch.mockResolvedValueOnce({
+      session_id: 10,
+      participants: [{ student_id: 20, pretraining_status: "COMPLETED" }],
+    });
+    const result = await sessionFormService.submitPretraining(10, payload);
+    expect(result.success).toBe(true);
+    expect(mockApiFetch).toHaveBeenCalledWith("/session-forms/session/10/pretraining", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  });
+});

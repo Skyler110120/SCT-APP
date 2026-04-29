@@ -167,6 +167,24 @@ export const userService = {
     return this.updateUser(userId, { role });
   },
 
+  async approveUserAccount(userId: number): Promise<UserResponse> {
+    try {
+      const data: User = await apiFetch<User>(`/users/${userId}/approve`, {
+        method: "POST",
+      });
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(`Error approving user account ${userId}:`, error);
+      return {
+        success: false,
+        error: "An error occurred while approving the user account",
+      };
+    }
+  },
+
   /**
    * Get all instructors for a company
    * @param companyId - ID of the company

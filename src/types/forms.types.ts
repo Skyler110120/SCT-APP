@@ -91,3 +91,28 @@ export interface SessionFormCompleteResponse {
     message?: string;
     error?: string;
 }
+
+export type SessionWorkflowStatus =
+  | "NOT_STARTED"
+  | "IN_PROGRESS"
+  | "COMPLETED";
+
+export interface SessionWorkflowParticipant {
+  student_id: number;
+  student_name?: string | null;
+  pretraining_status: SessionWorkflowStatus;
+  posttraining_status: SessionWorkflowStatus;
+  drill_progress?: unknown[];
+  form?: SessionForm;
+}
+
+export interface SessionWorkflow {
+  session_id: number;
+  participants: SessionWorkflowParticipant[];
+}
+
+export interface SessionWorkflowResponse {
+  success: boolean;
+  data?: SessionWorkflow;
+  error?: string;
+}

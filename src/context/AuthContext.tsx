@@ -17,6 +17,7 @@ import {
 } from "../types/auth.types";
 import { UserRole } from "../types/enums";
 import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
+import { logger } from "../utils/logger";
 
 interface AuthContextType {
   state: AuthState;
@@ -112,6 +113,23 @@ const convertUserInfoToUser = (userInfo: UserInfo): User => {
     instructor_id: userInfo.instructor_id || null,
     has_completed_onboarding: userInfo.has_completed_onboarding,
     is_active: userInfo.is_active,
+    is_approved: userInfo.is_approved,
+    phone: userInfo.phone,
+    birthday: userInfo.birthday,
+    bio: userInfo.bio,
+    company_name: userInfo.company_name,
+    instructor_name: userInfo.instructor_name,
+    profile_picture: userInfo.profile_picture,
+    can_manage_own_availability: userInfo.can_manage_own_availability,
+    can_manage_own_time_off: userInfo.can_manage_own_time_off,
+    can_manage_others_availability: userInfo.can_manage_others_availability,
+    can_manage_others_permissions: userInfo.can_manage_others_permissions,
+    can_create_student_invite_codes: userInfo.can_create_student_invite_codes,
+    can_create_instructor_invite_codes: userInfo.can_create_instructor_invite_codes,
+    can_set_own_session_capacity: userInfo.can_set_own_session_capacity,
+    can_set_others_session_capacity: userInfo.can_set_others_session_capacity,
+    max_students_per_session_self: userInfo.max_students_per_session_self,
+    max_students_per_session_others: userInfo.max_students_per_session_others,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -128,6 +146,7 @@ const convertSignupUserToUser = (signupUser: EnhancedSignupUser): User => {
     instructor_id: signupUser.instructor_id || null,
     has_completed_onboarding: signupUser.has_completed_onboarding,
     is_active: signupUser.is_active,
+    is_approved: signupUser.is_approved,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -156,22 +175,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("Checking authentication status...");
+        logger.debug("Checking authentication status...");
         const result = await authService.checkAuth();
         
         if (result) {
-          console.log("User is authenticated");
+          logger.debug("User is authenticated");
           const user = convertUserInfoToUser(result.user);
           dispatch({
             type: "AUTH_SUCCESS",
             payload: { user, token: result.token },
           });
         } else {
-          console.log("No valid authentication found");
+          logger.debug("No valid authentication found");
           dispatch({ type: "AUTH_LOGOUT" });
         }
       } catch (error) {
-        console.error(" Auth check error:", error);
+        logger.error("Auth check error:", error);
         dispatch({
           type: "AUTH_ERROR",
           payload: "Failed to authenticate",
@@ -183,23 +202,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
-      console.log("Starting login process for:", credentials.email);
+      logger.debug("Starting login process");
       
       const loginResult = await authService.login(credentials);
 
       if (!loginResult.success || !loginResult.data) {
-        console.log("Login failed:", loginResult.error);
+        logger.debug("Login failed:", loginResult.error);
         return false;
       }
 
-      console.log("Login successful, fetching user profile...");
+      logger.debug("Login successful, fetching user profile");
 
       dispatch({ type: "AUTH_LOADING" });
       
       const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 
       if (!userResult.success || !userResult.data) {
-        console.log("Failed to fetch user data:", userResult.error);
+        logger.debug("Failed to fetch user data:", userResult.error);
         dispatch({
           type: "AUTH_ERROR",
           payload: userResult.error || "Failed to fetch user data",
@@ -207,7 +226,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      console.log("User profile fetched successfully");
+      logger.debug("User profile fetched successfully");
       
       const user = convertUserInfoToUser(userResult.data);
       
@@ -222,7 +241,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return true;
 
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       dispatch({
         type: "AUTH_ERROR",
         payload: "Network error occurred during login",
@@ -235,7 +254,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   dispatch({ type: "AUTH_LOADING" });
   
   try {
-    console.log("Starting enhanced signup for:", userData.email);
+    logger.debug("Starting enhanced signup");
     
     const signupResult = await onboardingService.signup(userData);
     
@@ -251,8 +270,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
     }
 
-    console.log("Account created successfully");
-    console.log("Logging in new user...");
+    logger.debug("Account created successfully");
+    logger.debug("Logging in new user");
     
     const loginResult = await authService.login({
       email: userData.email,
@@ -301,7 +320,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
   } catch (error) {
-    console.error("Registration error:", error);
+    logger.error("Registration error:", error);
     
     const errorMessage = error instanceof Error ? error.message : "An error occurred during registration";
     
@@ -319,12 +338,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      console.log("Logging out user...");
+      logger.debug("Logging out user");
       await authService.logout();
       dispatch({ type: "AUTH_LOGOUT" });
-      console.log("Logout successful");
+      logger.debug("Logout successful");
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       // Even if logout fails, clear local state
       dispatch({ type: "AUTH_LOGOUT" });
     }

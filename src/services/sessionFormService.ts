@@ -4,6 +4,7 @@ import {
   SessionFormResponse,
   SessionFormListResponse,
   SessionFormCompleteResponse,
+  SessionWorkflowResponse,
   CreateSessionFormRequest,
   UpdateSessionFormRequest,
   CompleteSessionFormRequest,
@@ -155,6 +156,47 @@ export const sessionFormService = {
       return {
         success: false,
         error: error?.detail || "Failed to fetch session participants",
+      };
+    }
+  },
+
+  async getSessionWorkflow(sessionId: number): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(`/session-forms/session/${sessionId}/workflow`);
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error fetching session workflow:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to fetch session workflow",
+      };
+    }
+  },
+
+  async submitPretraining(
+    sessionId: number,
+    payload: {
+      student_id?: number;
+      sleep_hours?: number;
+      sleep_quality?: string;
+      has_eaten?: boolean;
+      has_pain?: boolean;
+      pain_description?: string;
+      pre_stress_level?: string;
+      motivation_before?: number;
+    }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(`/session-forms/session/${sessionId}/pretraining`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error submitting pretraining:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to submit pretraining",
       };
     }
   },

@@ -29,7 +29,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 // Students skip instructor selection — they book any available instructor after signup.
-type OnboardingStep = "invite-code" | "course-selection" | "registration";
+type OnboardingStep = "invite-code" | "course-selection" | "cadence-selection" | "registration";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -39,6 +39,7 @@ export default function RegisterScreen() {
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
 
   const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null);
+  const [selectedCadence, setSelectedCadence] = useState<"WEEKLY" | "BIWEEKLY" | null>(null);
   const [courses, setCourses] = useState<CourseSummary[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
 
@@ -108,6 +109,12 @@ export default function RegisterScreen() {
     setSelectedCourse(course);
     // Save course to storage so createSignupDataFromOnboarding can access it
     await onboardingService.saveSelectedCourse(course);
+    setCurrentStep("cadence-selection");
+  };
+
+  const handleCadenceSelection = async (cadence: "WEEKLY" | "BIWEEKLY") => {
+    setSelectedCadence(cadence);
+    await onboardingService.saveOnboardingData("selectedCadence", cadence);
     setCurrentStep("registration");
   };
 
@@ -124,9 +131,12 @@ export default function RegisterScreen() {
       setCurrentStep("invite-code");
       setSelectedCourse(null);
       setCourses([]);
+    } else if (currentStep === "cadence-selection") {
+      setCurrentStep("course-selection");
+      setSelectedCadence(null);
     } else if (currentStep === "registration") {
       if (role === UserRole.STUDENT) {
-        setCurrentStep("course-selection");
+        setCurrentStep("cadence-selection");
       } else {
         setCurrentStep("invite-code");
       }
@@ -162,6 +172,10 @@ export default function RegisterScreen() {
       Alert.alert("Error", "Please select a course");
       return;
     }
+    if (role === UserRole.STUDENT && selectedCadence === null) {
+      Alert.alert("Error", "Please choose a weekly or bi-weekly plan");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -171,6 +185,7 @@ export default function RegisterScreen() {
         ...formData,
         companyInfo,
         courseId: role === UserRole.STUDENT ? selectedCourse?.id : null,
+        program_cadence: role === UserRole.STUDENT ? selectedCadence : undefined,
       };
 
       await onboardingService.saveOnboardingData(
@@ -193,8 +208,18 @@ export default function RegisterScreen() {
       const signupResult = await onboardingService.signup(signupData);
 
       if (signupResult.success) {
+        const pendingApproval = Boolean(
+          signupResult.data &&
+          (signupResult.data.role === UserRole.ADMIN || signupResult.data.role === UserRole.INSTRUCTOR) &&
+          !signupResult.data.is_approved
+        );
         
-        Alert.alert("Registration Successful!", `Welcome to ${companyInfo.company_name}`,[
+        Alert.alert(
+          "Registration Successful!",
+          pendingApproval
+            ? `Welcome to ${companyInfo.company_name}. Your account is waiting for admin approval before you can log in.`
+            : `Welcome to ${companyInfo.company_name}`,
+          [
           {
             text: "Continue to Login",
             onPress: () => {
@@ -239,6 +264,47 @@ export default function RegisterScreen() {
           onBack={handleBack}
         />
       );
+    } else if (currentStep === "cadence-selection") {
+      return (
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.82)", justifyContent: "center", padding: 20 }}>
+          <View style={{ backgroundColor: "#111", borderRadius: 16, padding: 16 }}>
+            <TouchableOpacity onPress={handleBack} style={{ marginBottom: 12 }}>
+              <Text style={{ color: themes.vegasGold }}>Back</Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700", marginBottom: 8 }}>Choose Your Program Plan</Text>
+            <Text style={{ color: "#ddd", marginBottom: 16 }}>
+              This choice is final for this enrollment and cannot be changed later.
+            </Text>
+            <TouchableOpacity
+              onPress={() => handleCadenceSelection("WEEKLY")}
+              style={{
+                borderColor: selectedCadence === "WEEKLY" ? themes.vegasGold : "#444",
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 10,
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700" }}>Weekly Plan</Text>
+              <Text style={{ color: "#ccc" }}>24 classes over 6 months</Text>
+              <Text style={{ color: "#ccc" }}>$200/month, 1 grace month, then $50/class</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleCadenceSelection("BIWEEKLY")}
+              style={{
+                borderColor: selectedCadence === "BIWEEKLY" ? themes.vegasGold : "#444",
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700" }}>Bi-Weekly Plan</Text>
+              <Text style={{ color: "#ccc" }}>24 classes over 12 months</Text>
+              <Text style={{ color: "#ccc" }}>$100/month, 2 grace months, then $50/class</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
     } else {
       return null;
     }
@@ -278,7 +344,7 @@ export default function RegisterScreen() {
                   <Text style={styles.welcomeSubtext}>
                     Complete your account information below
                     {role === UserRole.STUDENT && selectedCourse &&
-                      `\nCourse: ${selectedCourse.title}`}
+                      `\nCourse: ${selectedCourse.title}${selectedCadence ? ` • ${selectedCadence === "BIWEEKLY" ? "Bi-Weekly" : "Weekly"} plan` : ""}`}
                   </Text>
                 </View>
               )}

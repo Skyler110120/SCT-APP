@@ -37,6 +37,7 @@ export interface UserFormDataWithRegistration extends UserFormData {
   course_id?: number;
   /** Mobile Register passes courseId; createSignupDataFromOnboarding accepts either course_id or courseId */
   courseId?: number;
+  program_cadence?: "WEEKLY" | "BIWEEKLY";
 }
 
 export interface EnhancedSignupData {
@@ -48,6 +49,7 @@ export interface EnhancedSignupData {
   role?: UserRole;
   instructor_id?: number | null;
   course_id?: number | null;
+  program_cadence?: "WEEKLY" | "BIWEEKLY";
   invite_code?: string;
 }
 
@@ -61,6 +63,7 @@ export interface EnhancedSignupUser {
   instructor_id?: number | null;
   has_completed_onboarding: boolean;
   is_active: boolean;
+  is_approved: boolean;
 }
 
 export type EnhancedSignupResponse = ApiResponse<EnhancedSignupUser>;

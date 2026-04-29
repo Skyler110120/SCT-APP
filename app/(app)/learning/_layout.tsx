@@ -4,10 +4,11 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
 import { themes } from "@/src/context/themes";
+import { logger } from "@/src/utils/logger";
 
 export default function LearningLayout() {
   const { user, isLoading } = useAuth();
-  console.log("📚 Learning Layout Guard - Education Features Access for:", user?.email);
+  logger.debug("Learning layout guard check");
 
   if (isLoading) {
     return (
@@ -31,7 +32,7 @@ export default function LearningLayout() {
   }
 
   if (!user) {
-    console.log("Learning Layout: No user, redirecting to login");
+    logger.debug("Learning layout: no user, redirecting to login");
     return <Redirect href="/login" />;
   }
 
@@ -41,11 +42,11 @@ export default function LearningLayout() {
   ].includes(user.role);
 
   if (!hasLearningAccess) {
-    console.log(`Learning Layout: Access denied for role ${user.role}, redirecting to company calendar`);
+    logger.debug(`Learning layout: access denied for role ${user.role}`);
     return <Redirect href="/company/calendar" />;
   }
 
-  console.log(`✅ Learning Layout: Learning access granted for ${user.role}`);
+  logger.debug(`Learning layout: access granted for ${user.role}`);
 
   return (
     <View style={{ flex: 1 }}>

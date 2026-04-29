@@ -74,7 +74,7 @@ describe("testSessionFormService.createTestSessionForm", () => {
     mockApiFetch.mockRejectedValueOnce(new Error("Session not found"));
     const result = await testSessionFormService.createTestSessionForm(formData);
     expect(result.success).toBe(false);
-    expect(result.error).toBe("An error occurred");
+    expect(result.error).toBe("Failed to create test session form");
     expect(mockApiFetch).toHaveBeenCalledWith("/test-session-forms/", {
       method: "POST",
       body: JSON.stringify(formData),
@@ -108,7 +108,7 @@ describe("testSessionFormService.updateTestSessionForm", () => {
       updateData
     );
     expect(result.success).toBe(false);
-    expect(result.error).toBe("An error occurred");
+    expect(result.error).toBe("Failed to update test session form");
     expect(mockApiFetch).toHaveBeenCalledWith("/test-session-forms/999", {
       method: "PATCH",
       body: JSON.stringify(updateData),
@@ -172,7 +172,7 @@ describe("testSessionFormService.getTestSessionForm", () => {
     mockApiFetch.mockRejectedValueOnce(new Error("Not found"));
     const result = await testSessionFormService.getTestSessionForm(999);
     expect(result.success).toBe(false);
-    expect(result.error).toBe("An error occurred");
+    expect(result.error).toBe("Failed to fetch test session form");
     expect(mockApiFetch).toHaveBeenCalledWith("/test-session-forms/999");
   });
 });
@@ -197,9 +197,17 @@ describe("testSessionFormService.getTestSessionForms", () => {
     mockApiFetch.mockRejectedValueOnce(new Error("Unauthorized"));
     const result = await testSessionFormService.getTestSessionForms();
     expect(result.success).toBe(false);
-    expect(result.error).toBe("An unexpected error occurred");
+    expect(result.error).toBe("Failed to fetch test session forms");
     expect(mockApiFetch).toHaveBeenCalledWith(
       "/test-session-forms/my-forms/"
     );
+  });
+
+  it("aliases getMyTestSessionForms to getTestSessionForms", async () => {
+    mockApiFetch.mockResolvedValueOnce([mockTestSessionForm]);
+    const result = await testSessionFormService.getMyTestSessionForms();
+    expect(result.success).toBe(true);
+    expect(result.data).toHaveLength(1);
+    expect(mockApiFetch).toHaveBeenCalledWith("/test-session-forms/my-forms/");
   });
 });

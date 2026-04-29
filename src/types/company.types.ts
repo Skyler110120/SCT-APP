@@ -5,6 +5,7 @@ export interface Company {
     name: string;
     slug: string;
     website?: string | null;
+    booking_lock_hours?: number;
     is_active: boolean;
     created_at: string;
     updated_at: string;
@@ -31,6 +32,7 @@ export interface UpdateCompanyRequest {
     name?: string;
     slug?: string;
     website?: string | null;
+    booking_lock_hours?: number;
     is_active?: boolean;
 }
 

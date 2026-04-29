@@ -8,19 +8,39 @@ jest.mock("../../services/api", () => ({
   apiFetch: jest.fn(),
 }));
 
-jest.mock("@react-native-async-storage/async-storage", () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  multiRemove: jest.fn(),
+jest.mock("../../services/authStorage", () => ({
+  authStorage: {
+    setAuthToken: jest.fn(),
+    getAuthToken: jest.fn(),
+    setTokenData: jest.fn(),
+    getTokenDataJson: jest.fn(),
+    setUserData: jest.fn(),
+    clearAuthData: jest.fn(),
+  },
 }));
 
 import { apiFetch } from "../../services/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authStorage } from "../../services/authStorage";
 
 const mockApiFetch = apiFetch as jest.MockedFunction<typeof apiFetch>;
-const mockGetItem = AsyncStorage.getItem as jest.MockedFunction<typeof AsyncStorage.getItem>;
-const mockSetItem = AsyncStorage.setItem as jest.MockedFunction<typeof AsyncStorage.setItem>;
-const mockMultiRemove = AsyncStorage.multiRemove as jest.MockedFunction<typeof AsyncStorage.multiRemove>;
+const mockSetAuthToken = authStorage.setAuthToken as jest.MockedFunction<
+  typeof authStorage.setAuthToken
+>;
+const mockGetAuthToken = authStorage.getAuthToken as jest.MockedFunction<
+  typeof authStorage.getAuthToken
+>;
+const mockSetTokenData = authStorage.setTokenData as jest.MockedFunction<
+  typeof authStorage.setTokenData
+>;
+const mockGetTokenDataJson = authStorage.getTokenDataJson as jest.MockedFunction<
+  typeof authStorage.getTokenDataJson
+>;
+const mockClearAuthData = authStorage.clearAuthData as jest.MockedFunction<
+  typeof authStorage.clearAuthData
+>;
+const mockSetUserData = authStorage.setUserData as jest.MockedFunction<
+  typeof authStorage.setUserData
+>;
 
 const mockTokenData = {
   access_token: "jwt-token-123",
@@ -33,6 +53,7 @@ const mockTokenData = {
   company_id: 1,
   needs_onboarding: false,
   has_completed_onboarding: true,
+  is_approved: true,
 };
 
 const mockUserData = {
@@ -44,16 +65,23 @@ const mockUserData = {
   company_id: 1,
   has_completed_onboarding: true,
   is_active: true,
+  is_approved: true,
 };
 
 beforeEach(() => {
   mockApiFetch.mockReset();
-  mockGetItem.mockReset();
-  mockSetItem.mockReset();
-  mockMultiRemove.mockReset();
-  mockGetItem.mockResolvedValue("mock-token");
-  mockSetItem.mockResolvedValue(undefined);
-  mockMultiRemove.mockResolvedValue(undefined);
+  mockSetAuthToken.mockReset();
+  mockGetAuthToken.mockReset();
+  mockSetTokenData.mockReset();
+  mockGetTokenDataJson.mockReset();
+  mockClearAuthData.mockReset();
+  mockSetUserData.mockReset();
+  mockGetAuthToken.mockResolvedValue("mock-token");
+  mockSetAuthToken.mockResolvedValue(undefined);
+  mockSetTokenData.mockResolvedValue(undefined);
+  mockGetTokenDataJson.mockResolvedValue(JSON.stringify(mockTokenData));
+  mockSetUserData.mockResolvedValue(undefined);
+  mockClearAuthData.mockResolvedValue(undefined);
 });
 
 describe("authService.login", () => {
@@ -71,8 +99,8 @@ describe("authService.login", () => {
       "/auth/login",
       expect.objectContaining({ method: "POST" })
     );
-    expect(mockSetItem).toHaveBeenCalledWith("auth_token", "jwt-token-123");
-    expect(mockSetItem).toHaveBeenCalledWith("token_data", JSON.stringify(mockTokenData));
+    expect(mockSetAuthToken).toHaveBeenCalledWith("jwt-token-123");
+    expect(mockSetTokenData).toHaveBeenCalledWith(JSON.stringify(mockTokenData));
   });
 
   it("returns error on login failure", async () => {
@@ -101,7 +129,7 @@ describe("authService.getCurrentUser", () => {
     expect(result.success).toBe(true);
     expect(result.data).toEqual(mockUserData);
     expect(mockApiFetch).toHaveBeenCalledWith("/auth/me");
-    expect(mockGetItem).not.toHaveBeenCalled();
+    expect(mockGetAuthToken).not.toHaveBeenCalled();
   });
 
   it("returns user data on success when reading token from AsyncStorage", async () => {
@@ -111,11 +139,11 @@ describe("authService.getCurrentUser", () => {
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual(mockUserData);
-    expect(mockGetItem).toHaveBeenCalledWith("auth_token");
+    expect(mockGetAuthToken).toHaveBeenCalled();
   });
 
   it("returns error when no token is found", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
 
     const result = await authService.getCurrentUser();
 
@@ -143,11 +171,11 @@ describe("authService.refreshUserInfo", () => {
     expect(result.success).toBe(true);
     expect(result.data).toEqual(mockTokenData);
     expect(mockApiFetch).toHaveBeenCalledWith("/auth/refresh");
-    expect(mockSetItem).toHaveBeenCalledWith("auth_token", "jwt-token-123");
+    expect(mockSetAuthToken).toHaveBeenCalledWith("jwt-token-123");
   });
 
   it("returns error when no token in storage", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
 
     const result = await authService.refreshUserInfo();
 
@@ -177,7 +205,7 @@ describe("authService.checkAuth", () => {
   });
 
   it("returns null when no token in storage", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
 
     const result = await authService.checkAuth();
 
@@ -191,22 +219,22 @@ describe("authService.checkAuth", () => {
     const result = await authService.checkAuth();
 
     expect(result).toBeNull();
-    expect(mockMultiRemove).toHaveBeenCalled();
+    expect(mockClearAuthData).toHaveBeenCalled();
   });
 });
 
 describe("authService.getStoredToken", () => {
   it("returns token from AsyncStorage", async () => {
-    mockGetItem.mockResolvedValueOnce("stored-token");
+    mockGetAuthToken.mockResolvedValueOnce("stored-token");
 
     const result = await authService.getStoredToken();
 
     expect(result).toBe("stored-token");
-    expect(mockGetItem).toHaveBeenCalledWith("auth_token");
+    expect(mockGetAuthToken).toHaveBeenCalled();
   });
 
   it("returns null when no token", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
 
     const result = await authService.getStoredToken();
 
@@ -216,16 +244,16 @@ describe("authService.getStoredToken", () => {
 
 describe("authService.getStoredTokenData", () => {
   it("returns parsed token data from AsyncStorage", async () => {
-    mockGetItem.mockResolvedValueOnce(JSON.stringify(mockTokenData));
+    mockGetTokenDataJson.mockResolvedValueOnce(JSON.stringify(mockTokenData));
 
     const result = await authService.getStoredTokenData();
 
     expect(result).toEqual(mockTokenData);
-    expect(mockGetItem).toHaveBeenCalledWith("token_data");
+    expect(mockGetTokenDataJson).toHaveBeenCalled();
   });
 
   it("returns null when no token data", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetTokenDataJson.mockResolvedValueOnce(null);
 
     const result = await authService.getStoredTokenData();
 
@@ -237,11 +265,7 @@ describe("authService.clearAuthData", () => {
   it("removes auth_token, token_data, user_data from AsyncStorage", async () => {
     await authService.clearAuthData();
 
-    expect(mockMultiRemove).toHaveBeenCalledWith([
-      "auth_token",
-      "token_data",
-      "user_data",
-    ]);
+    expect(mockClearAuthData).toHaveBeenCalled();
   });
 });
 
@@ -249,17 +273,13 @@ describe("authService.logout", () => {
   it("calls clearAuthData", async () => {
     await authService.logout();
 
-    expect(mockMultiRemove).toHaveBeenCalledWith([
-      "auth_token",
-      "token_data",
-      "user_data",
-    ]);
+    expect(mockClearAuthData).toHaveBeenCalled();
   });
 });
 
 describe("authService.hasStoredToken", () => {
   it("returns true when token exists", async () => {
-    mockGetItem.mockResolvedValueOnce("token");
+    mockGetAuthToken.mockResolvedValueOnce("token");
 
     const result = await authService.hasStoredToken();
 
@@ -267,10 +287,59 @@ describe("authService.hasStoredToken", () => {
   });
 
   it("returns false when no token", async () => {
-    mockGetItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
 
     const result = await authService.hasStoredToken();
 
     expect(result).toBe(false);
+  });
+});
+
+describe("authService.requestPasswordReset", () => {
+  it("calls forgot-password endpoint and returns success message", async () => {
+    mockApiFetch.mockResolvedValueOnce({
+      message: "If an account exists for that email, a password reset link has been sent.",
+    });
+
+    const result = await authService.requestPasswordReset({ email: "user@example.com" });
+
+    expect(result.success).toBe(true);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/auth/forgot-password",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+});
+
+describe("authService.validatePasswordResetToken", () => {
+  it("calls validate endpoint and returns valid=true", async () => {
+    mockApiFetch.mockResolvedValueOnce({ valid: true });
+
+    const result = await authService.validatePasswordResetToken("token-123");
+
+    expect(result.success).toBe(true);
+    expect(result.valid).toBe(true);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/auth/reset-password/validate?token=token-123",
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+});
+
+describe("authService.resetPassword", () => {
+  it("calls reset-password endpoint and returns success", async () => {
+    mockApiFetch.mockResolvedValueOnce({ message: "Password reset successfully" });
+
+    const result = await authService.resetPassword({
+      token: "token-123",
+      new_password: "newpass123",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.message).toBe("Password reset successfully");
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/auth/reset-password",
+      expect.objectContaining({ method: "POST" })
+    );
   });
 });

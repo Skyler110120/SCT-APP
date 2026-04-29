@@ -1,15 +1,17 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { API_URL, API_TIMEOUT } from "../config";
+import { emitGlobalError } from "../utils/globalErrorBus";
+import { authStorage } from "./authStorage";
+import { logger } from "../utils/logger";
 
-const AUTH_STORAGE_KEYS = ["auth_token", "token_data", "user_data"];
+const ISSUE_REPORT_PATH = "/issue-reports";
 
 // Helper function to clear auth data (moved here to avoid circular dependency)
 async function clearAuthData(): Promise<void> {
   try {
-    await AsyncStorage.multiRemove(AUTH_STORAGE_KEYS);
+    await authStorage.clearAuthData();
   } catch (error) {
-    if (__DEV__) console.error("Clear auth data error:", error);
+    logger.error("Clear auth data error:", error);
   }
 }
 
@@ -58,7 +60,8 @@ function normalizeApiPath(path: string, method?: string): string {
     '/instructors', '/auth', '/profiles', '/onboarding',
     '/sessions', '/session-forms', '/test-session-forms',
     '/availability', '/materials', '/drills',
-    '/technical-fundamentals',
+    '/technical-fundamentals', '/course-drills',
+    '/payments', '/webhooks', '/issue-reports',
   ];
   
   // Check if this is a root-level endpoint without trailing slash
@@ -68,7 +71,7 @@ function normalizeApiPath(path: string, method?: string): string {
   for (const endpoint of rootEndpoints) {
     if (basePath === endpoint) {
       const normalized = `${basePath}/${queryString}${fragment}`;
-      if (__DEV__) console.log(`[normalizeApiPath] ${path} → ${normalized}`);
+      logger.debug(`[normalizeApiPath] ${path} -> ${normalized}`);
       return normalized;
     }
     // Also check if path starts with endpoint followed by a path segment
@@ -102,12 +105,12 @@ function fetchWithTimeout(url: string, options: RequestInit, timeout: number): P
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
     // Normalize the path to ensure trailing slashes for root endpoints
     const normalizedPath = normalizeApiPath(path, options.method);
-    const token = await AsyncStorage.getItem("auth_token");
+    const token = await authStorage.getAuthToken();
     const fullUrl = `${API_URL}${normalizedPath}`;
     
-    if (__DEV__) {
-      console.log(`[apiFetch] ${options.method || 'GET'} ${fullUrl} (timeout: ${API_TIMEOUT}ms)`);
-    }
+    logger.debug(
+      `[apiFetch] ${options.method || "GET"} ${fullUrl} (timeout: ${API_TIMEOUT}ms)`
+    );
 
     const isFormData = options.body instanceof FormData;
 
@@ -127,7 +130,7 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       }, API_TIMEOUT);
       
       const duration = Date.now() - startTime;
-      if (__DEV__) console.log(`[apiFetch] ${response.status} in ${duration}ms`);
+      logger.debug(`[apiFetch] ${response.status} in ${duration}ms`);
     
       if (response.status === 401){
         if(normalizedPath !== "/auth/login" && normalizedPath !== "/auth/login/"){
@@ -153,26 +156,48 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       }
 
       if (!response.ok) {
-        if (__DEV__) console.error(`[apiFetch] ${response.status}`, data);
+        logger.error(`[apiFetch] ${response.status}`, data);
         
         const msg =
           data?.detail ||
           data?.message ||
           `Request failed with status ${response.status}`;
 
+        if (!path.includes(ISSUE_REPORT_PATH)) {
+          emitGlobalError({
+            message: msg,
+            status: response.status,
+            path: normalizedPath,
+            method: options.method || "GET",
+          });
+        }
         throw new ApiError(response.status, msg, data?.detail);
       }
 
       return data;
     } catch (error: any) {
-      if (__DEV__) console.error(`[apiFetch] Error:`, error);
+      logger.error("[apiFetch] Error:", error);
       
       // Handle network errors
       if (error?.message?.includes('timeout')) {
+        if (!path.includes(ISSUE_REPORT_PATH)) {
+          emitGlobalError({
+            message: `Request timeout - unable to reach server at ${API_URL}`,
+            path: normalizedPath,
+            method: options.method || "GET",
+          });
+        }
         throw new ApiError(408, `Request timeout - unable to reach server at ${API_URL}`);
       }
       
       if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
+        if (!path.includes(ISSUE_REPORT_PATH)) {
+          emitGlobalError({
+            message: `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`,
+            path: normalizedPath,
+            method: options.method || "GET",
+          });
+        }
         throw new ApiError(0, `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`);
       }
       
@@ -182,6 +207,13 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       }
       
       // Wrap other errors
+      if (!path.includes(ISSUE_REPORT_PATH)) {
+        emitGlobalError({
+          message: error?.message || "Unknown network error",
+          path: normalizedPath,
+          method: options.method || "GET",
+        });
+      }
       throw new ApiError(0, error?.message || 'Unknown network error');
     }
 }

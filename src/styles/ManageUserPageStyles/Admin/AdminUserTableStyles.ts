@@ -76,6 +76,19 @@ export const adminUserTableStyles = StyleSheet. create({
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
+  pendingBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: "#FFB020",
+    backgroundColor: "rgba(255, 176, 32, 0.12)",
+  },
+  pendingBadgeText: {
+    fontSize: isCompact ? 13 : 16,
+    fontFamily: "Chakra-Bold",
+    color: "#FFB020",
+  },
   userActions:  {
     flex: isCompact ? 0 : 1,
     marginTop: isCompact ? 8 : 0,

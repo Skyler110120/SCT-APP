@@ -41,6 +41,7 @@ export interface SignupFromInvitePayload {
   password: string;
   first_name: string;
   last_name: string;
+  program_cadence?: "WEEKLY" | "BIWEEKLY";
 }
 
 export interface SignupFromInviteResponse {

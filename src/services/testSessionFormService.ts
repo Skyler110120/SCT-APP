@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
 import {
   TestSessionForm,
@@ -35,7 +33,7 @@ export const testSessionFormService = {
       console.error("Error creating test session form:", error);
       return {
         success: false,
-        error: "An error occurred",
+        error: "Failed to create test session form",
       };
     }
   },
@@ -65,7 +63,7 @@ export const testSessionFormService = {
       console.error("Error updating test session form:", error);
       return {
         success: false,
-        error: "An error occurred",
+        error: "Failed to update test session form",
       };
     }
   },
@@ -125,7 +123,7 @@ export const testSessionFormService = {
       console.error("Error fetching test session form:", error);
       return {
         success: false,
-        error: "An error occurred",
+        error: "Failed to fetch test session form",
       };
     }
   },
@@ -146,8 +144,12 @@ export const testSessionFormService = {
       console.error("Error fetching test session forms:", error);
       return {
         success: false,
-        error: "An unexpected error occurred",
+        error: "Failed to fetch test session forms",
       };
     }
+  },
+
+  async getMyTestSessionForms(): Promise<TestSessionFormListResponse> {
+    return this.getTestSessionForms();
   },
 };

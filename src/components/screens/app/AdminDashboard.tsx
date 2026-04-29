@@ -1,4 +1,5 @@
 import * as Clipboard from "expo-clipboard";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,14 +22,18 @@ import { themes } from "@/src/context/themes";
 import { companyService } from "@/src/services/companyService";
 import { onboardingInviteService } from "@/src/services/onboardingInviteService";
 import { courseService } from "@/src/services/courseService";
+import { paymentService } from "@/src/services/paymentService";
 import { adminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/AdminDashboardStyles/adminDashboardStyles";
 import { Company, InviteCode } from "@/src/types/company.types";
 import { CourseSummary } from "@/src/types/course.types";
 import { OnboardingInviteListItem } from "@/src/types/onboardingInvite.types";
+import { ConnectStatusResponse } from "@/src/types/payment.types";
 import { UserRole } from "@/src/types/enums";
+import { openStripeHostedUrl } from "@/src/utils/safeExternalUrl";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const [company, setCompany] = useState<Company | null>(null);
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
@@ -47,6 +52,15 @@ export default function AdminDashboard() {
   const [emailInvites, setEmailInvites] = useState<OnboardingInviteListItem[]>([]);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteMessage, setInviteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<ConnectStatusResponse | null>(
+    null
+  );
+  const [isLoadingPaymentStatus, setIsLoadingPaymentStatus] = useState(false);
+  const [isSettingUpPayments, setIsSettingUpPayments] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+  const [bookingLockHoursInput, setBookingLockHoursInput] = useState("24");
+  const [isSavingBookingLock, setIsSavingBookingLock] = useState(false);
+  const [bookingLockMessage, setBookingLockMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.company_id) {
@@ -58,15 +72,20 @@ export default function AdminDashboard() {
 
   const fetchCompanyData = async (companyId: number) => {
     setIsLoading(true);
+    setIsLoadingPaymentStatus(true);
     try {
-      const [companyResponse, coursesResponse, invitesResponse] = await Promise.all([
+      const [companyResponse, coursesResponse, invitesResponse, paymentStatusResponse] = await Promise.all([
         companyService.getCompany(companyId),
         courseService.getCourseForSelection(),
         onboardingInviteService.listInvites(companyId),
+        paymentService.getConnectStatus(companyId),
       ]);
 
       if (companyResponse.success && companyResponse.data) {
         setCompany(companyResponse.data);
+        setBookingLockHoursInput(
+          String(companyResponse.data.booking_lock_hours ?? 24)
+        );
         fetchInviteCodes(companyResponse.data.id);
       } else {
         Alert.alert("Error", "Failed to load company data");
@@ -77,11 +96,17 @@ export default function AdminDashboard() {
       if (invitesResponse.success && invitesResponse.data) {
         setEmailInvites(invitesResponse.data);
       }
+      if (paymentStatusResponse.payment_enabled !== undefined) {
+        setPaymentStatus(paymentStatusResponse);
+      } else {
+        setPaymentStatus(null);
+      }
     } catch (error) {
       console.error("Error fetching company data:", error);
       Alert.alert("Error", "An unexpected error occurred");
     } finally {
       setIsLoading(false);
+      setIsLoadingPaymentStatus(false);
     }
   };
 
@@ -186,6 +211,54 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSetupPayments = async () => {
+    if (!user?.company_id) return;
+    setIsSettingUpPayments(true);
+    setPaymentMessage(null);
+    try {
+      const response = await paymentService.createConnectOnboarding(user.company_id);
+      const opened = response?.url
+        ? await openStripeHostedUrl(response.url)
+        : false;
+      if (!opened) {
+        setPaymentMessage("Could not open Stripe onboarding URL.");
+      }
+    } catch {
+      setPaymentMessage("Failed to start payment setup.");
+    } finally {
+      setIsSettingUpPayments(false);
+    }
+  };
+
+  const handleSaveBookingLock = async () => {
+    if (!user?.company_id || !company) return;
+
+    const parsed = Number.parseInt(bookingLockHoursInput, 10);
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 168) {
+      setBookingLockMessage("Enter a whole number between 0 and 168.");
+      return;
+    }
+
+    setIsSavingBookingLock(true);
+    setBookingLockMessage(null);
+    try {
+      const response = await companyService.updateCompany(Number(user.company_id), {
+        booking_lock_hours: parsed,
+      });
+      if (response.success && response.data) {
+        setCompany(response.data);
+        setBookingLockHoursInput(String(response.data.booking_lock_hours ?? parsed));
+        setBookingLockMessage("Booking lock window updated.");
+      } else {
+        setBookingLockMessage(response.error || "Failed to update booking lock window.");
+      }
+    } catch {
+      setBookingLockMessage("An unexpected error occurred while saving booking lock.");
+    } finally {
+      setIsSavingBookingLock(false);
+    }
+  };
+
   const INVITE_ROLES = [
     { label: "Student", value: "STUDENT" },
     { label: "Instructor", value: "INSTRUCTOR" },
@@ -211,6 +284,112 @@ export default function AdminDashboard() {
                 Loading company data...
               </Text>
             )}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Payment Setup</Text>
+              {isLoadingPaymentStatus ? (
+                <Text style={{ color: themes.white, textAlign: "center" }}>
+                  Checking payment status...
+                </Text>
+              ) : paymentStatus?.payment_enabled ? (
+                <>
+                  <Text
+                    style={{
+                      color: "#4ade80",
+                      textAlign: "center",
+                      fontFamily: "Chakra-Regular",
+                    }}
+                  >
+                    Payments are active for your company.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, { marginTop: 8 }]}
+                    onPress={() => router.push("/company/management/payments")}
+                  >
+                    <Text style={styles.buttonText}>Open Payments Page</Text>
+                  </TouchableOpacity>
+                </>
+              ) : paymentStatus?.stripe_account_id ? (
+                <>
+                  <Text style={styles.sectionDescription}>
+                    Stripe account is connected but setup is incomplete.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, isSettingUpPayments && { opacity: 0.7 }]}
+                    onPress={handleSetupPayments}
+                    disabled={isSettingUpPayments}
+                  >
+                    <Text style={styles.buttonText}>
+                      {isSettingUpPayments ? "Opening..." : "Complete Payment Setup"}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.sectionDescription}>
+                    Set up Stripe Connect to accept student subscription payments.
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.actionButton, isSettingUpPayments && { opacity: 0.7 }]}
+                    onPress={handleSetupPayments}
+                    disabled={isSettingUpPayments}
+                  >
+                    <Text style={styles.buttonText}>
+                      {isSettingUpPayments ? "Opening..." : "Set Up Payments"}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {paymentMessage && (
+                <Text
+                  style={{
+                    marginTop: 8,
+                    textAlign: "center",
+                    color: "#fbbf24",
+                    fontFamily: "Chakra-Regular",
+                  }}
+                >
+                  {paymentMessage}
+                </Text>
+              )}
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Session Booking Lock Window</Text>
+              <Text style={styles.sectionDescription}>
+                Students cannot book sessions within this many hours of the session start time.
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Enter hours (0-168)"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                keyboardType="number-pad"
+                value={bookingLockHoursInput}
+                onChangeText={(value) => {
+                  setBookingLockHoursInput(value);
+                  setBookingLockMessage(null);
+                }}
+              />
+              <TouchableOpacity
+                style={[styles.actionButton, isSavingBookingLock && { opacity: 0.7 }]}
+                onPress={handleSaveBookingLock}
+                disabled={isSavingBookingLock}
+              >
+                <Text style={styles.buttonText}>
+                  {isSavingBookingLock ? "Saving..." : "Save Booking Lock"}
+                </Text>
+              </TouchableOpacity>
+              {bookingLockMessage && (
+                <Text
+                  style={{
+                    marginTop: 8,
+                    textAlign: "center",
+                    color: "#fbbf24",
+                    fontFamily: "Chakra-Regular",
+                  }}
+                >
+                  {bookingLockMessage}
+                </Text>
+              )}
+            </View>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
                 Invite Codes
