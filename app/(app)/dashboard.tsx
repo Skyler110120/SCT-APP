@@ -1,9 +1,8 @@
 import React from "react";
 import { Redirect } from "expo-router";
-import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
-import { themes } from "@/src/context/themes";
+import { AppScreen, AppText, LoadingState } from "@/src/components/ui";
 
 export default function DashboardRouter() {
   const { user, isLoading } = useAuth();
@@ -14,28 +13,7 @@ export default function DashboardRouter() {
 
   if (isLoading) {
     console.log("Dashboard Router: Loading user data...");
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: themes.black,
-        }}
-      >
-        <ActivityIndicator size="large" color={themes.vegasGold} />
-        <Text
-          style={{
-            marginTop: 16,
-            color: themes.white,
-            fontSize: 16,
-            fontFamily: "Chakra-Regular",
-          }}
-        >
-          Loading dashboard...
-        </Text>
-      </View>
-    );
+    return <LoadingState label="Loading dashboard..." />;
   }
 
   if (!user) {
@@ -48,25 +26,11 @@ export default function DashboardRouter() {
   if (!user.role) {
     console.error("Dashboard Router: User has no role assigned");
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: themes.black,
-        }}
-      >
-        <Text
-          style={{
-            color: themes.white,
-            fontSize: 18,
-            fontFamily: "Chakra-Regular",
-            textAlign: "center",
-          }}
-        >
+      <AppScreen style={{ justifyContent: "center", alignItems: "center" }}>
+        <AppText variant="subtitle" style={{ textAlign: "center" }}>
           Account setup incomplete.{"\n"}Please contact support.
-        </Text>
-      </View>
+        </AppText>
+      </AppScreen>
     );
   }
 
@@ -91,25 +55,11 @@ export default function DashboardRouter() {
   } else {
     console.error(`Dashboard Router: Unknown role: ${user.role}`);
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: themes.black,
-        }}
-      >
-        <Text
-          style={{
-            color: themes.white,
-            fontSize: 18,
-            fontFamily: "Chakra-Regular",
-            textAlign: "center",
-          }}
-        >
+      <AppScreen style={{ justifyContent: "center", alignItems: "center" }}>
+        <AppText variant="subtitle" style={{ textAlign: "center" }}>
           Invalid user role.{"\n"}Please contact support.
-        </Text>
-      </View>
+        </AppText>
+      </AppScreen>
     );
   }
 }

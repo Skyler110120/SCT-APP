@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
 import {
+  AdminCreateAvailabilityRequest,
   Availability,
   AvailabilityUpdate,
   AvailabilityResponse,
@@ -92,6 +93,30 @@ export const instructorAvailabilityService = {
   },
 
   /**
+   * Company admin: create availability for a specific instructor.
+   */
+  async createAvailabilityAsAdmin(
+    availability: AdminCreateAvailabilityRequest
+  ): Promise<AvailabilityResponse> {
+    try {
+      const data: Availability = await apiFetch<Availability>(`/availability/admin`, {
+        method: "POST",
+        body: JSON.stringify(availability),
+      });
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error("Failed to create availability as admin:", error);
+      return {
+        success: false,
+        error: "Failed to create availability as admin",
+      };
+    }
+  },
+
+  /**
    * Update an existing availability
    * @param availabilityId - ID of the availability to update
    * @param availabilityUpdate - Availability data to update
@@ -142,6 +167,26 @@ export const instructorAvailabilityService = {
     } catch (error) {
       console.error("Failed to fetch company availability:", error);
       return { success: false, error: "Failed to fetch company availability" };
+    }
+  },
+
+  /**
+   * Company admin: list all availability windows for one instructor.
+   */
+  async getInstructorAvailabilityForAdmin(
+    instructorId: number
+  ): Promise<AvailabilityListResponse> {
+    try {
+      const data: Availability[] = await apiFetch<Availability[]>(
+        `/availability/admin/instructor/${instructorId}`
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Failed to fetch instructor availability for admin:", error);
+      return {
+        success: false,
+        error: "Failed to fetch instructor availability for admin",
+      };
     }
   },
 

@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { authStorage } from "./authStorage";
 import {
   Company,
   CreateCompanyRequest,
@@ -174,7 +174,7 @@ export const companyService = {
     inviteData: CreateInviteCodeRequest
   ): Promise<InviteCodeResponse> {
     try {
-      const token = await AsyncStorage.getItem("auth_token");
+      const token = await authStorage.getAuthToken();
 
       if (!token) {
         return {

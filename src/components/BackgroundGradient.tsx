@@ -1,4 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { themes } from "@/src/context/themes";
+import { StyleSheet } from "react-native";
 
 export default function BackgroundGradient({
   children,
@@ -7,13 +9,23 @@ export default function BackgroundGradient({
 }) {
   return (
     <LinearGradient
-      colors={["#000000", "#000000", "#666666"]}
+      colors={[
+        themes.gradientTop,
+        themes.background,
+        themes.gradientBottom,
+      ]}
       locations={[0, 0.3, 1]} 
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1}}
+      style={styles.container}
     >
       {children}
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

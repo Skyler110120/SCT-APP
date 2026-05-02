@@ -6,14 +6,34 @@ import { AuthProvider } from '@/src/context/AuthContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
 import { themes } from '@/src/context/themes';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+import {
+  Oswald_400Regular,
+  Oswald_500Medium,
+  Oswald_600SemiBold,
+} from "@expo-google-fonts/oswald";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'Chakra-Regular': require('../src/assets/fonts/chakra-petch-regular.ttf'),
-    'Chakra-Italic': require('../src/assets/fonts/chakra-petch-italic.ttf'),
-    'Chakra-Bold': require('../src/assets/fonts/chakra-petch-bold.ttf'),
-    'Chakra-BoldItalic': require('../src/assets/fonts/chakra-petch-bold-italic.ttf'),
-    'Chakra-semiBoldItalic': require('../src/assets/fonts/chakra-petch-semi-bold-italic.ttf'),
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Oswald_400Regular,
+    Oswald_500Medium,
+    Oswald_600SemiBold,
+    // Backward compatibility aliases so existing style modules continue working.
+    "Chakra-Regular": Inter_400Regular,
+    "Chakra-Italic": Inter_400Regular,
+    "Chakra-Bold": Oswald_600SemiBold,
+    "Chakra-BoldItalic": Oswald_600SemiBold,
+    "Chakra-semiBoldItalic": Inter_600SemiBold,
+    "Chakra-Medium": Inter_500Medium,
   });
 
   if (!fontsLoaded) {

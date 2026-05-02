@@ -403,9 +403,9 @@ export default function SessionDetailsModal({
                                     Target: {[cd.drill.target_spec, cd.drill.target_count != null ? `×${cd.drill.target_count}` : null].filter(Boolean).join(" ")}
                                   </Text>
                                 )}
-                                {cd.drill.commands ? (
+                                {cd.drill.loadout?.trim() ? (
                                   <Text style={[styles.infoValueTertiary, { marginTop: 2, fontSize: 12 }]} numberOfLines={2}>
-                                    Commands: {cd.drill.commands}
+                                    Loadout/Commands: {cd.drill.loadout}
                                   </Text>
                                 ) : null}
                                 {cd.drill.instructor_notes ? (

@@ -158,6 +158,46 @@ describe("instructorAvailabilityService.createAvailability", () => {
   });
 });
 
+describe("instructorAvailabilityService.createAvailabilityAsAdmin", () => {
+  const adminCreateRequest = {
+    instructor_id: 10,
+    day_of_week: 1,
+    start_time: "09:00",
+    end_time: "11:00",
+    start_date: "2026-03-01",
+  };
+
+  it("sends POST /availability/admin and returns created availability", async () => {
+    mockApiFetch.mockResolvedValueOnce(mockAvailability);
+
+    const result =
+      await instructorAvailabilityService.createAvailabilityAsAdmin(
+        adminCreateRequest
+      );
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(mockAvailability);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/availability/admin",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(adminCreateRequest),
+      })
+    );
+  });
+
+  it("returns error on failure", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("forbidden"));
+
+    const result =
+      await instructorAvailabilityService.createAvailabilityAsAdmin(
+        adminCreateRequest
+      );
+
+    expect(result.success).toBe(false);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // updateAvailability
 // ---------------------------------------------------------------------------
@@ -223,6 +263,30 @@ describe("instructorAvailabilityService.getCompanyAvailability", () => {
     mockApiFetch.mockRejectedValueOnce(new Error("fail"));
 
     const result = await instructorAvailabilityService.getCompanyAvailability("2026-03-01", "2026-03-31");
+
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("instructorAvailabilityService.getInstructorAvailabilityForAdmin", () => {
+  it("calls admin instructor availability endpoint", async () => {
+    mockApiFetch.mockResolvedValueOnce([mockAvailability]);
+
+    const result =
+      await instructorAvailabilityService.getInstructorAvailabilityForAdmin(10);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toHaveLength(1);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      "/availability/admin/instructor/10"
+    );
+  });
+
+  it("returns error on failure", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("forbidden"));
+
+    const result =
+      await instructorAvailabilityService.getInstructorAvailabilityForAdmin(10);
 
     expect(result.success).toBe(false);
   });

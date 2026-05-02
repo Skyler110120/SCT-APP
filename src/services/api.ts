@@ -102,7 +102,92 @@ function fetchWithTimeout(url: string, options: RequestInit, timeout: number): P
   ]);
 }
 
-export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+type ApiFetchOptions = RequestInit & {
+  suppressGlobalError?: boolean;
+  friendlyErrorTitle?: string;
+};
+
+function buildGlobalErrorEvent(args: {
+  message: string;
+  status?: number;
+  path: string;
+  method: string;
+  title?: string;
+}) {
+  const { message, status, path, method, title } = args;
+  const normalizedStatus = status ?? 0;
+
+  if (normalizedStatus === 0) {
+    return {
+      title: title || "Connection problem",
+      message:
+        "We could not reach the server. Check your connection and try again.",
+      kind: "network" as const,
+      severity: "error" as const,
+      canRetry: true,
+      status: normalizedStatus,
+      path,
+      method,
+      dedupeKey: `${method}:${path}:network`,
+    };
+  }
+
+  if (normalizedStatus === 408) {
+    return {
+      title: title || "Request timed out",
+      message: "The server took too long to respond. Please try again.",
+      kind: "timeout" as const,
+      severity: "warning" as const,
+      canRetry: true,
+      status: normalizedStatus,
+      path,
+      method,
+      dedupeKey: `${method}:${path}:timeout`,
+    };
+  }
+
+  if (normalizedStatus >= 500) {
+    return {
+      title: title || "Server error",
+      message: "Something went wrong on our side. Please try again shortly.",
+      kind: "server" as const,
+      severity: "error" as const,
+      canRetry: true,
+      status: normalizedStatus,
+      path,
+      method,
+      dedupeKey: `${method}:${path}:server`,
+    };
+  }
+
+  if (normalizedStatus >= 400) {
+    return {
+      title: title || "Request failed",
+      message,
+      kind: normalizedStatus === 401 ? "auth" : "validation",
+      severity: "warning" as const,
+      canRetry: normalizedStatus !== 401 && normalizedStatus !== 403,
+      status: normalizedStatus,
+      path,
+      method,
+      dedupeKey: `${method}:${path}:${normalizedStatus}`,
+    };
+  }
+
+  return {
+    title: title || "Unexpected error",
+    message,
+    kind: "unknown" as const,
+    severity: "error" as const,
+    canRetry: true,
+    status: normalizedStatus,
+    path,
+    method,
+    dedupeKey: `${method}:${path}:unknown`,
+  };
+}
+
+export async function apiFetch<T = any>(path: string, options: ApiFetchOptions = {}): Promise<T> {
     // Normalize the path to ensure trailing slashes for root endpoints
     const normalizedPath = normalizeApiPath(path, options.method);
     const token = await authStorage.getAuthToken();
@@ -114,18 +199,24 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
 
     const isFormData = options.body instanceof FormData;
 
+    const {
+      suppressGlobalError = false,
+      friendlyErrorTitle,
+      ...requestOptions
+    } = options;
+
     const headers = {
         Accept: "application/json",
-        ...(options.body && !isFormData && { "Content-Type": "application/json" }),
+        ...(requestOptions.body && !isFormData && { "Content-Type": "application/json" }),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(options.headers || {}),
+        ...(requestOptions.headers || {}),
     };
 
     const startTime = Date.now();
     
     try {
       const response = await fetchWithTimeout(fullUrl, {
-          ...options,
+          ...requestOptions,
           headers
       }, API_TIMEOUT);
       
@@ -163,13 +254,16 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
           data?.message ||
           `Request failed with status ${response.status}`;
 
-        if (!path.includes(ISSUE_REPORT_PATH)) {
-          emitGlobalError({
-            message: msg,
-            status: response.status,
-            path: normalizedPath,
-            method: options.method || "GET",
-          });
+        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
+          emitGlobalError(
+            buildGlobalErrorEvent({
+              message: msg,
+              status: response.status,
+              path: normalizedPath,
+              method: requestOptions.method || "GET",
+              title: friendlyErrorTitle,
+            })
+          );
         }
         throw new ApiError(response.status, msg, data?.detail);
       }
@@ -180,23 +274,31 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       
       // Handle network errors
       if (error?.message?.includes('timeout')) {
-        if (!path.includes(ISSUE_REPORT_PATH)) {
-          emitGlobalError({
-            message: `Request timeout - unable to reach server at ${API_URL}`,
-            path: normalizedPath,
-            method: options.method || "GET",
-          });
+        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
+          emitGlobalError(
+            buildGlobalErrorEvent({
+              message: "Request timeout",
+              status: 408,
+              path: normalizedPath,
+              method: requestOptions.method || "GET",
+              title: friendlyErrorTitle,
+            })
+          );
         }
         throw new ApiError(408, `Request timeout - unable to reach server at ${API_URL}`);
       }
       
       if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
-        if (!path.includes(ISSUE_REPORT_PATH)) {
-          emitGlobalError({
-            message: `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`,
-            path: normalizedPath,
-            method: options.method || "GET",
-          });
+        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
+          emitGlobalError(
+            buildGlobalErrorEvent({
+              message: "Network request failed",
+              status: 0,
+              path: normalizedPath,
+              method: requestOptions.method || "GET",
+              title: friendlyErrorTitle,
+            })
+          );
         }
         throw new ApiError(0, `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`);
       }
@@ -207,12 +309,16 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       }
       
       // Wrap other errors
-      if (!path.includes(ISSUE_REPORT_PATH)) {
-        emitGlobalError({
-          message: error?.message || "Unknown network error",
-          path: normalizedPath,
-          method: options.method || "GET",
-        });
+      if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
+        emitGlobalError(
+          buildGlobalErrorEvent({
+            message: error?.message || "Unknown network error",
+            status: 0,
+            path: normalizedPath,
+            method: requestOptions.method || "GET",
+            title: friendlyErrorTitle,
+          })
+        );
       }
       throw new ApiError(0, error?.message || 'Unknown network error');
     }

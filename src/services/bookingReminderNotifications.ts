@@ -1,26 +1,70 @@
 /* eslint-disable import/no-unresolved */
-import * as Notifications from "expo-notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
+import { Platform } from "react-native";
 import { sessionService } from "./sessionService";
 import { getWeekBounds, isWednesday } from "@/src/utils/dateTimeUtils";
 import { UserRole } from "@/src/types/enums";
 
 const REMINDER_STORAGE_KEY_PREFIX = "booking_reminder_sent_week_";
+type NotificationsModule = typeof import("expo-notifications");
+
+let notificationsModulePromise: Promise<NotificationsModule | null> | null = null;
+let didLogExpoGoNotice = false;
+
+function isUnsupportedNotificationEnvironment(): boolean {
+  // Expo Go on Android does not support the push APIs used by expo-notifications.
+  return (
+    Platform.OS === "android" && Constants.executionEnvironment === "storeClient"
+  );
+}
+
+function logUnsupportedEnvironmentOnce(): void {
+  if (didLogExpoGoNotice) return;
+  didLogExpoGoNotice = true;
+  console.info(
+    "[notifications] Skipping notification setup in Expo Go on Android. Use a development build to test notifications."
+  );
+}
+
+async function getNotificationsModule(): Promise<NotificationsModule | null> {
+  if (isUnsupportedNotificationEnvironment()) {
+    logUnsupportedEnvironmentOnce();
+    return null;
+  }
+
+  if (!notificationsModulePromise) {
+    notificationsModulePromise = import("expo-notifications").catch((error) => {
+      console.warn("Failed to load expo-notifications:", error);
+      return null;
+    });
+  }
+
+  return notificationsModulePromise;
+}
 
 /** Configure how notifications appear when app is in foreground */
 export function setNotificationHandler(): void {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-    }),
-  });
+  void (async () => {
+    const Notifications = await getNotificationsModule();
+    if (!Notifications) return;
+
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+      }),
+    });
+  })();
 }
 
 /** Request notification permissions. Call when user is a student (e.g. on app open). */
 export async function requestNotificationPermissions(): Promise<boolean> {
+  const Notifications = await getNotificationsModule();
+  if (!Notifications) return false;
+
   const { status: existing } = await Notifications.getPermissionsAsync();
   if (existing === "granted") return true;
   const { status } = await Notifications.requestPermissionsAsync();
@@ -59,6 +103,9 @@ export async function checkAndNotifyWednesdayBookingReminder(
         s.status?.toLowerCase() === "in_progress"
     );
     if (scheduled.length > 0) return;
+
+    const Notifications = await getNotificationsModule();
+    if (!Notifications) return;
 
     await Notifications.scheduleNotificationAsync({
       content: {

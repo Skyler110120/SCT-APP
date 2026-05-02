@@ -50,7 +50,6 @@ export interface Drill {
   loadout?: string;
   position_start?: string;
   position_end?: string;
-  commands: string;
   instructor_notes?: string;
   is_cte: boolean;
   time_limit_seconds?: number;
@@ -72,10 +71,9 @@ export interface DrillCreate {
   rounds_total?: number;
   rounds_per_string?: number;
   number_of_strings?: number;
-  loadout?: string;
+  loadout: string;
   position_start?: string;
   position_end?: string;
-  commands: string;
   instructor_notes?: string;
   is_cte?: boolean;
   time_limit_seconds?: number;
@@ -97,7 +95,6 @@ export interface DrillUpdate {
   loadout?: string;
   position_start?: string;
   position_end?: string;
-  commands?: string;
   instructor_notes?: string;
   is_cte?: boolean;
   time_limit_seconds?: number;

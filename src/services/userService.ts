@@ -13,6 +13,7 @@ import {
   UserWithStudents,
   UserWithInstructorResponse,
   UserWithStudentsResponse,
+  InstructorPermissionUpdate,
 } from "@/src/types/auth.types";
 import { UserRole } from "../types/enums";
 
@@ -165,6 +166,31 @@ export const userService = {
    */
   async updateUserRole(userId: number, role: UserRole): Promise<UserResponse> {
     return this.updateUser(userId, { role });
+  },
+
+  /**
+   * Update instructor-specific permissions/capacity settings.
+   */
+  async updateInstructorPermissions(
+    userId: number,
+    permissionData: InstructorPermissionUpdate
+  ): Promise<UserResponse> {
+    try {
+      const data: User = await apiFetch<User>(`/users/${userId}/permissions`, {
+        method: "PATCH",
+        body: JSON.stringify(permissionData),
+      });
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error(`Error updating instructor permissions for ${userId}:`, error);
+      return {
+        success: false,
+        error: "An error occurred while updating instructor permissions",
+      };
+    }
   },
 
   async approveUserAccount(userId: number): Promise<UserResponse> {

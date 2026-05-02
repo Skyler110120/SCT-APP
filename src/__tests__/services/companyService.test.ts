@@ -16,15 +16,18 @@ jest.mock("../../services/api", () => ({
 }));
 
 jest.mock("react-native", () => ({ Platform: { OS: "ios" } }));
-jest.mock("@react-native-async-storage/async-storage", () => ({
-  getItem: jest.fn().mockResolvedValue("mock-token"),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  multiRemove: jest.fn(),
+jest.mock("../../services/authStorage", () => ({
+  authStorage: {
+    getAuthToken: jest.fn().mockResolvedValue("mock-token"),
+  },
 }));
 
 import { apiFetch } from "../../services/api";
+import { authStorage } from "../../services/authStorage";
 const mockApiFetch = apiFetch as jest.MockedFunction<typeof apiFetch>;
+const mockGetAuthToken = authStorage.getAuthToken as jest.MockedFunction<
+  typeof authStorage.getAuthToken
+>;
 
 const mockCompany = {
   id: 1,
@@ -53,6 +56,7 @@ const mockInviteCode = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGetAuthToken.mockResolvedValue("mock-token");
 });
 
 describe("companyService.getCompany", () => {
@@ -145,8 +149,7 @@ describe("companyService.createInviteCode", () => {
   });
 
   it("returns error when no auth token", async () => {
-    const AsyncStorage = require("@react-native-async-storage/async-storage");
-    AsyncStorage.getItem.mockResolvedValueOnce(null);
+    mockGetAuthToken.mockResolvedValueOnce(null);
     const result = await companyService.createInviteCode({
       company_id: 1,
       role: "student" as any,

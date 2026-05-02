@@ -28,6 +28,7 @@ import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/
 import { eventService } from "@/src/services/eventService";
 import { instructorAvailabilityService } from "@/src/services/instructorAvailabilityService";
 import { sessionService } from "@/src/services/sessionService";
+import { userService } from "@/src/services/userService";
 
 import { UserRole } from "@/src/types/enums";
 import {
@@ -35,6 +36,7 @@ import {
   AvailabilityUpdate,
   CreateAvailabilityRequest,
 } from "@/src/types/availability.types";
+import { User } from "@/src/types/auth.types";
 import { CreateEventRequest, Event } from "@/src/types/event.types";
 import { SessionDetailed } from "@/src/types/sessions.types";
 
@@ -57,6 +59,9 @@ interface Session {
 export default function CalendarScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const canManageOwnAvailability =
+    user?.role === UserRole.INSTRUCTOR &&
+    Boolean(user.can_manage_own_availability);
   const availabilityScrollViewRef = useRef<ScrollView>(null);
   const bottomContentPadding = insets.bottom + 150;
 
@@ -79,7 +84,7 @@ export default function CalendarScreen() {
     70,
     Math.max(36, Math.floor((screenWidth - horizontalPadding - 24) / 7))
   );
-  const monthTitleFontSize = screenWidth < 400 ? 22 : 48;
+  const monthTitleFontSize = screenWidth < 400 ? 20 : 24;
 
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
@@ -93,6 +98,8 @@ export default function CalendarScreen() {
   const [visibleMonth, setVisibleMonth] = useState(firstOfThisMonth);
 
   const [showAvailabilityManagement, setShowAvailabilityManagement] =
+    useState<boolean>(false);
+  const [showAdminAvailabilityManagement, setShowAdminAvailabilityManagement] =
     useState<boolean>(false);
   const [selectedAvailabilityForActions, setSelectedAvailabilityForActions] =
     useState<Availability | null>(null);
@@ -127,6 +134,10 @@ export default function CalendarScreen() {
   const [instructorFilterId, setInstructorFilterId] = useState<number | null>(
     null
   );
+  const [companyInstructors, setCompanyInstructors] = useState<User[]>([]);
+  const [selectedInstructorForAdmin, setSelectedInstructorForAdmin] = useState<
+    number | null
+  >(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -141,10 +152,13 @@ export default function CalendarScreen() {
         promises.push(loadSessionsForMonth());
       }
 
-      if (user?.role === UserRole.INSTRUCTOR) {
+      if (canManageOwnAvailability) {
         promises.push(loadMyAvailabilities());
-      } else if (user?.role === UserRole.STUDENT) {
+      } else if (user?.role === UserRole.STUDENT || user?.role === UserRole.ADMIN) {
         promises.push(loadCompanyAvailabilities());
+      }
+      if (user?.role === UserRole.ADMIN && user?.company_id) {
+        promises.push(loadCompanyInstructors(user.company_id));
       }
 
       await Promise.all(promises);
@@ -217,10 +231,8 @@ export default function CalendarScreen() {
         end_date: formatDateForAPI(endOfMonth),
       });
 
-      console.log(response)
       if (response.success && response.data) {
         setSessions(response.data);
-        console.log("Loaded", response.data.length, "Calendar sessions");
       } else {
         console.error("Failed to load sessions:", response.error);
       }
@@ -279,6 +291,34 @@ export default function CalendarScreen() {
     }
   };
 
+  const loadCompanyInstructors = async (companyId: number) => {
+    try {
+      const response = await userService.getInstructorsByCompany(companyId);
+      if (response.success && response.data) {
+        setCompanyInstructors(response.data);
+        if (!selectedInstructorForAdmin && response.data.length > 0) {
+          setSelectedInstructorForAdmin(response.data[0].id);
+        }
+      }
+    } catch (loadError) {
+      console.error("Error loading company instructors:", loadError);
+    }
+  };
+
+  const loadAdminInstructorAvailabilities = async (instructorId: number) => {
+    try {
+      const response =
+        await instructorAvailabilityService.getInstructorAvailabilityForAdmin(
+          instructorId
+        );
+      if (response.success && response.data) {
+        setAvailabilities(response.data);
+      }
+    } catch (loadError) {
+      console.error("Error loading admin instructor availability:", loadError);
+    }
+  };
+
   const handleSelectDate = (day: any) => {
     setSelectedDate(day.dateString);
     setShowAvailabilityManagement(false);
@@ -300,20 +340,44 @@ export default function CalendarScreen() {
   };
 
   const handleManageAvailability = () => {
-    if (user?.role !== UserRole.INSTRUCTOR) {
-      Alert.alert(
-        "Permission Denied",
-        "Only instructors can manage availability"
-      );
+    if (user?.role === UserRole.INSTRUCTOR) {
+      if (!canManageOwnAvailability) {
+        Alert.alert(
+          "Permission Denied",
+          "You do not have permission to manage availability."
+        );
+        return;
+      }
+      const newShowState = !showAvailabilityManagement;
+      setShowAvailabilityManagement(newShowState);
+      setShowAdminAvailabilityManagement(false);
+      if (!newShowState) {
+        setSelectedAvailabilityForActions(null);
+      }
       return;
     }
 
-    const newShowState = !showAvailabilityManagement;
-    setShowAvailabilityManagement(newShowState);
-
-    if (!newShowState) {
+    if (user?.role === UserRole.ADMIN) {
+      if (!selectedInstructorForAdmin) {
+        Alert.alert("Select Instructor", "Choose an instructor to manage first.");
+        return;
+      }
+      const newShowState = !showAdminAvailabilityManagement;
+      setShowAdminAvailabilityManagement(newShowState);
+      setShowAvailabilityManagement(false);
       setSelectedAvailabilityForActions(null);
+      if (newShowState) {
+        loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
+      } else {
+        loadCompanyAvailabilities();
+      }
+      return;
     }
+
+    Alert.alert(
+      "Permission Denied",
+      "Only instructors or admins can manage availability"
+    );
   };
 
   const handleSelectAvailabilityForActions = (availability: Availability) => {
@@ -376,12 +440,22 @@ export default function CalendarScreen() {
   ) => {
     setIsSubmittingAvailability(true);
     try {
-      const response = await instructorAvailabilityService.createAvailability(
-        availabilityData
-      );
+      const response =
+        user?.role === UserRole.ADMIN && selectedInstructorForAdmin
+          ? await instructorAvailabilityService.createAvailabilityAsAdmin({
+              ...availabilityData,
+              instructor_id: selectedInstructorForAdmin,
+            })
+          : await instructorAvailabilityService.createAvailability(
+              availabilityData
+            );
 
       if (response.success && response.data) {
-        setAvailabilities((prev) => [...prev, response.data!]);
+        if (user?.role === UserRole.ADMIN && selectedInstructorForAdmin) {
+          await loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
+        } else {
+          setAvailabilities((prev) => [...prev, response.data!]);
+        }
         setShowAvailabilityModal(false);
         Alert.alert("Success", "Availability created successfully");
       } else {
@@ -530,19 +604,11 @@ export default function CalendarScreen() {
   }, [selectedDate, user]);
 
   const handleAvailabilityPress = (availability: Availability) => {
-  console.log('handleAvailabilityPress called');
-  console.log('User role:', user?.role);
-  console.log('Availability:', availability);
-  
-  if (user?.role === UserRole.STUDENT) {
-    console.log('✅ Setting availability for booking');
-    setSelectedAvailabilityForBooking(availability);
-    setShowSessionBookingModal(true);
-    console.log('Modal should be showing now');
-  } else {
-    console.log('User is not a student');
-  }
-};
+    if (user?.role === UserRole.STUDENT) {
+      setSelectedAvailabilityForBooking(availability);
+      setShowSessionBookingModal(true);
+    }
+  };
 
   const handleSessionPress = (session: SessionDetailed) => {
     setSelectedSessionForDetails(session);
@@ -584,7 +650,6 @@ export default function CalendarScreen() {
   };
 
   const handleReviewMaterials = () => {
-    console.log("Navigate to course materials");
     router.push({
       pathname: "/company/courses",
       params: {
@@ -677,7 +742,7 @@ export default function CalendarScreen() {
       );
     }
 
-    if (user?.role === UserRole.INSTRUCTOR) {
+    if (canManageOwnAvailability) {
       buttons.push(
         <TouchableOpacity
           key="manage-availability"
@@ -701,15 +766,78 @@ export default function CalendarScreen() {
       );
     }
 
+    if (user?.role === UserRole.ADMIN) {
+      buttons.push(
+        <TouchableOpacity
+          key="manage-instructor-availability"
+          style={[
+            styles.actionButton,
+            showAdminAvailabilityManagement && styles.actionButtonActive,
+          ]}
+          onPress={handleManageAvailability}
+        >
+          <Text
+            style={[
+              styles.actionButtonText,
+              showAdminAvailabilityManagement && styles.actionButtonTextActive,
+            ]}
+          >
+            {showAdminAvailabilityManagement
+              ? "Hide Instructor Schedule"
+              : "Manage Instructor Schedule"}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
     if (buttons.length === 0) return null;
 
-    return <View style={styles.buttonContainer}>{buttons}</View>;
+    return (
+      <>
+        {user?.role === UserRole.ADMIN && (
+          <View style={styles.instructorFilterRow}>
+            <Text style={styles.instructorFilterLabel}>Instructor</Text>
+            <View style={styles.instructorFilterPickerWrap}>
+              <Picker
+                selectedValue={selectedInstructorForAdmin ?? "none"}
+                onValueChange={(value) => {
+                  const nextValue = value === "none" ? null : (value as number);
+                  setSelectedInstructorForAdmin(nextValue);
+                  if (nextValue && showAdminAvailabilityManagement) {
+                    loadAdminInstructorAvailabilities(nextValue);
+                  }
+                }}
+                style={styles.instructorFilterPicker}
+                dropdownIconColor={themes.vegasGold}
+              >
+                {companyInstructors.length === 0 ? (
+                  <Picker.Item label="No instructors found" value="none" />
+                ) : (
+                  companyInstructors.map((instructor) => (
+                    <Picker.Item
+                      key={instructor.id}
+                      label={`${instructor.first_name} ${instructor.last_name}`}
+                      value={instructor.id}
+                    />
+                  ))
+                )}
+              </Picker>
+            </View>
+          </View>
+        )}
+        <View style={styles.buttonContainer}>{buttons}</View>
+      </>
+    );
   };
 
   const renderAvailabilityManagement = () => {
     return (
       <View>
-        <Text style={styles.scheduleText}>Manage Availability</Text>
+        <Text style={styles.scheduleText}>
+          {user?.role === UserRole.ADMIN
+            ? "Manage Instructor Availability"
+            : "Manage Availability"}
+        </Text>
 
         <ScrollView
           ref={availabilityScrollViewRef}
@@ -881,13 +1009,13 @@ export default function CalendarScreen() {
                   selectedDayBackgroundColor: themes.vegasGold,
                   selectedDayTextColor: themes.black,
                   todayTextColor: themes.vegasGold,
-                  dayTextColor: themes.vegasGold,
-                  textDisabledColor: themes.white,
+                  dayTextColor: themes.textPrimary,
+                  textDisabledColor: themes.textMuted,
                   monthTextColor: themes.vegasGold,
                   arrowColor: themes.vegasGold,
                   textMonthFontSize: monthTitleFontSize,
-                  textDayFontSize: Math.max(14, daySize * 0.22),
-                  textDayHeaderFontSize: 14,
+                  textDayFontSize: Math.max(13, daySize * 0.2),
+                  textDayHeaderFontSize: 12,
                   ...({
                     "stylesheet.day.basic": {
                       base: {
@@ -895,9 +1023,9 @@ export default function CalendarScreen() {
                         height: daySize,
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: Math.min(20, daySize * 0.28),
+                        borderRadius: Math.min(14, daySize * 0.25),
                         borderWidth: 1,
-                        borderColor: themes.white,
+                        borderColor: themes.border,
                       },
                     },
                   } as any),
@@ -955,7 +1083,8 @@ export default function CalendarScreen() {
             {renderActionButtons()}
 
             <View style={styles.scheduleContainer}>
-              {user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement ? (
+              {(user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement) ||
+              (user?.role === UserRole.ADMIN && showAdminAvailabilityManagement) ? (
                 renderAvailabilityManagement()
               ) : (
                 <>
@@ -972,7 +1101,7 @@ export default function CalendarScreen() {
                         <Text style={styles.sectionSubtitle}>Events</Text>
                         {eventsForSelectedDate.map((event) => (
                           <View key={event.id} style={styles.sessionCard}>
-                            <Text style={[styles.sessionText]}>
+                            <Text style={styles.sessionText}>
                               {event.title}: {""}
                               {formatTimeString(event.start_time)} -{" "}
                               {formatTimeString(event.end_time)}
@@ -992,50 +1121,25 @@ export default function CalendarScreen() {
                             style={styles.sessionCard}
                             onPress={() => handleSessionPress(session)}
                           >
-                            <View style={{ flex: 1 }}>
-                              <Text
-                                style={[
-                                  styles.sessionText,
-                                  { fontSize: 28, fontFamily: "Chakra-Bold" },
-                                ]}
-                              >
+                            <View style={styles.sessionInfo}>
+                              <Text style={styles.sessionTitleText}>
                                 {session.course_title || session.title} From {formatTimeString(session.start_time)} -{" "}{formatTimeString(session.end_time)}
                               </Text>
-                              <Text
-                                style={[
-                                  styles.sessionText,
-                                  { fontSize: 28 }
-                                ]}
-                              >
+                              <Text style={styles.sessionText}>
                                 Progress: {session.enrollment_progress_display}
                               </Text>
                               {user?.role === UserRole.INSTRUCTOR ? (
-                                <Text
-                                  style={[
-                                    styles.sessionText,
-                                    { fontSize: 28 },
-                                  ]}
-                                >
+                                <Text style={styles.sessionText}>
                                   Student: {session.student_name} 
                                 </Text>
                               ) : (
-                                <Text
-                                  style={[
-                                    styles.sessionText,
-                                    { fontSize: 28 },
-                                  ]}
-                                >
+                                <Text style={styles.sessionText}>
                                   Instructor: {session.instructor_name}
                                 </Text>
                               )}
                             </View>
                             <TouchableOpacity>
-                              <Text
-                                style={[
-                                  styles.actionButtonText,
-                                  { fontSize: 28 },
-                                ]}
-                              >
+                              <Text style={styles.actionButtonText}>
                                 VIEW
                               </Text>
                             </TouchableOpacity>
@@ -1052,7 +1156,7 @@ export default function CalendarScreen() {
                         </Text>
                       )}
 
-                    {user?.role === UserRole.INSTRUCTOR &&
+                    {canManageOwnAvailability &&
                       availabilities.length === 0 && (
                         <>
                           <Text style={styles.sectionSubtitle}>
@@ -1103,6 +1207,8 @@ export default function CalendarScreen() {
                         <Text style={styles.sectionSubtitle}>
                           {user?.role === UserRole.INSTRUCTOR
                             ? "Your Availability"
+                            : user?.role === UserRole.ADMIN
+                            ? "Company Availability"
                             : "Instructor's Availability"}
                         </Text>
                         {displayAvailabilitiesForSelectedDate.length > 0 ? (
@@ -1125,39 +1231,19 @@ export default function CalendarScreen() {
                                   {formatTimeString(availability.end_time)}
                                 </Text>
                                 {availability.instructor_name && user?.role === UserRole.STUDENT && (
-                                  <Text
-                                    style={[
-                                      styles.sessionText,
-                                      { fontSize: 22 },
-                                    ]}
-                                  >
+                                  <Text style={styles.sessionText}>
                                     Instructor: {availability.instructor_name}
                                   </Text>
                                 )}
                                 {user?.role === UserRole.STUDENT && (
-                                  <Text
-                                    style={[
-                                      styles.sessionText,
-                                      { fontSize: 20 },
-                                    ]}
-                                  >
+                                  <Text style={styles.hintText}>
                                     Tap to book a session
                                   </Text>
                                 )}
                               </View>
                               {user?.role === UserRole.STUDENT && (
-                                <View
-                                  style={{
-                                    justifyContent: "center",
-                                    paddingRight: 10,
-                                  }}
-                                >
-                                  <Text
-                                    style={[
-                                      styles.actionButtonText,
-                                      { fontSize: 20 },
-                                    ]}
-                                  >
+                                <View style={styles.bookingActionWrap}>
+                                  <Text style={styles.actionButtonText}>
                                     BOOK
                                   </Text>
                                 </View>
@@ -1181,7 +1267,7 @@ export default function CalendarScreen() {
                             {formatDateString(selectedDate)}
                           </Text>
                         )}
-                        {user?.role === UserRole.INSTRUCTOR && (
+                        {canManageOwnAvailability && (
                           <Text style={styles.hintText}>
                             Tap Manage Availability to see your full weekly
                             schedule
@@ -1206,7 +1292,8 @@ export default function CalendarScreen() {
           />
         )}
 
-        {user?.role === UserRole.INSTRUCTOR && (
+        {((user?.role === UserRole.INSTRUCTOR && canManageOwnAvailability) ||
+          user?.role === UserRole.ADMIN) && (
           <InstructorAvailabilityModal
             visible={showAvailabilityModal}
             isSubmitting={isSubmittingAvailability}

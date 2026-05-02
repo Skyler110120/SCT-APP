@@ -195,6 +195,46 @@ describe("userService.updateUserRole", () => {
   });
 });
 
+describe("userService.updateInstructorPermissions", () => {
+  it("calls PATCH /users/:id/permissions and returns updated user", async () => {
+    const updated = {
+      ...mockUser,
+      role: UserRole.INSTRUCTOR,
+      can_manage_own_availability: true,
+      can_manage_others_permissions: true,
+      max_students_per_session_self: 6,
+    };
+    const payload = {
+      can_manage_own_availability: true,
+      can_manage_others_permissions: true,
+      max_students_per_session_self: 6,
+    };
+    mockApiFetch.mockResolvedValueOnce(updated);
+
+    const result = await userService.updateInstructorPermissions(3, payload);
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(updated);
+    expect(mockApiFetch).toHaveBeenCalledWith("/users/3/permissions", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  });
+
+  it("returns error when permission update fails", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("Forbidden"));
+
+    const result = await userService.updateInstructorPermissions(3, {
+      can_manage_own_availability: false,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(
+      "An error occurred while updating instructor permissions"
+    );
+  });
+});
+
 describe("userService.approveUserAccount", () => {
   it("calls POST /users/:id/approve and returns updated user", async () => {
     const approvedUser = { ...mockUser, role: UserRole.INSTRUCTOR, is_approved: true };

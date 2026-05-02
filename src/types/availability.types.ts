@@ -21,6 +21,10 @@ export interface CreateAvailabilityRequest {
     end_date?: string;
 }
 
+export interface AdminCreateAvailabilityRequest extends CreateAvailabilityRequest {
+    instructor_id: number;
+}
+
 export interface AvailabilityUpdate {
     start_time?: string;
     end_time?: string;

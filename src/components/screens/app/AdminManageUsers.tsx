@@ -7,7 +7,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { userService } from "@/src/services/userService";
 import { adminManageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminManageUsersStyles";
-import { User } from "@/src/types/auth.types";
+import { InstructorPermissionUpdate, User } from "@/src/types/auth.types";
 import { UserRole } from "@/src/types/enums";
 import React, { useEffect, useState } from "react";
 import {
@@ -33,8 +33,25 @@ export default function AdminManageUsers() {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [actionType, setActionType] = useState<"removal" | "role" | "approve">("role");
+  const [actionType, setActionType] = useState<
+    "removal" | "role" | "approve" | "permissions" | "capacity"
+  >("role");
   const [newRole, setNewRole] = useState<UserRole | null>(null);
+  const [permissionDraft, setPermissionDraft] =
+    useState<InstructorPermissionUpdate>({});
+  const [capacitySelfDraft, setCapacitySelfDraft] = useState<number>(4);
+  const [capacityOthersDraft, setCapacityOthersDraft] = useState<number>(4);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const canManageInstructorPermissions =
+    isAdmin ||
+    (user?.role === UserRole.INSTRUCTOR &&
+      Boolean(user.can_manage_others_permissions));
+  const canManageInstructorCapacity =
+    isAdmin ||
+    (user?.role === UserRole.INSTRUCTOR &&
+      Boolean(user.can_set_others_session_capacity));
 
   useEffect(() => {
     if (user?.company_id) {
@@ -96,7 +113,6 @@ export default function AdminManageUsers() {
   };
 
   const handleRemoveAction = (user: User) => {
-    console.log("handleRemoveAction called", user);
     setSelectedUser(user);
     setActionType("removal");
     setModalVisible(true);
@@ -108,10 +124,38 @@ export default function AdminManageUsers() {
     setModalVisible(true);
   };
 
+  const buildPermissionDraft = (targetUser: User): InstructorPermissionUpdate => ({
+    can_manage_own_availability: targetUser.can_manage_own_availability,
+    can_manage_own_time_off: targetUser.can_manage_own_time_off,
+    can_manage_others_availability: targetUser.can_manage_others_availability,
+    can_manage_others_permissions: targetUser.can_manage_others_permissions,
+    can_create_student_invite_codes: targetUser.can_create_student_invite_codes,
+    can_create_instructor_invite_codes:
+      targetUser.can_create_instructor_invite_codes,
+    can_set_own_session_capacity: targetUser.can_set_own_session_capacity,
+    can_set_others_session_capacity: targetUser.can_set_others_session_capacity,
+  });
+
+  const handlePermissionsAction = (targetUser: User) => {
+    setSelectedUser(targetUser);
+    setActionType("permissions");
+    setPermissionDraft(buildPermissionDraft(targetUser));
+    setModalVisible(true);
+  };
+
+  const handleCapacityAction = (targetUser: User) => {
+    setSelectedUser(targetUser);
+    setActionType("capacity");
+    setCapacitySelfDraft(targetUser.max_students_per_session_self ?? 4);
+    setCapacityOthersDraft(targetUser.max_students_per_session_others ?? 4);
+    setModalVisible(true);
+  };
+
   const handleConfirmAction = async () => {
     if (!selectedUser) return;
 
     try {
+      setIsSubmitting(true);
       if (actionType === "role" && newRole) {
         const response = await userService.updateUserRole(
           selectedUser.id,
@@ -160,14 +204,53 @@ export default function AdminManageUsers() {
         } else {
           Alert.alert("Error", response.error || "Failed to approve user account");
         }
+      } else if (actionType === "permissions") {
+        const response = await userService.updateInstructorPermissions(
+          selectedUser.id,
+          permissionDraft
+        );
+        if (response.success && response.data) {
+          setUsers(
+            users.map((u) => (u.id === selectedUser.id ? response.data! : u))
+          );
+          Alert.alert("Success", "Instructor permissions updated");
+        } else {
+          Alert.alert(
+            "Error",
+            response.error || "Failed to update instructor permissions"
+          );
+        }
+      } else if (actionType === "capacity") {
+        const response = await userService.updateInstructorPermissions(
+          selectedUser.id,
+          {
+            max_students_per_session_self: capacitySelfDraft,
+            max_students_per_session_others: capacityOthersDraft,
+          }
+        );
+        if (response.success && response.data) {
+          setUsers(
+            users.map((u) => (u.id === selectedUser.id ? response.data! : u))
+          );
+          Alert.alert("Success", "Session capacity updated");
+        } else {
+          Alert.alert(
+            "Error",
+            response.error || "Failed to update session capacity"
+          );
+        }
       }
     } catch (error) {
       console.error("Error handling user action:", error);
       Alert.alert("Error", "An unexpected error occurred");
     } finally {
+      setIsSubmitting(false);
       setModalVisible(false);
       setSelectedUser(null);
       setNewRole(null);
+      setPermissionDraft({});
+      setCapacitySelfDraft(4);
+      setCapacityOthersDraft(4);
     }
   };
 
@@ -175,6 +258,9 @@ export default function AdminManageUsers() {
     setModalVisible(false);
     setSelectedUser(null);
     setNewRole(null);
+    setPermissionDraft({});
+    setCapacitySelfDraft(4);
+    setCapacityOthersDraft(4);
   };
 
   const handleRetryFetch = () => {
@@ -219,6 +305,11 @@ export default function AdminManageUsers() {
                   onRemoveAction={handleRemoveAction}
                   onRoleAction={handleRoleAction}
                   onApproveAction={handleApproveAction}
+                  onPermissionsAction={handlePermissionsAction}
+                  onCapacityAction={handleCapacityAction}
+                  canManageInstructorPermissions={canManageInstructorPermissions}
+                  canManageInstructorCapacity={canManageInstructorCapacity}
+                  currentUserId={user?.id}
                 />
               )}
 
@@ -250,6 +341,13 @@ export default function AdminManageUsers() {
                 action={actionType}
                 newRole={newRole}
                 setNewRole={setNewRole}
+                permissionDraft={permissionDraft}
+                setPermissionDraft={setPermissionDraft}
+                capacitySelfDraft={capacitySelfDraft}
+                setCapacitySelfDraft={setCapacitySelfDraft}
+                capacityOthersDraft={capacityOthersDraft}
+                setCapacityOthersDraft={setCapacityOthersDraft}
+                isSubmitting={isSubmitting}
                 onConfirm={handleConfirmAction}
                 onCancel={handleCancelAction}
             />

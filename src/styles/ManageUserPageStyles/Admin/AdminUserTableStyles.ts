@@ -5,21 +5,21 @@ import { Dimensions } from "react-native";
 const { width } = Dimensions.get("window");
 const isCompact = width < 420;
 
-export const adminUserTableStyles = StyleSheet. create({
+export const adminUserTableStyles = StyleSheet.create({
   tableContainer: {
     flex: 1,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
-    borderRadius: 8,
-    backgroundColor: "transparent",
+    borderColor: themes.borderStrong,
+    borderRadius: 12,
+    backgroundColor: themes.backgroundElevated,
     overflow: "hidden",
   },
   tableSectionTitle: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: themes. vegasGold,
-    fontSize: isCompact ? 22 : 28,
-    fontFamily: "Chakra-Bold",
+    borderBottomColor: themes.borderStrong,
+    fontSize: isCompact ? 18 : 20,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   emptyState: {
@@ -29,9 +29,8 @@ export const adminUserTableStyles = StyleSheet. create({
   },
   emptyStateText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
-    opacity: 0.5,
+    fontFamily: "Inter_400Regular",
+    color: themes.textMuted,
   },
   listContent: {
     paddingBottom: 16,
@@ -46,16 +45,15 @@ export const adminUserTableStyles = StyleSheet. create({
   },
   userName:  {
     marginBottom: 4,
-    fontSize: isCompact ? 20 : 24,
-    fontFamily: "Chakra-Bold",
+    fontSize: isCompact ? 16 : 17,
+    fontFamily: "Inter_600SemiBold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
-    fontSize: isCompact ? 15 : 18,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
-    opacity: 0.8,
+    fontSize: isCompact ? 13 : 14,
+    fontFamily: "Inter_400Regular",
+    color: themes.textSecondary,
   },
   userMeta:  {
     flexDirection: "row",
@@ -63,17 +61,17 @@ export const adminUserTableStyles = StyleSheet. create({
     flexWrap: "wrap",
   },
   roleBadge:  {
-    paddingVertical: 2,
-    paddingHorizontal: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
     marginRight: 12,
     borderWidth: 1,
     borderRadius: 12,
-    borderColor: themes. vegasGold,
-    backgroundColor: themes.black,
+    borderColor: themes.borderStrong,
+    backgroundColor: themes.backgroundSoft,
   },
   roleBadgeText: {
-    fontSize: isCompact ? 14 : 18,
-    fontFamily: "Chakra-Bold",
+    fontSize: isCompact ? 12 : 13,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   pendingBadge: {
@@ -85,8 +83,8 @@ export const adminUserTableStyles = StyleSheet. create({
     backgroundColor: "rgba(255, 176, 32, 0.12)",
   },
   pendingBadgeText: {
-    fontSize: isCompact ? 13 : 16,
-    fontFamily: "Chakra-Bold",
+    fontSize: isCompact ? 12 : 13,
+    fontFamily: "Inter_600SemiBold",
     color: "#FFB020",
   },
   userActions:  {
@@ -104,8 +102,8 @@ export const adminUserTableStyles = StyleSheet. create({
   },
   actionText: {
     marginLeft: 6,
-    fontSize: isCompact ? 14 : 16,
-    fontFamily: "Chakra-BoldItalic",
+    fontSize: isCompact ? 12 : 13,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   removeText:  {

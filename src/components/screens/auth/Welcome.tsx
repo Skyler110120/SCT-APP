@@ -1,56 +1,56 @@
 import React from "react";
-import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import { SafeAreaView, View } from "react-native";
 import { useRouter } from "expo-router";
-import BackgroundGradient from "@/src/components/BackgroundGradient";
-import { themes } from "@/src/context/themes";
+import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
+import { AppButton, AppText } from "@/src/components/ui";
+import { welcomeScreenStyles as styles } from "@/src/styles/AuthPageStyles/welcomeScreenStyles";
+import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 export default function WelcomeScreen() {
   const router = useRouter();
   return (
-    <BackgroundGradient>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text
-            style={{ fontSize: 24, fontWeight: "bold", color: themes.white }}
-          >
-            Dashboard
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              router.push("/login");
-            }}
-            style={{
-              marginTop: 20,
-              padding: 10,
-              backgroundColor: themes.vegasGold,
-              borderRadius: 20,
-            }}
-          >
-            <Text style={{ fontSize: 18, color: themes.black }}>
-              Go to Login
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              router.push("/register");
-            }}
-            style={{
-              marginTop: 20,
-              padding: 10,
-              backgroundColor: themes.black,
-              borderWidth: 1,
-              borderRadius: 20,
-              borderColor: themes.vegasGold,
-            }}
-          >
-            <Text style={{ fontSize: 18, color: themes.white }}>
-              Go to Register
-            </Text>
-          </TouchableOpacity>
+    <AuthGridBackground>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.centered}>
+          <View style={styles.card}>
+            <AuthBrandLockup />
+            <AppText variant="title" style={styles.headline}>
+              Train with precision. Lead with confidence.
+            </AppText>
+            <AppText variant="body" style={styles.subtitle}>
+              Access your schedule, progress, and training standards from one secure mobile hub.
+            </AppText>
+
+            <View style={styles.valueProps}>
+              <View style={styles.valuePropRow}>
+                <AppText variant="caption" style={styles.valuePropText}>Trusted Coaching</AppText>
+              </View>
+              <View style={styles.valuePropRow}>
+                <AppText variant="caption" style={styles.valuePropText}>Structured Progress</AppText>
+              </View>
+              <View style={styles.valuePropRow}>
+                <AppText variant="caption" style={styles.valuePropText}>Results-Driven Training</AppText>
+              </View>
+            </View>
+
+            <View style={styles.actionColumn}>
+              <AppButton
+                label="Sign in"
+                fullWidth
+                size="lg"
+                onPress={() => router.push("/login")}
+              />
+              <AppButton
+                label="Create account"
+                variant="outline"
+                fullWidth
+                size="lg"
+                onPress={() => router.push("/register")}
+              />
+            </View>
+          </View>
         </View>
       </SafeAreaView>
-    </BackgroundGradient>
+    </AuthGridBackground>
   );
 }

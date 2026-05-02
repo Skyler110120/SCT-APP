@@ -66,7 +66,7 @@ describe("drillService", () => {
         name: "Draw Drill",
         purpose: "Speed",
         fire_type: "LIVE_FIRE" as const,
-        commands: "Draw and fire.",
+        loadout: "2×10",
       };
       const mockDrill = { id: 10, ...drillData, fundamentals: [] };
       mockApiFetch.mockResolvedValue(mockDrill);

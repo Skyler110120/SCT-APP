@@ -1,12 +1,12 @@
 import React, { Component, ErrorInfo } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
 } from "react-native";
-import { themes } from "@/src/context/themes";
+import { theme } from "@/src/context/themes";
+import { AppButton, AppCard, AppText } from "@/src/components/ui";
+import { emitGlobalError } from "@/src/utils/globalErrorBus";
 
 interface Props {
   children: React.ReactNode;
@@ -37,29 +37,51 @@ export class ErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: false, error: null });
   };
 
+  handleReport = () => {
+    if (!this.state.error) return;
+    emitGlobalError({
+      title: "App crash detected",
+      message: this.state.error.message || "Unexpected rendering failure.",
+      kind: "unknown",
+      severity: "error",
+      canRetry: true,
+      dedupeKey: `boundary:${this.state.error.message}`,
+    });
+  };
+
   render() {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Something went wrong</Text>
-            <Text style={styles.message}>
+          <AppCard style={styles.card} variant="elevated">
+            <AppText variant="title" style={styles.title}>
+              Something went wrong
+            </AppText>
+            <AppText variant="body" style={styles.message}>
               An unexpected error occurred. Please try again.
-            </Text>
+            </AppText>
             {__DEV__ && this.state.error && (
               <ScrollView style={styles.debugBox}>
-                <Text style={styles.debugText}>
+                <AppText style={styles.debugText}>
                   {this.state.error.message}
-                </Text>
+                </AppText>
               </ScrollView>
             )}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={this.handleReset}
-            >
-              <Text style={styles.buttonText}>Try Again</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.actions}>
+              <AppButton
+                label="Try again"
+                variant="secondary"
+                onPress={this.handleReset}
+                style={styles.actionButton}
+              />
+              <AppButton
+                label="Report issue"
+                variant="outline"
+                onPress={this.handleReport}
+                style={styles.actionButton}
+              />
+            </View>
+          </AppCard>
         </View>
       );
     }
@@ -73,33 +95,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: themes.black,
+    backgroundColor: theme.colors.background,
     padding: 24,
   },
   card: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 12,
-    padding: 24,
     width: "100%",
     maxWidth: 400,
-    alignItems: "center",
+    alignItems: "stretch",
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: themes.white,
     marginBottom: 8,
-    fontFamily: "Chakra-Bold",
   },
   message: {
-    fontSize: 14,
-    color: "#AAAAAA",
     textAlign: "center",
     marginBottom: 20,
-    fontFamily: "Chakra-Regular",
+    color: theme.colors.textSecondary,
   },
   debugBox: {
-    backgroundColor: themes.black,
+    backgroundColor: theme.colors.background,
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
@@ -107,20 +120,13 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   debugText: {
-    fontSize: 12,
-    color: "#FF6B6B",
-    fontFamily: "Chakra-Regular",
+    color: theme.colors.danger,
   },
-  button: {
-    backgroundColor: themes.vegasGold,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+  actions: {
+    flexDirection: "row",
+    gap: theme.space.sm,
   },
-  buttonText: {
-    color: themes.black,
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Chakra-Bold",
+  actionButton: {
+    flex: 1,
   },
 });

@@ -4,7 +4,7 @@ import { themes } from "@/src/context/themes";
 export const sessionFormStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themes.black,
+    backgroundColor: themes.background,
   },
   safeArea: {
     flex: 1,
@@ -20,9 +20,9 @@ export const sessionFormStyles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: themes.white,
+    color: themes.textSecondary,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Inter_400Regular",
   },
 
   // Header
@@ -44,8 +44,8 @@ export const sessionFormStyles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     color: themes.vegasGold,
-    fontSize: 22,
-    fontFamily: "Chakra-Bold",
+    fontSize: 20,
+    fontFamily: "Oswald_500Medium",
   },
   headerSubtitle: {
     color: themes.white,
@@ -98,8 +98,8 @@ export const sessionFormStyles = StyleSheet.create({
   // Section
   sectionContainer: {
     marginTop: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderRadius: 12,
+    backgroundColor: themes.backgroundElevated,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: "rgba(197, 179, 88, 0.15)",
@@ -107,7 +107,7 @@ export const sessionFormStyles = StyleSheet.create({
   sectionTitle: {
     color: themes.vegasGold,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "Oswald_500Medium",
     marginBottom: 12,
   },
   sectionDivider: {
@@ -123,7 +123,7 @@ export const sessionFormStyles = StyleSheet.create({
   fieldLabel: {
     color: themes.white,
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "Inter_600SemiBold",
     marginBottom: 8,
   },
   fieldHint: {
@@ -232,14 +232,14 @@ export const sessionFormStyles = StyleSheet.create({
 
   // Text input
   textInput: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderRadius: 8,
+    backgroundColor: themes.backgroundSoft,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: "rgba(197, 179, 88, 0.2)",
     color: themes.white,
     padding: 12,
     fontSize: 15,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Inter_400Regular",
     minHeight: 44,
   },
   textInputMultiline: {
@@ -294,7 +294,7 @@ export const sessionFormStyles = StyleSheet.create({
   completeButtonText: {
     color: themes.black,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "Oswald_500Medium",
     letterSpacing: 1,
   },
 

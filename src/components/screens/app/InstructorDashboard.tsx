@@ -251,15 +251,7 @@ export default function InstructorDashboard() {
               </TouchableOpacity>
             ))
           ) : (
-            <Text
-              style={{
-                color: "rgba(255,255,255,0.5)",
-                textAlign: "center",
-                fontSize: 16,
-                fontFamily: "Chakra-Regular",
-                paddingVertical: 24,
-              }}
-            >
+            <Text style={styles.emptyStateText}>
               No sessions scheduled for this day
             </Text>
           )}

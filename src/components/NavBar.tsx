@@ -1,10 +1,11 @@
 import Images from "@/src/assets/images";
 import { useAuth } from "@/src/context/AuthContext";
 import { Link, usePathname, useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import { navBarStyles as styles } from "../styles/navBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getNavItemsForRole as getNavConfig } from "../utils/navBarUtils";
+import { AppText } from "./ui";
 
 type AppRouterType = Parameters<typeof Link>[0]["href"];
 
@@ -44,6 +45,11 @@ function getIconForNavItem(name: string) {
   return iconMap[key] ?? iconMap.profile;
 }
 
+function formatLabel(label: string) {
+  if (!label) return label;
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 interface BottomNavBarProps {}
 
 export default function BottomNavBar({}: BottomNavBarProps) {
@@ -74,15 +80,18 @@ export default function BottomNavBar({}: BottomNavBarProps) {
             style={isActive ? styles.selectedIconBackground : undefined}
           >
             <TouchableOpacity
-              style={styles.navItem}
+              style={isActive ? styles.navItemActive : styles.navItem}
               onPress={() => router.push(item.route as AppRouterType)}
             >
               <Image
                 source={isActive ? item.activeIcon : item.icon}
                 style={styles.navIcon}
+                resizeMode="contain"
               />
             </TouchableOpacity>
-            {isActive && <Text style={[styles.navText]}>{item.name}</Text>}
+            {isActive && (
+              <AppText style={styles.navText}>{formatLabel(item.name)}</AppText>
+            )}
           </View>
         );
       })}

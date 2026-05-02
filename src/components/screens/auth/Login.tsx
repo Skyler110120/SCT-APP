@@ -1,25 +1,22 @@
-import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/context/AuthContext";
 import { useEffect } from "react";
-import { themes } from "@/src/context/themes";
 import { LoginCredentials } from "@/src/types/auth.types";
 import { loginScreenStyles as styles } from "@/src/styles/LoginPageStyles/loginScreenStyles";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Image,
-  Text,
-  TextInput,
   View,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
 import Images from "@/src/assets/images";
+import { AppButton, AppInput, AppScreen, AppText } from "@/src/components/ui";
+import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
+import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 export default function LoginScreen() {
 
@@ -71,7 +68,7 @@ export default function LoginScreen() {
 
   return (
     
-   <BackgroundGradient>
+   <AuthGridBackground>
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}>
@@ -79,68 +76,75 @@ export default function LoginScreen() {
       contentContainerStyle={{ flexGrow: 1 }}
       keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.container}>
-            <SafeAreaView style={styles.container}>
+        <AppScreen style={styles.container}>
+            <View style={styles.card}>
               <View style={styles.backButtonContainer}>
                 <TouchableOpacity onPress={() => router.push('/welcome')}>
                   <Image source={Images.buttons.backButton} />
                 </TouchableOpacity>
               </View>
               <View style={styles.loginScreenContentContainer}>
-                <Image
-                  source={Images.logo.sctLogo}
-                  style={styles.image}
-                />
-                <TextInput
-                  multiline={false}
-                  scrollEnabled={false}
-                  placeholder="Email"
-                  placeholderTextColor={themes.vegasGold}
-                  style={styles.textInputBox}
-                  value={credentials.email}
-                  onChangeText={(text) => handleChange("email", text)}
-                  autoCapitalize="none"
-                  autoComplete="username"
-                />
-                <TextInput
-                  multiline={false}
-                  scrollEnabled={false}
-                  placeholder="Password"
-                  placeholderTextColor={themes.vegasGold}
-                  style={styles.textInputBox}
-                  secureTextEntry={true}
-                  value={credentials.password}
-                  onChangeText={(text) => handleChange("password", text)}
-                />
-                <TouchableOpacity
-                  style={styles.logInButton}
-                  onPress={handleLogin}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color={themes.white} />
-                  ) : (
-                    <Text style={styles.logInButtonText}>LOG IN</Text>
-                  )}
-                </TouchableOpacity>
+                <View style={styles.logoWrap}>
+                  <AuthBrandLockup compact />
+                </View>
+                <AppText variant="title" style={styles.heading}>
+                  Sign in to your training hub
+                </AppText>
+                <AppText variant="body" style={styles.subtitle}>
+                  Access your schedule, progress, and program updates in one secure place.
+                </AppText>
+                <View style={styles.securityBadge}>
+                  <AppText variant="caption" style={styles.securityText}>
+                    Secure encrypted login
+                  </AppText>
+                </View>
+                <View style={styles.form}>
+                  <AppInput
+                    label="Email"
+                    placeholder="Email"
+                    style={styles.textInputBox}
+                    value={credentials.email}
+                    onChangeText={(text) => handleChange("email", text)}
+                    autoCapitalize="none"
+                    autoComplete="username"
+                  />
+                  <AppInput
+                    label="Password"
+                    placeholder="Password"
+                    style={styles.textInputBox}
+                    secureTextEntry={true}
+                    value={credentials.password}
+                    onChangeText={(text) => handleChange("password", text)}
+                  />
+                  <AppButton
+                    style={styles.logInButton as any}
+                    fullWidth
+                    label="Sign in"
+                    isLoading={isLoading}
+                    onPress={handleLogin}
+                  />
+                </View>
                 <TouchableOpacity onPress={() => router.push('/forgot-password')}>
-                  <Text style={styles.forgotPasswordText}>
+                  <AppText style={styles.forgotPasswordText}>
                     Forgot Password?
-                  </Text>
+                  </AppText>
                 </TouchableOpacity>
                 <View style={styles.orContainer}>
                   <View style={styles.horizontalLine} />
-                  <Text style={styles.orText}>OR</Text>
+                  <AppText style={styles.orText}>OR</AppText>
                   <View style={styles.horizontalLine} />
                 </View>
-                <TouchableOpacity>
-                  <Image source={Images.buttons.signInWithGoogle} />
+                <TouchableOpacity onPress={() => router.push("/register")}>
+                  <AppText style={styles.registerPrompt}>
+                    Don't have an account?{" "}
+                    <AppText style={styles.registerLink}>Create one</AppText>
+                  </AppText>
                 </TouchableOpacity>
               </View>
-            </SafeAreaView>
-        </View>
+            </View>
+        </AppScreen>
       </ScrollView>
     </KeyboardAvoidingView>
-   </BackgroundGradient>
+   </AuthGridBackground>
   );
 }

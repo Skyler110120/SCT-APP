@@ -17,8 +17,8 @@ export const adminManageUsersStyles = StyleSheet.create({
   pageTitle: {
     marginBottom: 24,
     textAlign: "center",
-    fontSize: 34,
-    fontFamily: "Chakra-BoldItalic",
+    fontSize: 30,
+    fontFamily: "Oswald_600SemiBold",
     color: themes.vegasGold,
   },
   tableSection: {
@@ -33,8 +33,8 @@ export const adminManageUsersStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
+    fontFamily: "Inter_500Medium",
+    color: themes.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -44,8 +44,8 @@ export const adminManageUsersStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Inter_500Medium",
+    color: themes.danger,
     textAlign: "center",
     marginBottom: 20,
   },
@@ -56,8 +56,8 @@ export const adminManageUsersStyles = StyleSheet.create({
     borderRadius: 6,
   },
   retryButtonText:  {
-    fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontSize: 14,
+    fontFamily: "Oswald_500Medium",
     color: themes.black,
   },
 });

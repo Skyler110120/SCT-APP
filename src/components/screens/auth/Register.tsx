@@ -2,7 +2,6 @@ import Images from "@/src/assets/images";
 import { themes } from "@/src/context/themes";
 import { registerScreenStyles as styles } from "@/src/styles/RegisterPageStyles/registerScreen";
 
-import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { CourseSelectionModal } from "@/src/components/onboarding/CourseSelectionModal";
 import { InviteCodeModal } from "@/src/components/onboarding/InviteCodeModal";
 
@@ -16,17 +15,17 @@ import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 import { useRouter } from "expo-router";
 import { useState, useEffect, useRef } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Platform,
   SafeAreaView,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { AppButton, AppInput, AppText } from "@/src/components/ui";
+import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
+import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 // Students skip instructor selection — they book any available instructor after signup.
 type OnboardingStep = "invite-code" | "course-selection" | "cadence-selection" | "registration";
@@ -267,14 +266,14 @@ export default function RegisterScreen() {
     } else if (currentStep === "cadence-selection") {
       return (
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.82)", justifyContent: "center", padding: 20 }}>
-          <View style={{ backgroundColor: "#111", borderRadius: 16, padding: 16 }}>
+          <View style={{ backgroundColor: themes.backgroundElevated, borderRadius: 16, padding: 16 }}>
             <TouchableOpacity onPress={handleBack} style={{ marginBottom: 12 }}>
-              <Text style={{ color: themes.vegasGold }}>Back</Text>
+              <AppText color={themes.vegasGold}>Back</AppText>
             </TouchableOpacity>
-            <Text style={{ color: "#fff", fontSize: 20, fontWeight: "700", marginBottom: 8 }}>Choose Your Program Plan</Text>
-            <Text style={{ color: "#ddd", marginBottom: 16 }}>
+            <AppText variant="title" style={{ marginBottom: 8 }}>Choose Your Program Plan</AppText>
+            <AppText style={{ marginBottom: 16 }}>
               This choice is final for this enrollment and cannot be changed later.
-            </Text>
+            </AppText>
             <TouchableOpacity
               onPress={() => handleCadenceSelection("WEEKLY")}
               style={{
@@ -285,9 +284,9 @@ export default function RegisterScreen() {
                 marginBottom: 10,
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Weekly Plan</Text>
-              <Text style={{ color: "#ccc" }}>24 classes over 6 months</Text>
-              <Text style={{ color: "#ccc" }}>$200/month, 1 grace month, then $50/class</Text>
+              <AppText variant="bodyStrong">Weekly Plan</AppText>
+              <AppText>24 classes over 6 months</AppText>
+              <AppText>$200/month, 1 grace month, then $50/class</AppText>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleCadenceSelection("BIWEEKLY")}
@@ -298,9 +297,9 @@ export default function RegisterScreen() {
                 padding: 12,
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Bi-Weekly Plan</Text>
-              <Text style={{ color: "#ccc" }}>24 classes over 12 months</Text>
-              <Text style={{ color: "#ccc" }}>$100/month, 2 grace months, then $50/class</Text>
+              <AppText variant="bodyStrong">Bi-Weekly Plan</AppText>
+              <AppText>24 classes over 12 months</AppText>
+              <AppText>$100/month, 2 grace months, then $50/class</AppText>
             </TouchableOpacity>
           </View>
         </View>
@@ -315,9 +314,9 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <BackgroundGradient>
-        <SafeAreaView style={styles.container}>
+    <AuthGridBackground>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.card}>
           <View style={styles.backButtonContainer}>
             <TouchableOpacity onPress={handleBack}>
               <Image source={Images.buttons.backButton} />
@@ -334,34 +333,47 @@ export default function RegisterScreen() {
             keyboardOpeningTime={0}
           >
             <View style={styles.registerScreenContentContainer}>
-              <Image source={Images.logo.sctLogo} style={styles.image} />
+              <View style={styles.brandHeader}>
+                <AuthBrandLockup compact />
+              </View>
+              <AppText variant="title" style={styles.title}>
+                Create your training account
+              </AppText>
+              <AppText variant="body" style={styles.subtitle}>
+                Join your organization and start tracking progress with a modern training workflow.
+              </AppText>
+              <View style={styles.flowBadge}>
+                <AppText variant="caption" style={styles.flowBadgeText}>
+                  Structured enrollment flow
+                </AppText>
+              </View>
 
               {companyInfo && (
                 <View style={styles.welcomeContainer}>
-                  <Text style={styles.welcomeText}>
+                  <AppText style={styles.welcomeText}>
                     Welcome to {companyInfo.company_name}!
-                  </Text>
-                  <Text style={styles.welcomeSubtext}>
+                  </AppText>
+                  <AppText style={styles.welcomeSubtext}>
                     Complete your account information below
                     {role === UserRole.STUDENT && selectedCourse &&
                       `\nCourse: ${selectedCourse.title}${selectedCadence ? ` • ${selectedCadence === "BIWEEKLY" ? "Bi-Weekly" : "Weekly"} plan` : ""}`}
-                  </Text>
+                  </AppText>
                 </View>
               )}
 
               <View style={styles.formContainer}>
                 <View style={styles.nameInputBoxContainer}>
-                  <TextInput
+                  <AppInput
+                    label="First Name"
                     placeholder="First Name"
-                    placeholderTextColor={themes.vegasGold}
                     style={styles.nameInputBox}
                     value={formData.first_name}
                     onChangeText={(text) => handleChange("first_name", text)}
                     returnKeyType="next"
                   />
-                  <TextInput
+                  <AppInput
+                    label="Last Name"
                     placeholder="Last Name"
-                    placeholderTextColor={themes.vegasGold}
                     style={styles.nameInputBox}
                     value={formData.last_name}
                     onChangeText={(text) => handleChange("last_name", text)}
@@ -369,9 +381,9 @@ export default function RegisterScreen() {
                   />
                 </View>
 
-                <TextInput
+                <AppInput
+                  label="Email"
                   placeholder="Email"
-                  placeholderTextColor={themes.vegasGold}
                   style={styles.textInputBox}
                   value={formData.email}
                   onChangeText={(text) => handleChange("email", text)}
@@ -380,9 +392,9 @@ export default function RegisterScreen() {
                   returnKeyType="next"
                 />
 
-                <TextInput
+                <AppInput
+                  label="Password"
                   placeholder="Password"
-                  placeholderTextColor={themes.vegasGold}
                   style={styles.textInputBox}
                   secureTextEntry={true}
                   value={formData.password}
@@ -390,9 +402,9 @@ export default function RegisterScreen() {
                   returnKeyType="next"
                 />
 
-                <TextInput
+                <AppInput
+                  label="Confirm Password"
                   placeholder="Confirm Password"
-                  placeholderTextColor={themes.vegasGold}
                   style={styles.textInputBox}
                   secureTextEntry={true}
                   value={formData.confirm_password}
@@ -401,22 +413,18 @@ export default function RegisterScreen() {
                   onSubmitEditing={handleRegister}
                 />
 
-                <TouchableOpacity
-                  style={styles.signUpButton}
+                <AppButton
+                  style={styles.signUpButton as any}
+                  label="Create account"
+                  isLoading={isLoading}
+                  fullWidth
                   onPress={handleRegister}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
-                  )}
-                </TouchableOpacity>
+                />
               </View>
             </View>
           </KeyboardAwareScrollView>
-        </SafeAreaView>
-      </BackgroundGradient>
-    </View>
+        </View>
+      </SafeAreaView>
+    </AuthGridBackground>
   );
 }

@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
 import { adminUserActionModalStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminUserActionModalStyles";
-import { User, UserRole } from "@/src/types/auth.types";
+import { InstructorPermissionUpdate, User, UserRole } from "@/src/types/auth.types";
 import { Picker } from "@react-native-picker/picker";
 import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
@@ -8,9 +8,18 @@ import { Modal, Text, TouchableOpacity, View } from "react-native";
 interface UserActionModalProps {
   visible: boolean;
   user: User | null;
-  action: "removal" | "role" | "approve";
+  action: "removal" | "role" | "approve" | "permissions" | "capacity";
   newRole: UserRole | null;
   setNewRole: (role: UserRole) => void;
+  permissionDraft: InstructorPermissionUpdate;
+  setPermissionDraft: React.Dispatch<
+    React.SetStateAction<InstructorPermissionUpdate>
+  >;
+  capacitySelfDraft: number;
+  setCapacitySelfDraft: React.Dispatch<React.SetStateAction<number>>;
+  capacityOthersDraft: number;
+  setCapacityOthersDraft: React.Dispatch<React.SetStateAction<number>>;
+  isSubmitting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -21,34 +30,46 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
   action,
   newRole,
   setNewRole,
+  permissionDraft,
+  setPermissionDraft,
+  capacitySelfDraft,
+  setCapacitySelfDraft,
+  capacityOthersDraft,
+  setCapacityOthersDraft,
+  isSubmitting = false,
   onConfirm,
   onCancel,
 }) => {
-  console.log("=== UserActionModal Debug ===");
-  console.log("visible:", visible);
-  console.log("user:", user);
-  console.log("user?.id:", user?.id, "type:", typeof user?.id);
-  console.log("action:", action);
-  console.log("newRole:", newRole);
-  console.log("================================");
   if (!user) return null;
 
   const isRemovalAction = action === "removal";
   const isApproveAction = action === "approve";
+  const isPermissionsAction = action === "permissions";
+  const isCapacityAction = action === "capacity";
 
   const modalTitle = isRemovalAction
     ? "Remove User from Company"
     : isApproveAction
     ? "Approve Account Access"
+    : isPermissionsAction
+    ? "Manage Permissions"
+    : isCapacityAction
+    ? "Session Capacity"
     : "Update Role";
 
-  const confirmButtonText = isRemovalAction ? "Remove User" : isApproveAction ? "Approve Access" : "Update Role";
+  const confirmButtonText = isRemovalAction
+    ? "Remove User"
+    : isApproveAction
+    ? "Approve Access"
+    : isPermissionsAction
+    ? "Save Permissions"
+    : isCapacityAction
+    ? "Save Capacity"
+    : "Update Role";
 
   const confirmButtonStyle = isRemovalAction
     ? styles.removalButton
     : styles.confirmButton;
-
-  console.log("UserActionModal props", { visible, user, action });
 
   return (
     <Modal
@@ -84,6 +105,142 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
                   This applies to pending instructor/admin invite signups.
                 </Text>
               </>
+            ) : isPermissionsAction ? (
+              <>
+                <Text style={styles.confirmationText}>
+                  Configure instructor permissions.
+                </Text>
+                <TouchableOpacity
+                  style={styles.permissionToggleRow}
+                  onPress={() =>
+                    setPermissionDraft((prev) => ({
+                      ...prev,
+                      can_manage_own_availability: !Boolean(
+                        prev.can_manage_own_availability
+                      ),
+                    }))
+                  }
+                >
+                  <Text style={styles.permissionLabel}>
+                    Manage own availability
+                  </Text>
+                  <Text style={styles.permissionValue}>
+                    {Boolean(permissionDraft.can_manage_own_availability)
+                      ? "ON"
+                      : "OFF"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.permissionToggleRow}
+                  onPress={() =>
+                    setPermissionDraft((prev) => ({
+                      ...prev,
+                      can_manage_others_availability: !Boolean(
+                        prev.can_manage_others_availability
+                      ),
+                    }))
+                  }
+                >
+                  <Text style={styles.permissionLabel}>
+                    Manage others availability
+                  </Text>
+                  <Text style={styles.permissionValue}>
+                    {Boolean(permissionDraft.can_manage_others_availability)
+                      ? "ON"
+                      : "OFF"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.permissionToggleRow}
+                  onPress={() =>
+                    setPermissionDraft((prev) => ({
+                      ...prev,
+                      can_manage_others_permissions: !Boolean(
+                        prev.can_manage_others_permissions
+                      ),
+                    }))
+                  }
+                >
+                  <Text style={styles.permissionLabel}>
+                    Manage others permissions
+                  </Text>
+                  <Text style={styles.permissionValue}>
+                    {Boolean(permissionDraft.can_manage_others_permissions)
+                      ? "ON"
+                      : "OFF"}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.permissionToggleRow}
+                  onPress={() =>
+                    setPermissionDraft((prev) => ({
+                      ...prev,
+                      can_set_others_session_capacity: !Boolean(
+                        prev.can_set_others_session_capacity
+                      ),
+                    }))
+                  }
+                >
+                  <Text style={styles.permissionLabel}>
+                    Set others session capacity
+                  </Text>
+                  <Text style={styles.permissionValue}>
+                    {Boolean(permissionDraft.can_set_others_session_capacity)
+                      ? "ON"
+                      : "OFF"}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : isCapacityAction ? (
+              <>
+                <Text style={styles.confirmationText}>
+                  Configure session capacity limits.
+                </Text>
+                <View style={styles.capacityRow}>
+                  <Text style={styles.permissionLabel}>Own session max</Text>
+                  <View style={styles.capacityStepper}>
+                    <TouchableOpacity
+                      style={styles.capacityButton}
+                      onPress={() =>
+                        setCapacitySelfDraft((value) => Math.max(1, value - 1))
+                      }
+                    >
+                      <Text style={styles.capacityButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.capacityValue}>{capacitySelfDraft}</Text>
+                    <TouchableOpacity
+                      style={styles.capacityButton}
+                      onPress={() =>
+                        setCapacitySelfDraft((value) => Math.min(50, value + 1))
+                      }
+                    >
+                      <Text style={styles.capacityButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <View style={styles.capacityRow}>
+                  <Text style={styles.permissionLabel}>Others session max</Text>
+                  <View style={styles.capacityStepper}>
+                    <TouchableOpacity
+                      style={styles.capacityButton}
+                      onPress={() =>
+                        setCapacityOthersDraft((value) => Math.max(1, value - 1))
+                      }
+                    >
+                      <Text style={styles.capacityButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.capacityValue}>{capacityOthersDraft}</Text>
+                    <TouchableOpacity
+                      style={styles.capacityButton}
+                      onPress={() =>
+                        setCapacityOthersDraft((value) => Math.min(50, value + 1))
+                      }
+                    >
+                      <Text style={styles.capacityButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </>
             ) : (
               <>
                 <Text style={styles.currentRole}>
@@ -118,9 +275,18 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
             <TouchableOpacity
               style={confirmButtonStyle}
               onPress={onConfirm}
-              disabled={!isRemovalAction && !isApproveAction && newRole === user.role}
+              disabled={
+                isSubmitting ||
+                (!isRemovalAction &&
+                  !isApproveAction &&
+                  !isPermissionsAction &&
+                  !isCapacityAction &&
+                  newRole === user.role)
+              }
             >
-              <Text style={styles.buttonText}>{confirmButtonText}</Text>
+              <Text style={styles.buttonText}>
+                {isSubmitting ? "Saving..." : confirmButtonText}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

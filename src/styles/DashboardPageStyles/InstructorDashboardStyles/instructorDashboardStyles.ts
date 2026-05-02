@@ -4,7 +4,7 @@ import { themes } from "@/src/context/themes";
 export const instructorDashboardStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themes.black,
+    backgroundColor: themes.background,
   },
   scrollContent: {
     flex: 1,
@@ -15,14 +15,14 @@ export const instructorDashboardStyles = StyleSheet.create({
     marginBottom: 20,
   },
   todayText: {
-    fontSize: 36,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    fontSize: 30,
+    fontFamily: "Oswald_500Medium",
+    color: themes.textPrimary,
   },
   fullDateText: {
-    fontSize: 30,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    fontSize: 18,
+    fontFamily: "Inter_500Medium",
+    color: themes.textSecondary,
     marginTop: 5,
   },
   weekContainer: {
@@ -37,7 +37,7 @@ export const instructorDashboardStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     borderRadius: 8,
   },
   selectedDayButton: {
@@ -45,13 +45,13 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   dayName: {
     color: themes.vegasGold,
-    fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
   },
   dayNumber: {
     color: themes.vegasGold,
-    fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontSize: 18,
+    fontFamily: "Oswald_500Medium",
     marginTop: 4,
   },
   selectedDayText: {
@@ -62,8 +62,9 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   sectionTitle: {
     color: themes.white,
-    fontSize: 24,
+    fontSize: 20,
     textAlign: "center",
+    fontFamily: "Oswald_500Medium",
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: themes.vegasGold,
@@ -85,12 +86,13 @@ export const instructorDashboardStyles = StyleSheet.create({
   classCard: {
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     borderRadius: 10,
     height: 80,
     marginBottom: 15,
     marginHorizontal: 10,
     overflow: "hidden",
+    backgroundColor: themes.backgroundElevated,
   },
   classTypeSection: {
     width: 100,
@@ -111,8 +113,8 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   classTimeText: {
     color: themes.white,
-    fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontSize: 16,
+    fontFamily: "Inter_400Regular",
   },
   viewButtonSection: {
     width: 100,
@@ -122,8 +124,8 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   viewButtonText: {
     color: themes.vegasGold,
-    fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontSize: 15,
+    fontFamily: "Oswald_500Medium",
     marginRight: 5,
   },
   arrowIcon: {
@@ -148,8 +150,8 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   modalTitle: {
     marginBottom: 20,
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    fontSize: 22,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
     textAlign: "center",
   },
@@ -158,9 +160,9 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   labelText: {
     marginBottom: 12,
-    fontSize: 18,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
+    fontSize: 16,
+    fontFamily: "Inter_400Regular",
+    color: themes.textSecondary,
   },
   textInput: {
     padding: 12,
@@ -183,20 +185,27 @@ export const instructorDashboardStyles = StyleSheet.create({
     opacity: 0.6
   },
   buttonText: {
-    fontSize: 18,
-    fontFamily: "Chakra-Bold",
-    color: themes.white,
+    fontSize: 16,
+    fontFamily: "Oswald_500Medium",
+    color: themes.black,
   },
   buttonContainer: {
     gap: 12,
     marginTop: 8,
   },
   errorText: {
-    fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    color: themes.danger,
     textAlign: "center",
     marginVertical: 10,
+  },
+  emptyStateText: {
+    color: themes.textMuted,
+    textAlign: "center",
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    paddingVertical: 24,
   },
   navContainer: {
     flexDirection: "row",

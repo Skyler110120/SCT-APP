@@ -10,6 +10,11 @@ interface UserTableProps {
   onRemoveAction: (user: User) => void;
   onRoleAction: (user: User) => void;
   onApproveAction: (user: User) => void;
+  onPermissionsAction: (user: User) => void;
+  onCapacityAction: (user: User) => void;
+  canManageInstructorPermissions: boolean;
+  canManageInstructorCapacity: boolean;
+  currentUserId?: number;
 }
 
 const UserTable: React.FC<UserTableProps> = ({
@@ -17,6 +22,11 @@ const UserTable: React.FC<UserTableProps> = ({
   onRemoveAction,
   onRoleAction,
   onApproveAction,
+  onPermissionsAction,
+  onCapacityAction,
+  canManageInstructorPermissions,
+  canManageInstructorCapacity,
+  currentUserId,
 }) => {
   const formatName = (user: User) => {
     return `${user.first_name} ${user.last_name}`.trim();
@@ -62,6 +72,26 @@ const UserTable: React.FC<UserTableProps> = ({
           <FontAwesome name="user" size={20} color={themes.vegasGold} />
           <Text style={styles.actionText}>Change Role</Text>
         </TouchableOpacity>
+        {item.role === "INSTRUCTOR" && canManageInstructorPermissions && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => onPermissionsAction(item)}
+            disabled={Boolean(currentUserId) && currentUserId === item.id}
+          >
+            <FontAwesome name="sliders" size={20} color={themes.vegasGold} />
+            <Text style={styles.actionText}>Permissions</Text>
+          </TouchableOpacity>
+        )}
+        {item.role === "INSTRUCTOR" && canManageInstructorCapacity && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => onCapacityAction(item)}
+            disabled={Boolean(currentUserId) && currentUserId === item.id}
+          >
+            <FontAwesome name="users" size={20} color={themes.vegasGold} />
+            <Text style={styles.actionText}>Session Capacity</Text>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.actionButton}

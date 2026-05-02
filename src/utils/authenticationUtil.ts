@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authStorage } from "@/src/services/authStorage";
 
 export async function requireAuthToken(): Promise<string> {
-  const token = await AsyncStorage.getItem("auth_token");
+  const token = await authStorage.getAuthToken();
 
   if (!token) {
     throw new Error("AUTH_REQUIRED");

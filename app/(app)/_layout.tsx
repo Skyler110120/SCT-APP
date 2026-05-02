@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { Slot, Redirect } from 'expo-router';
-import { View, Text, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
+import { View, AppState, AppStateStatus } from 'react-native';
 import { useAuth } from '@/src/context/AuthContext';
-import { themes } from '@/src/context/themes';
 import {
   setNotificationHandler,
   requestNotificationPermissions,
   checkAndNotifyWednesdayBookingReminder,
 } from '@/src/services/bookingReminderNotifications';
 import { logger } from '@/src/utils/logger';
+import { LoadingState } from '@/src/components/ui';
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
@@ -50,24 +50,7 @@ export default function AppLayout() {
   logger.debug('App Layout authentication check');
 
   if (isLoading) {
-    return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: themes.black,
-      }}>
-        <ActivityIndicator size="large" color={themes.vegasGold} />
-        <Text style={{
-          marginTop: 16,
-          color: themes.white,
-          fontSize: 16,
-          fontFamily: 'Chakra-Regular',
-        }}>
-          Loading application...
-        </Text>
-      </View>
-    );
+    return <LoadingState label="Loading application..." />;
   }
 
   if (!user) {

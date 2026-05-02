@@ -39,7 +39,7 @@ export default function DrillForm({
   const [name, setName] = useState("");
   const [purpose, setPurpose] = useState("");
   const [fireType, setFireType] = useState<FireType>(FireType.LIVE_FIRE);
-  const [commands, setCommands] = useState("");
+  const [loadout, setLoadout] = useState("");
   const [instructorNotes, setInstructorNotes] = useState("");
   const [isCte, setIsCte] = useState(false);
   const [timeLimitSeconds, setTimeLimitSeconds] = useState("");
@@ -57,7 +57,7 @@ export default function DrillForm({
         setName(drill.name);
         setPurpose(drill.purpose);
         setFireType(drill.fire_type);
-        setCommands(drill.commands);
+        setLoadout(drill.loadout ?? "");
         setInstructorNotes(drill.instructor_notes || "");
         setIsCte(drill.is_cte);
         setTimeLimitSeconds(drill.time_limit_seconds?.toString() || "");
@@ -69,7 +69,7 @@ export default function DrillForm({
         setName("");
         setPurpose("");
         setFireType(FireType.LIVE_FIRE);
-        setCommands("");
+        setLoadout("");
         setInstructorNotes("");
         setIsCte(false);
         setTimeLimitSeconds("");
@@ -86,7 +86,7 @@ export default function DrillForm({
     const newErrors: { [key: string]: string } = {};
     if (!name.trim()) newErrors.name = "Name is required.";
     if (!purpose.trim()) newErrors.purpose = "Purpose is required.";
-    if (!commands.trim()) newErrors.commands = "Commands are required.";
+    if (!loadout.trim()) newErrors.loadout = "Loadout is required.";
     const orderNum = parseInt(displayOrder);
     if (isNaN(orderNum) || orderNum < 1) newErrors.displayOrder = "Must be a positive integer.";
     setErrors(newErrors);
@@ -105,7 +105,7 @@ export default function DrillForm({
           name: name.trim(),
           purpose: purpose.trim(),
           fire_type: fireType,
-          commands: commands.trim(),
+          loadout: loadout.trim(),
           instructor_notes: instructorNotes.trim() || undefined,
           is_cte: isCte,
           time_limit_seconds: timeLimitSeconds ? parseInt(timeLimitSeconds) : undefined,
@@ -120,7 +120,7 @@ export default function DrillForm({
           name: name.trim(),
           purpose: purpose.trim(),
           fire_type: fireType,
-          commands: commands.trim(),
+          loadout: loadout.trim(),
           instructor_notes: instructorNotes.trim() || undefined,
           is_cte: isCte,
           time_limit_seconds: timeLimitSeconds ? parseInt(timeLimitSeconds) : undefined,
@@ -188,17 +188,16 @@ export default function DrillForm({
             </View>
 
             <View style={styles.createSection}>
-              <Text style={styles.modalLabel}>Commands *</Text>
+              <Text style={styles.modalLabel}>Loadout *</Text>
               <TextInput
-                style={[styles.searchInput, errors.commands && { borderColor: "#FF4444" }]}
-                value={commands}
-                onChangeText={setCommands}
-                placeholder="Step-by-step execution commands"
+                style={[styles.searchInput, errors.loadout && { borderColor: "#FF4444" }]}
+                value={loadout}
+                onChangeText={setLoadout}
+                placeholder="e.g. 2×10"
                 placeholderTextColor={themes.white}
-                multiline
-                numberOfLines={3}
+                maxLength={255}
               />
-              {errors.commands && <Text style={styles.warningText}>{errors.commands}</Text>}
+              {errors.loadout && <Text style={styles.warningText}>{errors.loadout}</Text>}
             </View>
 
             <View style={styles.createSection}>

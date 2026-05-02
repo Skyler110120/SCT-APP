@@ -1,56 +1,32 @@
 import React from "react";
-import { Slot, Redirect } from "expo-router";
-import { View, Text, ActivityIndicator } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
-import { themes } from "@/src/context/themes";
 import { logger } from "@/src/utils/logger";
+import { ProtectedLayout } from "@/src/components/layout/ProtectedLayout";
 
 export default function CompanyLayout() {
   const { user, isLoading } = useAuth();
   logger.debug("Company layout guard check");
 
-  if (isLoading) {
-    return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        backgroundColor: themes.black 
-      }}>
-        <ActivityIndicator size="large" color={themes.vegasGold} />
-        <Text style={{
-          marginTop: 16,
-          color: themes.white,
-          fontSize: 16,
-          fontFamily: "Chakra-Regular"
-        }}>
-          Checking company access...
-        </Text>
-      </View>
-    );
-  }
+  const hasCompanyAccess = Boolean(user) &&
+    [UserRole.ADMIN, UserRole.INSTRUCTOR, UserRole.STUDENT].includes(user.role);
 
-  if (!user) {
-    logger.debug("Company layout: no user, redirecting to login");
-    return <Redirect href="/login" />;
-  }
-  const hasCompanyAccess = [
-    UserRole.ADMIN,
-    UserRole.INSTRUCTOR,
-    UserRole.STUDENT
-  ].includes(user.role);
-
-  if (!hasCompanyAccess) {
+  if (user && hasCompanyAccess) {
+    logger.debug(`Company layout: access granted for ${user.role}`);
+  } else if (user) {
     logger.debug(`Company layout: access denied for role ${user.role}`);
-    return <Redirect href="/dashboard" />;
+  } else {
+    logger.debug("Company layout: no user, redirecting to login");
   }
-
-  logger.debug(`Company layout: access granted for ${user.role}`);
 
   return (
-    <View style={{ flex: 1 }}>
-      <Slot />
-    </View>
+    <ProtectedLayout
+      isLoading={isLoading}
+      hasUser={Boolean(user)}
+      hasAccess={hasCompanyAccess}
+      loadingLabel="Checking company access..."
+      noUserRedirect="/login"
+      unauthorizedRedirect="/dashboard"
+    />
   );
 }
