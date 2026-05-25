@@ -1,5 +1,4 @@
 import { useAuth } from "@/src/context/AuthContext";
-import { useEffect } from "react";
 import { LoginCredentials } from "@/src/types/auth.types";
 import { loginScreenStyles as styles } from "@/src/styles/LoginPageStyles/loginScreenStyles";
 import { useRouter } from "expo-router";
@@ -19,12 +18,6 @@ import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
 import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 export default function LoginScreen() {
-
-  useEffect(() => {
-  console.log("LoginScreen mounted");
-  return () => console.log("LoginScreen unmounted");
-}, []);
-
   const router = useRouter();
   const { login, state } = useAuth();
 
@@ -33,12 +26,16 @@ export default function LoginScreen() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loginError, setLoginError] = useState<string>("");
 
   const handleChange = (field: keyof LoginCredentials, value: string) => {
     setCredentials((prev) => ({
       ...prev,
       [field]: value
     }));
+    if (loginError) {
+      setLoginError("");
+    }
   };
 
   const handleLogin = async () => {
@@ -48,10 +45,11 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
+    setLoginError("");
     try {
       const success = await login(credentials);
       if (!success) {
-        Alert.alert("Login Failed", state.error || "Invalid credentials");
+        setLoginError(state.error || "Invalid credentials");
 
         setCredentials((prev) => ({
           ...prev,
@@ -116,6 +114,9 @@ export default function LoginScreen() {
                     value={credentials.password}
                     onChangeText={(text) => handleChange("password", text)}
                   />
+                  {loginError ? (
+                    <AppText style={styles.loginErrorText}>{loginError}</AppText>
+                  ) : null}
                   <AppButton
                     style={styles.logInButton as any}
                     fullWidth
@@ -136,7 +137,7 @@ export default function LoginScreen() {
                 </View>
                 <TouchableOpacity onPress={() => router.push("/register")}>
                   <AppText style={styles.registerPrompt}>
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <AppText style={styles.registerLink}>Create one</AppText>
                   </AppText>
                 </TouchableOpacity>

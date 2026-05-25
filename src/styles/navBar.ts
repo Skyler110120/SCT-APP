@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { themes } from "@/src/context/themes";
+import { theme, themes } from "@/src/context/themes";
 import { Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -39,7 +39,7 @@ export const navBarStyles = StyleSheet.create({
     backgroundColor: "rgba(197, 179, 88, 0.26)",
     borderColor: themes.borderStrong,
     borderWidth: 1,
-    borderRadius: themes.radius.md,
+    borderRadius: theme.radius.md,
     minWidth: ACTIVE_MIN_WIDTH,
     minHeight: 52,
     paddingHorizontal: 12,

@@ -228,7 +228,11 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
           await clearAuthData();
           router.replace("/login");
         }
-        throw new Error("Unauthorized");
+        const message =
+          normalizedPath === "/auth/login" || normalizedPath === "/auth/login/"
+            ? "Invalid credentials"
+            : "Unauthorized";
+        throw new ApiError(401, message);
       }
 
       if (response.status === 403) {

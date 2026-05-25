@@ -12,6 +12,15 @@ import { apiFetch } from "./api";
 import { authStorage } from "./authStorage";
 import { logger } from "../utils/logger";
 
+function isUnauthorizedApiError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as { status?: unknown }).status === 401
+  );
+}
+
 export const authService = {
   /**
    * Login a user with email and password
@@ -45,6 +54,12 @@ export const authService = {
       };
     } catch (error) {
       logger.error("Login error:", error);
+      if (isUnauthorizedApiError(error)) {
+        return {
+          success: false,
+          error: "Invalid credentials",
+        };
+      }
       return {
         success: false,
         error: "An error occurred during login",

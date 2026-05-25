@@ -86,7 +86,14 @@ export const sessionFormService = {
           body: JSON.stringify(request),
         }
       );
-      return { success: true, ...data };
+      // The API's own `success` field is authoritative when present (a 200
+      // response can still semantically signal partial-failure with
+      // `success: false`). If the API omits it, default to true since we
+      // got here on the no-throw path. Previously this used
+      // `{ success: true, ...data }` which had a duplicate key — the spread
+      // silently overrode the local `success: true`, so behavior was
+      // technically correct but the intent was ambiguous and TS flagged it.
+      return { ...data, success: data?.success ?? true };
     } catch (error: any) {
       console.error("Error completing session form:", error);
       return {

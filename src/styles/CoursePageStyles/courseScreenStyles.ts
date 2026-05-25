@@ -50,16 +50,23 @@ export const courseScreenStyles = StyleSheet.create({
   },
   statRow: {
     flexDirection: "row",
-    justifyContent:  "space-around",
+    justifyContent: "space-between",
+    alignItems: "stretch",
+    gap: 8,
   },
   statCard: {
+    flex: 1,
+    minWidth: 0,
     alignItems: "center",
-    padding: 8,
+    justifyContent: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 8,
   },
   statValue: {
     fontSize: 22,
     fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
+    textAlign: "center",
   },
   statLabel:  {
     fontSize: 14,

@@ -20,6 +20,7 @@ import {
   Platform,
   SafeAreaView,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -32,6 +33,8 @@ type OnboardingStep = "invite-code" | "course-selection" | "cadence-selection" |
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const stackNameFields = width < 390;
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("invite-code");
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
@@ -362,23 +365,32 @@ export default function RegisterScreen() {
               )}
 
               <View style={styles.formContainer}>
-                <View style={styles.nameInputBoxContainer}>
-                  <AppInput
-                    label="First Name"
-                    placeholder="First Name"
-                    style={styles.nameInputBox}
-                    value={formData.first_name}
-                    onChangeText={(text) => handleChange("first_name", text)}
-                    returnKeyType="next"
-                  />
-                  <AppInput
-                    label="Last Name"
-                    placeholder="Last Name"
-                    style={styles.nameInputBox}
-                    value={formData.last_name}
-                    onChangeText={(text) => handleChange("last_name", text)}
-                    returnKeyType="next"
-                  />
+                <View
+                  style={[
+                    styles.nameInputBoxContainer,
+                    stackNameFields && styles.nameInputBoxContainerStacked,
+                  ]}
+                >
+                  <View style={styles.nameInputField}>
+                    <AppInput
+                      label="First Name"
+                      placeholder="First Name"
+                      style={styles.nameInputBox}
+                      value={formData.first_name}
+                      onChangeText={(text) => handleChange("first_name", text)}
+                      returnKeyType="next"
+                    />
+                  </View>
+                  <View style={styles.nameInputField}>
+                    <AppInput
+                      label="Last Name"
+                      placeholder="Last Name"
+                      style={styles.nameInputBox}
+                      value={formData.last_name}
+                      onChangeText={(text) => handleChange("last_name", text)}
+                      returnKeyType="next"
+                    />
+                  </View>
                 </View>
 
                 <AppInput

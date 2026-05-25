@@ -13,6 +13,7 @@ import { SubscriptionStatusData } from "@/src/types/payment.types";
 import { UserRole } from "@/src/types/enums";
 import { formatDateString } from "@/src/utils/dateTimeUtils";
 import { openStripeHostedUrl } from "@/src/utils/safeExternalUrl";
+import * as Linking from "expo-linking";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -49,6 +50,20 @@ export default function InstructorProfile() {
   const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [isUpdatingSubscription, setIsUpdatingSubscription] = useState(false);
   const [billingMessage, setBillingMessage] = useState<string | null>(null);
+
+  const buildBillingRedirectUrls = () => {
+    return {
+      subscription: {
+        successUrl: Linking.createURL("/payment-success"),
+        cancelUrl: Linking.createURL("/payment-cancel"),
+      },
+      makeup: {
+        successUrl: Linking.createURL("/makeup-payment-success"),
+        cancelUrl: Linking.createURL("/makeup-payment-cancel"),
+      },
+      portalReturnUrl: Linking.createURL("/learning/profile"),
+    };
+  };
 
   useEffect(() => {
     loadProfile();
@@ -110,7 +125,8 @@ export default function InstructorProfile() {
     setBillingMessage(null);
     try {
       const response = await paymentService.createSubscriptionCheckout(
-        enrolledCourseId
+        enrolledCourseId,
+        buildBillingRedirectUrls().subscription
       );
       const opened = response.checkout_url
         ? await openStripeHostedUrl(response.checkout_url)
@@ -129,7 +145,8 @@ export default function InstructorProfile() {
     setIsPortalLoading(true);
     setBillingMessage(null);
     try {
-      const response = await paymentService.getPortalUrl();
+      const { portalReturnUrl } = buildBillingRedirectUrls();
+      const response = await paymentService.getPortalUrl(portalReturnUrl);
       const opened = response.portal_url
         ? await openStripeHostedUrl(response.portal_url)
         : false;
@@ -148,7 +165,10 @@ export default function InstructorProfile() {
     setIsCheckoutLoading(true);
     setBillingMessage(null);
     try {
-      const response = await paymentService.createMakeupCheckout(enrollmentId);
+      const response = await paymentService.createMakeupCheckout(
+        enrollmentId,
+        buildBillingRedirectUrls().makeup
+      );
       const opened = response.checkout_url
         ? await openStripeHostedUrl(response.checkout_url)
         : false;

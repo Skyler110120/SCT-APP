@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { logger } from "@/src/utils/logger";
 
 type ValidIconName = "check-circle" | "clock-o" | "circle-o";
 
@@ -95,10 +96,10 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
               await onUpdateProgress({
                 enrollment_id: student.enrollment_id,
                 new_week: student.current_week + 1,
-                notes: `Advanced by $${userRole} on ${new Date().toLocaleDateString()}`,
+                notes: `Advanced by ${userRole ?? "system"} on ${new Date().toLocaleDateString()}`,
               });
             } catch (error) {
-              console.error("Error updating progress:", error);
+              logger.error("Error updating progress:", error);
             } finally {
               setUpdating(null);
             }
@@ -120,7 +121,7 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
         icon: "clock-o",
       };
     } else {
-      return { status: "not-started", color: "#9E9E9E9", icon: "circle-o" };
+      return { status: "not-started", color: themes.textMuted, icon: "circle-o" };
     }
   };
 

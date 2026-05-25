@@ -30,10 +30,16 @@ export const paymentService = {
 
   // ── Student Subscription ──────────────────────────────────
 
-  async createSubscriptionCheckout(courseId: number): Promise<SubscriptionCheckoutResponse> {
+  async createSubscriptionCheckout(
+    courseId: number,
+    redirectUrls?: { successUrl?: string; cancelUrl?: string }
+  ): Promise<SubscriptionCheckoutResponse> {
+    const payload: Record<string, unknown> = { course_id: courseId };
+    if (redirectUrls?.successUrl) payload.success_url = redirectUrls.successUrl;
+    if (redirectUrls?.cancelUrl) payload.cancel_url = redirectUrls.cancelUrl;
     return apiFetch<SubscriptionCheckoutResponse>('/payments/checkout/subscription', {
       method: 'POST',
-      body: JSON.stringify({ course_id: courseId }),
+      body: JSON.stringify(payload),
     });
   },
 
@@ -62,17 +68,24 @@ export const paymentService = {
 
   // ── Makeup Sessions ───────────────────────────────────────
 
-  async createMakeupCheckout(enrollmentId: number): Promise<MakeupCheckoutResponse> {
+  async createMakeupCheckout(
+    enrollmentId: number,
+    redirectUrls?: { successUrl?: string; cancelUrl?: string }
+  ): Promise<MakeupCheckoutResponse> {
+    const payload: Record<string, unknown> = { enrollment_id: enrollmentId };
+    if (redirectUrls?.successUrl) payload.success_url = redirectUrls.successUrl;
+    if (redirectUrls?.cancelUrl) payload.cancel_url = redirectUrls.cancelUrl;
     return apiFetch<MakeupCheckoutResponse>('/payments/checkout/makeup-session', {
       method: 'POST',
-      body: JSON.stringify({ enrollment_id: enrollmentId }),
+      body: JSON.stringify(payload),
     });
   },
 
   // ── Billing Portal ────────────────────────────────────────
 
-  async getPortalUrl(): Promise<PortalUrlResponse> {
-    return apiFetch<PortalUrlResponse>('/payments/portal');
+  async getPortalUrl(returnUrl?: string): Promise<PortalUrlResponse> {
+    const query = returnUrl ? `?return_url=${encodeURIComponent(returnUrl)}` : "";
+    return apiFetch<PortalUrlResponse>(`/payments/portal${query}`);
   },
 
   // ── Payment History ───────────────────────────────────────

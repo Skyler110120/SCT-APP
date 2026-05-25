@@ -208,6 +208,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (!loginResult.success || !loginResult.data) {
         logger.debug("Login failed:", loginResult.error);
+        dispatch({
+          type: "AUTH_ERROR",
+          payload: loginResult.error || "Invalid credentials",
+        });
         return false;
       }
 

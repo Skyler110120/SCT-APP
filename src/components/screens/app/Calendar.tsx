@@ -538,6 +538,7 @@ export default function CalendarScreen() {
 
   /** Backend uses Python weekday: Monday=0, Sunday=6. JS getDay() is Sunday=0, Saturday=6. */
   const toBackendDayOfWeek = (date: Date) => (date.getDay() + 6) % 7;
+  const weekdayIndexToBackendDayOfWeek = (dayIndex: number) => (dayIndex + 6) % 7;
 
   const selectedDateObject = getDateObject(selectedDate);
   const selectedDayOfWeek = toBackendDayOfWeek(selectedDateObject);
@@ -895,7 +896,8 @@ export default function CalendarScreen() {
 
     const daysWithAvailability = dayOfWeek.filter(({ day }) => {
       return availabilities.some(
-        (availability) => availability.day_of_week === toBackendDayOfWeek(day)
+        (availability) =>
+          availability.day_of_week === weekdayIndexToBackendDayOfWeek(day)
       );
     });
 
@@ -903,7 +905,8 @@ export default function CalendarScreen() {
       <View style={styles.weeklyScheduleContainer}>
         {daysWithAvailability.map(({ day, name }) => {
           const dayAvailabilities = availabilities.filter(
-            (availability) => availability.day_of_week === toBackendDayOfWeek(day)
+            (availability) =>
+              availability.day_of_week === weekdayIndexToBackendDayOfWeek(day)
           );
           return (
             <View key={day} style={styles.dayScheduleContainer}>

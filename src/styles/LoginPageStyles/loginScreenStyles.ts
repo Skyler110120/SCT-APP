@@ -57,6 +57,12 @@ export const loginScreenStyles = StyleSheet.create({
     textTransform: "uppercase",
   },
   form: { gap: 12, marginTop: 8 },
+  loginErrorText: {
+    color: themes.danger,
+    fontFamily: "Inter_500Medium",
+    fontSize: 14,
+    textAlign: "left",
+  },
   textInputBox: {
     minHeight: 52,
     width: "100%",

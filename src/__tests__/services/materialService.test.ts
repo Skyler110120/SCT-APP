@@ -6,14 +6,18 @@ jest.mock("../../services/api", () => ({
   apiFetch: jest.fn(),
 }));
 
-jest.mock("expo-file-system", () => ({
+// The production module imports from the LEGACY submodule because
+// the top-level `expo-file-system` no longer exports `readAsStringAsync`
+// or `EncodingType`. Mock the same module path so the test exercises the
+// same code path that ships in production.
+jest.mock("expo-file-system/legacy", () => ({
   readAsStringAsync: jest.fn(),
   EncodingType: { Base64: "base64" },
 }));
 
 import { materialService } from "../../services/materialService";
 import { apiFetch } from "../../services/api";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 
 const mockApiFetch = apiFetch as jest.MockedFunction<typeof apiFetch>;
 const mockReadAsStringAsync = FileSystem.readAsStringAsync as jest.MockedFunction<
@@ -209,6 +213,47 @@ describe("materialService.uploadFileToPresignedUrl", () => {
     expect(result.success).toBe(false);
     expect("error" in result && result.error).toBe(
       "Upload failed. Please try again."
+    );
+  });
+});
+
+/**
+ * Regression guard for a real shipping bug discovered during the pre-release
+ * audit: `expo-file-system` v18+ removed `readAsStringAsync` and
+ * `EncodingType` from the top-level export and moved them to the `legacy`
+ * submodule. The previous code did
+ *   `import * as FileSystem from "expo-file-system"`
+ * and then accessed `FileSystem.EncodingType.Base64`, which threw
+ * `TypeError: Cannot read properties of undefined (reading 'Base64')` the
+ * first time a master admin tried to upload a course material. This test
+ * fails loudly if anyone reverts the import.
+ */
+describe("materialService import target (regression: legacy file-system)", () => {
+  it("imports readAsStringAsync from expo-file-system/legacy, not the top-level package", () => {
+    // We rely on the fact that the mock above is bound to the LEGACY path.
+    // If materialService ever reverts to importing from "expo-file-system",
+    // the mocked spy will not be invoked when uploadFileToPresignedUrl runs.
+    const mockReadOnLegacy = FileSystem.readAsStringAsync as jest.MockedFunction<
+      typeof FileSystem.readAsStringAsync
+    >;
+    expect(jest.isMockFunction(mockReadOnLegacy)).toBe(true);
+  });
+
+  it("actually invokes the legacy readAsStringAsync when uploading", async () => {
+    const mockReadOnLegacy = FileSystem.readAsStringAsync as jest.MockedFunction<
+      typeof FileSystem.readAsStringAsync
+    >;
+    mockReadOnLegacy.mockResolvedValueOnce("YQ==");
+    global.fetch = jest.fn().mockResolvedValueOnce({ ok: true }) as any;
+    await materialService.uploadFileToPresignedUrl(
+      "https://s3.example.com/put",
+      "file:///path/to/file.pdf",
+      "application/pdf"
+    );
+    expect(mockReadOnLegacy).toHaveBeenCalledTimes(1);
+    expect(mockReadOnLegacy).toHaveBeenCalledWith(
+      "file:///path/to/file.pdf",
+      expect.objectContaining({ encoding: "base64" })
     );
   });
 });

@@ -67,9 +67,9 @@ export default function PaymentResultScreen() {
           >
             <Text
               style={{
-                fontFamily: "Chakra-Bold",
+                fontFamily: themes.fonts.headingSemiBold,
                 fontSize: 24,
-                color: isSuccess ? "#4ade80" : "#f87171",
+                color: isSuccess ? themes.success : themes.danger,
                 textAlign: "center",
               }}
             >
@@ -78,7 +78,7 @@ export default function PaymentResultScreen() {
 
             <Text
               style={{
-                fontFamily: "Chakra-Regular",
+                fontFamily: themes.fonts.bodyRegular,
                 fontSize: 16,
                 color: themes.white,
                 textAlign: "center",
@@ -95,7 +95,7 @@ export default function PaymentResultScreen() {
             {syncing && (
               <View style={{ alignItems: "center", gap: 8 }}>
                 <ActivityIndicator color={themes.vegasGold} />
-                <Text style={{ color: themes.white, fontFamily: "Chakra-Regular" }}>
+                <Text style={{ color: themes.white, fontFamily: themes.fonts.bodyRegular }}>
                   Confirming payment...
                 </Text>
               </View>
@@ -104,12 +104,25 @@ export default function PaymentResultScreen() {
             {syncError && (
               <Text
                 style={{
-                  color: "#fbbf24",
-                  fontFamily: "Chakra-Regular",
+                  color: themes.warning,
+                  fontFamily: themes.fonts.bodyRegular,
                   textAlign: "center",
                 }}
               >
                 {syncError}
+              </Text>
+            )}
+
+            {isSuccess && (
+              <Text
+                style={{
+                  color: themes.textMuted,
+                  fontFamily: themes.fonts.bodyRegular,
+                  textAlign: "center",
+                  fontSize: 13,
+                }}
+              >
+                Redirecting to dashboard...
               </Text>
             )}
 
@@ -126,7 +139,7 @@ export default function PaymentResultScreen() {
                 style={{
                   textAlign: "center",
                   color: themes.black,
-                  fontFamily: "Chakra-Bold",
+                  fontFamily: themes.fonts.bodySemiBold,
                   fontSize: 16,
                 }}
               >

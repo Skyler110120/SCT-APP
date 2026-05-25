@@ -52,8 +52,10 @@ export default function AdminPaymentsScreen() {
             setMessage(null);
             try {
               await paymentService.refundPayment(paymentId);
-              setMessage(`Payment #${paymentId} refunded successfully.`);
+              // Reload the ledger first so its internal setMessage(null) doesn't
+              // wipe the success banner before the user can read it.
               await loadLedger();
+              setMessage(`Payment #${paymentId} refunded successfully.`);
             } catch {
               setMessage("An error occurred while issuing the refund.");
             } finally {

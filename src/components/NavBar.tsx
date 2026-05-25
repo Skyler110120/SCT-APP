@@ -6,6 +6,8 @@ import { navBarStyles as styles } from "../styles/navBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getNavItemsForRole as getNavConfig } from "../utils/navBarUtils";
 import { AppText } from "./ui";
+import { FontAwesome } from "@expo/vector-icons";
+import { themes } from "@/src/context/themes";
 
 type AppRouterType = Parameters<typeof Link>[0]["href"];
 
@@ -40,9 +42,36 @@ const iconMap: Record<string, { icon: number; activeIcon: number }> = {
   },
 };
 
+const fontIconMap: Record<string, { name: keyof typeof FontAwesome.glyphMap }> = {
+  payments: { name: "credit-card" },
+};
+
 function getIconForNavItem(name: string) {
   const key = name.toLowerCase();
   return iconMap[key] ?? iconMap.profile;
+}
+
+function renderNavIcon(name: string, isActive: boolean, icon: number, activeIcon: number) {
+  const key = name.toLowerCase();
+  const fontIcon = fontIconMap[key];
+
+  if (fontIcon) {
+    return (
+      <FontAwesome
+        name={fontIcon.name}
+        size={20}
+        color={isActive ? themes.vegasGold : themes.textMuted}
+      />
+    );
+  }
+
+  return (
+    <Image
+      source={isActive ? activeIcon : icon}
+      style={styles.navIcon}
+      resizeMode="contain"
+    />
+  );
 }
 
 function formatLabel(label: string) {
@@ -83,11 +112,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
               style={isActive ? styles.navItemActive : styles.navItem}
               onPress={() => router.push(item.route as AppRouterType)}
             >
-              <Image
-                source={isActive ? item.activeIcon : item.icon}
-                style={styles.navIcon}
-                resizeMode="contain"
-              />
+              {renderNavIcon(item.name, isActive, item.icon, item.activeIcon)}
             </TouchableOpacity>
             {isActive && (
               <AppText style={styles.navText}>{formatLabel(item.name)}</AppText>

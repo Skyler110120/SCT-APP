@@ -1,4 +1,11 @@
-import * as FileSystem from "expo-file-system";
+// NOTE: `readAsStringAsync` / `EncodingType` moved to the `legacy` submodule
+// in newer `expo-file-system` (the top-level export now ships only the
+// `File`/`Directory`/`Paths` API). Importing from the top level used to
+// crash this code at runtime with
+// "TypeError: Cannot read properties of undefined (reading 'Base64')"
+// the first time a master admin tried to upload a course material. The
+// legacy submodule preserves the original call shape.
+import * as FileSystem from "expo-file-system/legacy";
 import { apiFetch } from "./api";
 import {
   MaterialAccessRequest,

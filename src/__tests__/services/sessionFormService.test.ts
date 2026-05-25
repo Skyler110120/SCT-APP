@@ -141,6 +141,45 @@ describe("sessionFormService.completeSessionForm", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  // Regression for the previous duplicate-key bug
+  //   `return { success: true, ...data };`
+  // which was flagged by TS as TS2783 (`success` specified more than once).
+  // The original code's effective behavior was "spread wins, so API value
+  // is authoritative" — these two tests pin that contract explicitly so the
+  // refactor to `{ ...data, success: data?.success ?? true }` does not
+  // change observable behavior.
+  it("respects an explicit success=false from the API on a 200 response", async () => {
+    const completeResponse = {
+      success: false,
+      message: "Form already submitted; ignored.",
+      form_id: 1,
+    };
+    mockApiFetch.mockResolvedValueOnce(completeResponse);
+    const result = await sessionFormService.completeSessionForm(1, {
+      post_stress_level: PostStressLevel.SAME,
+      confidence_level: 5,
+      advance_student: false,
+    });
+    expect(result.success).toBe(false);
+    expect(result.message).toBe("Form already submitted; ignored.");
+    expect(result.form_id).toBe(1);
+  });
+
+  it("defaults success to true when the API response omits the field", async () => {
+    mockApiFetch.mockResolvedValueOnce({
+      form_id: 7,
+      student_advanced: false,
+    });
+    const result = await sessionFormService.completeSessionForm(7, {
+      post_stress_level: PostStressLevel.SAME,
+      confidence_level: 5,
+      advance_student: false,
+    });
+    expect(result.success).toBe(true);
+    expect(result.form_id).toBe(7);
+    expect(result.student_advanced).toBe(false);
+  });
 });
 
 describe("sessionFormService.getSessionForm", () => {

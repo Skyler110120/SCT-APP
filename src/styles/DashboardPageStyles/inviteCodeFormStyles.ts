@@ -33,8 +33,9 @@ export const inviteCodeFormStyles = StyleSheet.create({
     color: themes.vegasGold,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    gap: 10,
+    marginTop: 8,
     marginBottom: "1%",
   },
   actionButton: {

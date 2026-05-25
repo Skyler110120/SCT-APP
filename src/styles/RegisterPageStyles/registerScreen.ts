@@ -104,8 +104,15 @@ export const registerScreenStyles = StyleSheet.create({
     gap: 12,
     justifyContent: "center",
   },
-  nameInputBox: {
+  nameInputBoxContainerStacked: {
+    flexDirection: "column",
+    gap: 10,
+  },
+  nameInputField: {
     flex: 1,
+    minWidth: 0,
+  },
+  nameInputBox: {
     height: 52,
     paddingHorizontal: 16,
     borderRadius: 10,

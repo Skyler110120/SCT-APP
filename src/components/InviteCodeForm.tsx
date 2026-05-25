@@ -58,31 +58,33 @@ const InviteCodeForm = ({
             <AppButton
               label="Cancel"
               variant="outline"
-              style={styles.button}
+              style={styles.cancelButton}
               onPress={onClose}
               disabled={isSubmitting}
             />
-            <AppButton
-              label="Student"
-              style={styles.button}
-              isLoading={isSubmitting}
-              onPress={() => onSubmit(UserRole.STUDENT)}
-              disabled={isSubmitting}
-            />
-            <AppButton
-              label="Instructor"
-              style={styles.button}
-              isLoading={isSubmitting}
-              onPress={() => onSubmit(UserRole.INSTRUCTOR)}
-              disabled={isSubmitting}
-            />
-            <AppButton
-              label="Admin"
-              style={styles.button}
-              isLoading={isSubmitting}
-              onPress={() => onSubmit(UserRole.ADMIN)}
-              disabled={isSubmitting}
-            />
+            <View style={styles.roleOptionsRow}>
+              <AppButton
+                label="Student"
+                style={styles.roleButton}
+                isLoading={isSubmitting}
+                onPress={() => onSubmit(UserRole.STUDENT)}
+                disabled={isSubmitting}
+              />
+              <AppButton
+                label="Instructor"
+                style={styles.roleButton}
+                isLoading={isSubmitting}
+                onPress={() => onSubmit(UserRole.INSTRUCTOR)}
+                disabled={isSubmitting}
+              />
+              <AppButton
+                label="Admin"
+                style={styles.roleButton}
+                isLoading={isSubmitting}
+                onPress={() => onSubmit(UserRole.ADMIN)}
+                disabled={isSubmitting}
+              />
+            </View>
           </View>
         </AppCard>
       </View>
@@ -103,7 +105,16 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 480,
   },
-  button: {
-    flex: 1,
+  cancelButton: {
+    width: "100%",
+  },
+  roleOptionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.space.sm,
+  },
+  roleButton: {
+    flexGrow: 1,
+    minWidth: 132,
   },
 });

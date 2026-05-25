@@ -443,16 +443,28 @@ export default function Courses() {
       <View style={styles.statsContainer}>
         <View style={styles.statRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>Week {stats.currentWeek}</Text>
-            <Text style={styles.statLabel}>Current Progress</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              Week {stats.currentWeek}
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Current Progress
+            </Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.progressPercentage}</Text>
-            <Text style={styles.statLabel}>Course Complete</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              {stats.progressPercentage}%
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Course Complete
+            </Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.videosAvailable}</Text>
-            <Text style={styles.statLabel}>Videos Available</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              {stats.videosAvailable}
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Videos Available
+            </Text>
           </View>
         </View>
       </View>
@@ -464,18 +476,28 @@ export default function Courses() {
       <View style={styles.statsContainer}>
         <View style={styles.statRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalCourses}</Text>
-            <Text style={styles.statLabel}>Active Courses</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              {stats.totalCourses}
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              Active Courses
+            </Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalStudents}</Text>
-            <Text style={styles.statLabel}>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              {stats.totalStudents}
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
               {isAdmin ? "All Students" : "Students"}
             </Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.studentsInProgress}</Text>
-            <Text style={styles.statLabel}>In Progress</Text>
+            <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+              {stats.studentsInProgress}
+            </Text>
+            <Text style={styles.statLabel} numberOfLines={2}>
+              In Progress
+            </Text>
           </View>
         </View>
       </View>
