@@ -9,23 +9,26 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "sct.app"
+      "bundleIdentifier": "sct.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "sct.app"
+      "package": "com.sct.app"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./src/assets/images/sct-logo.jpg"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./src/assets/images/sct-logo.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -37,7 +40,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/splash-icon.png",
+          "icon": "./src/assets/images/sct-logo.jpg",
           "color": "#D4AF37",
           "sounds": []
         }
