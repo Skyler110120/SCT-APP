@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
-import { View, ActivityIndicator } from 'react-native';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
@@ -35,6 +37,15 @@ export default function RootLayout() {
     "Chakra-semiBoldItalic": Inter_600SemiBold,
     "Chakra-Medium": Inter_500Medium,
   });
+
+  // iOS keeps the Stripe in-app browser on top when its page deep-links back into the app.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    const subscription = Linking.addEventListener('url', () => {
+      WebBrowser.dismissBrowser()?.catch(() => {});
+    });
+    return () => subscription.remove();
+  }, []);
 
   if (!fontsLoaded) {
     return (

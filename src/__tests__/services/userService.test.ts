@@ -394,3 +394,37 @@ describe("userService.unassignStudentFromInstructor", () => {
     );
   });
 });
+
+describe("userService.deleteMyAccount", () => {
+  beforeEach(() => mockApiFetch.mockReset());
+
+  it("posts the password and reports success", async () => {
+    mockApiFetch.mockResolvedValueOnce({ success: true, message: "Your account has been deleted." });
+
+    const result = await userService.deleteMyAccount("secret123");
+
+    expect(mockApiFetch).toHaveBeenCalledWith("/users/me/delete", {
+      method: "POST",
+      body: JSON.stringify({ password: "secret123" }),
+      suppressGlobalError: true,
+    });
+    expect(result).toEqual({ success: true, message: "Your account has been deleted." });
+  });
+
+  it("surfaces the server message (e.g. incorrect password)", async () => {
+    mockApiFetch.mockRejectedValueOnce(Object.assign(new Error("Incorrect password"), { status: 400 }));
+
+    const result = await userService.deleteMyAccount("wrong");
+
+    expect(result).toEqual({ success: false, error: "Incorrect password" });
+  });
+
+  it("explains the sole-admin conflict", async () => {
+    mockApiFetch.mockRejectedValueOnce(Object.assign(new Error("Request Conflict"), { status: 409 }));
+
+    const result = await userService.deleteMyAccount("secret123");
+
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/only admin/);
+  });
+});

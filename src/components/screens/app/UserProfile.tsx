@@ -41,6 +41,9 @@ export default function InstructorProfile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] =
     useState<SubscriptionStatusData | null>(null);
   const [enrollmentId, setEnrollmentId] = useState<number | null>(null);
@@ -286,6 +289,31 @@ export default function InstructorProfile() {
       resetPasswordFields();
     } finally {
       setIsUpdatingPassword(false);
+    }
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setDeletePassword("");
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      Alert.alert("Password Required", "Enter your password to confirm.");
+      return;
+    }
+    setIsDeletingAccount(true);
+    try {
+      const result = await userService.deleteMyAccount(deletePassword);
+      if (!result.success) {
+        Alert.alert("Could Not Delete Account", result.error ?? "Please try again.");
+        return;
+      }
+      closeDeleteModal();
+      Alert.alert("Account Deleted", result.message ?? "Your account has been deleted.");
+      await logout();
+    } finally {
+      setIsDeletingAccount(false);
     }
   };
 
@@ -549,6 +577,19 @@ export default function InstructorProfile() {
                     <Text style={styles.buttonText}>Log Out</Text>
                   )}
                 </TouchableOpacity>
+
+                {user?.role !== UserRole.MASTER_ADMIN && (
+                  <TouchableOpacity
+                    testID="delete-account-button"
+                    style={[styles.button, { borderColor: themes.danger }]}
+                    onPress={() => setShowDeleteModal(true)}
+                    disabled={isLoggingOut || isSubmittingProfile}
+                  >
+                    <Text style={[styles.buttonText, { color: themes.danger }]}>
+                      Delete Account
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
             {user?.role === UserRole.STUDENT && (
@@ -784,6 +825,83 @@ export default function InstructorProfile() {
                   <ActivityIndicator size="small" color={themes.white} />
                 ) : (
                   <Text style={styles.buttonText}>Update</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showDeleteModal}
+        animationType="slide"
+        transparent
+        onRequestClose={closeDeleteModal}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(0,0,0,0.92)",
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: themes.danger,
+              padding: 16,
+              gap: 10,
+            }}
+          >
+            <Text style={{ color: themes.white, fontFamily: "Chakra-Bold", fontSize: 20 }}>
+              Delete Account
+            </Text>
+            <Text style={{ color: themes.white, fontFamily: "Chakra-Regular", lineHeight: 20 }}>
+              This permanently deletes your account and personal information. Any active
+              subscription is cancelled immediately and upcoming sessions are released. This
+              cannot be undone.
+            </Text>
+            <TextInput
+              testID="delete-account-password"
+              placeholder="Enter your password to confirm"
+              placeholderTextColor={themes.vegasGold}
+              secureTextEntry
+              style={{
+                borderWidth: 1,
+                borderColor: themes.vegasGold,
+                borderRadius: 8,
+                color: themes.white,
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+                fontFamily: "Chakra-Regular",
+              }}
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+            />
+            <View style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end", marginTop: 4 }}>
+              <TouchableOpacity
+                style={[styles.button, { flex: 1 }]}
+                onPress={closeDeleteModal}
+                disabled={isDeletingAccount}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="delete-account-confirm"
+                style={[
+                  styles.button,
+                  { flex: 1, borderColor: themes.danger, opacity: isDeletingAccount ? 0.7 : 1 },
+                ]}
+                onPress={handleDeleteAccount}
+                disabled={isDeletingAccount}
+              >
+                {isDeletingAccount ? (
+                  <ActivityIndicator size="small" color={themes.danger} />
+                ) : (
+                  <Text style={[styles.buttonText, { color: themes.danger }]}>Delete</Text>
                 )}
               </TouchableOpacity>
             </View>

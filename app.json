@@ -4,12 +4,13 @@
     "slug": "SCT-App",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./src/assets/images/app-icon.png",
     "scheme": "sctapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "sct.app",
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sct.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

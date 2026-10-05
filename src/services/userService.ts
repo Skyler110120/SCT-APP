@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiFetch } from "./api";
+import { apiFetch, type ApiError } from "./api";
 import {
   User,
   UserUpdate,
@@ -120,6 +120,37 @@ export const userService = {
       return {
         success: false,
         error: "An error occurred while updating the password",
+      };
+    }
+  },
+
+  /**
+   * Permanently delete the signed-in user's account
+   * @param password - Current password, required to confirm deletion
+   * @returns success message or error
+   */
+  async deleteMyAccount(password: string): Promise<MessageResponse> {
+    try {
+      const data = await apiFetch(`/users/me/delete`, {
+        method: "POST",
+        body: JSON.stringify({ password }),
+        suppressGlobalError: true,
+      });
+      return { success: true, message: data?.message };
+    } catch (error) {
+      if ((error as ApiError)?.status === 409) {
+        return {
+          success: false,
+          error:
+            "You're the only admin for your company. Make another user an admin before deleting your account.",
+        };
+      }
+      return {
+        success: false,
+        error:
+          error instanceof Error && error.message
+            ? error.message
+            : "An error occurred while deleting your account",
       };
     }
   },
