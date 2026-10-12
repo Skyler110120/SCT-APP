@@ -10,14 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sct.app",
+      "bundleIdentifier": "com.everydaytechllc.sct",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.sct.app"
+      "package": "com.everydaytechllc.sct"
     },
     "web": {
       "bundler": "metro",
