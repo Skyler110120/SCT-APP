@@ -293,7 +293,7 @@ export default function VideoForm({
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Enter video title..."
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 maxLength={200}
               />
               {errors.title && (
@@ -308,7 +308,7 @@ export default function VideoForm({
                 value={description}
                 onChangeText={setDescription}
                 placeholder="Enter video description..."
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 multiline
                 numberOfLines={3}
               />
@@ -348,7 +348,7 @@ export default function VideoForm({
                     value={videoUrl}
                     onChangeText={setVideoUrl}
                     placeholder="https://youtube.com/watch?v=..."
-                    placeholderTextColor={themes.white}
+                    placeholderTextColor={themes.textMuted}
                     keyboardType="url"
                     autoCapitalize="none"
                   />
@@ -414,7 +414,7 @@ export default function VideoForm({
                 value={orderIndex}
                 onChangeText={setOrderIndex}
                 placeholder="Enter display order..."
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 keyboardType="numeric"
                 maxLength={3}
               />

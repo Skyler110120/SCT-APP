@@ -27,7 +27,7 @@ const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
           <TextInput
             style={styles.searchInput}
             placeholder="Search by student name or email"
-            placeholderTextColor={themes.white}
+            placeholderTextColor={themes.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />

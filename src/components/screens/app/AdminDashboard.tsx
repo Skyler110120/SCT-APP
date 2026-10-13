@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import InviteCodeForm from "@/src/components/InviteCodeForm";

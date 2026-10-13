@@ -15,12 +15,12 @@ import * as Clipboard from "expo-clipboard";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import AdminStats from "@/src/components/admin/AdminStats";
 import CompanyForm from "@/src/components/admin/CompanyForm";

@@ -13,16 +13,18 @@ import { CourseSummary } from "@/src/types/course.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { PRIVACY_POLICY_URL } from "@/src/config";
 import { useState, useEffect, useRef } from "react";
 import {
   Alert,
   Image,
   Platform,
-  SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { AppButton, AppInput, AppText } from "@/src/components/ui";
 import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
@@ -427,6 +429,17 @@ export default function RegisterScreen() {
                   fullWidth
                   onPress={handleRegister}
                 />
+
+                <AppText variant="caption" style={styles.privacyNotice}>
+                  By creating an account you agree to our{" "}
+                  <AppText
+                    variant="caption"
+                    style={styles.privacyLink}
+                    onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+                  >
+                    Privacy Policy
+                  </AppText>
+                </AppText>
               </View>
             </View>
           </KeyboardAwareScrollView>

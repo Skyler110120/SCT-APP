@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -78,7 +81,15 @@ export default function GlobalErrorReporter() {
 
   return (
     <Modal visible={!!errorEvent} transparent animationType="fade" onRequestClose={close}>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.overlay}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <AppCard style={styles.card} variant="elevated">
           <View style={[styles.badge, { borderColor: severityColor }]}>
             <AppText variant="caption" color={severityColor} style={styles.badgeText}>
@@ -151,7 +162,8 @@ export default function GlobalErrorReporter() {
           </View>
           {isSubmitting ? <ActivityIndicator color={theme.colors.vegasGold} /> : null}
         </AppCard>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -160,8 +172,12 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: theme.colors.overlay,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
     padding: theme.space.lg,
+    paddingVertical: theme.space["3xl"],
   },
   card: {
     gap: theme.space.md,

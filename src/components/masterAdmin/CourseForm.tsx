@@ -315,7 +315,7 @@ export default function CourseForm({
                   value={title}
                   onChangeText={setTitle}
                   placeholder="Enter course title..."
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   maxLength={200}
                 />
                 {errors.title && (
@@ -329,7 +329,7 @@ export default function CourseForm({
                   value={description}
                   onChangeText={setDescription}
                   placeholder="Enter course description..."
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   multiline
                   numberOfLines={4}
                 />
@@ -377,7 +377,7 @@ export default function CourseForm({
                   value={orderIndex}
                   onChangeText={setOrderIndex}
                   placeholder="Enter display order..."
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   keyboardType="numeric"
                   maxLength={2}
                 />

@@ -28,7 +28,7 @@ const UserFilters: React.FC<UserFiltersProps> = ({
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name or email"
-            placeholderTextColor={themes.white}
+            placeholderTextColor={themes.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />

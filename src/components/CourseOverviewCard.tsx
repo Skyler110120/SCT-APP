@@ -22,20 +22,10 @@ const CourseOverviewCard: React.FC<CourseOverviewCardProps> = ({
   showStudentCount,
   showMaterialAccess = false,
 }) => {
-
-  console.log("📋 Full course object:", JSON.stringify(course, null, 2));
-  console.log("🔢 Student count:", studentCount);
-  console.log("✅ Is selected:", isSelected);
-  console.log("👥 Show student count:", showStudentCount);
-  console.log("🎥 Video count:", course?.videos?.length);
-  console.log("📝 Course title:", course?.title);
-  console.log("📖 Course description:", course?.description);
-
-  
   const videoCount = course?.videos?.length || 0;
   const hasPdf = Boolean(course?.pdf_s3_key?.trim());
   const hasScript = Boolean(course?.instructor_script_s3_key?.trim())
-  const canAccessScript = course.viewType === 'instructor' || 'admin';
+  const canAccessScript = course.viewType === 'instructor' || course.viewType === 'admin';
 
 
 

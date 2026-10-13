@@ -113,7 +113,7 @@ export const registerScreenStyles = StyleSheet.create({
     minWidth: 0,
   },
   nameInputBox: {
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -125,7 +125,7 @@ export const registerScreenStyles = StyleSheet.create({
   },
   textInputBox: {
     width: "100%",
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -137,7 +137,8 @@ export const registerScreenStyles = StyleSheet.create({
   },
   signUpButton: {
     width: "100%",
-    height: 54,
+    minHeight: 54,
+    paddingVertical: 12,
     marginTop: 8,
     backgroundColor: themes.vegasGold,
     borderRadius: 12,
@@ -150,5 +151,13 @@ export const registerScreenStyles = StyleSheet.create({
     color: themes.black,
     textTransform: "uppercase",
     letterSpacing: 0.8,
+  },
+  privacyNotice: {
+    textAlign: "center",
+    marginTop: 4,
+  },
+  privacyLink: {
+    color: themes.vegasGold,
+    textDecorationLine: "underline",
   },
 });

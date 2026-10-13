@@ -1,5 +1,6 @@
 import React from "react";
-import { SafeAreaView, View } from "react-native";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
 import { AppButton, AppText } from "@/src/components/ui";

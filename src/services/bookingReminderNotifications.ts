@@ -55,6 +55,7 @@ export function setNotificationHandler(): void {
         shouldPlaySound: true,
         shouldSetBadge: false,
         shouldShowBanner: true,
+        shouldShowList: true,
       }),
     });
   })();

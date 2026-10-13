@@ -196,7 +196,7 @@ export default function SessionBookingModal({
                 selectedValue={selectedWeek}
                 onValueChange={(v) => setSelectedWeek(Number(v))}
                 style={{ color: themes.white }}
-                itemStyle={{ color: themes.white }}
+                itemStyle={{ color: themes.white, height: 120 }}
               >
                 {Array.from({ length: 24 }, (_, i) => i + 1).map((w) => (
                   <Picker.Item key={w} label={`Week ${w}${w === currentWeek ? " (current)" : ""}`} value={w} />
@@ -211,7 +211,7 @@ export default function SessionBookingModal({
             Select a 1-hour time slot:
           </Text>
 
-          <ScrollView style={[{ maxHeight: 300, marginBottom: 20 }]}>
+          <ScrollView style={{ maxHeight: 300, flexShrink: 1, marginBottom: 20 }}>
             {timeSlots.map((startTime, index) => {
               const endTime = calculateEndTime(startTime);
               const formattedStartTime = formatTimeString(startTime);

@@ -24,6 +24,7 @@ const config = environments[currentEnv];
 export const API_URL = config.API_URL;
 export const API_TIMEOUT = config.API_TIMEOUT;
 export const USE_HTTPS = config.USE_HTTPS;
+export const PRIVACY_POLICY_URL = "https://sct-app.com/privacy";
 
 if (!__DEV__ && !API_URL.startsWith("https://")) {
   throw new Error("Production builds must use an https API URL.");

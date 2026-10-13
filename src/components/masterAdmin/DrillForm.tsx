@@ -152,7 +152,7 @@ export default function DrillForm({
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g., Bill Drill, Wall Drill"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 maxLength={200}
               />
               {errors.name && <Text style={styles.warningText}>{errors.name}</Text>}
@@ -180,7 +180,7 @@ export default function DrillForm({
                 value={purpose}
                 onChangeText={setPurpose}
                 placeholder="What this drill trains"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 multiline
                 numberOfLines={2}
               />
@@ -194,7 +194,7 @@ export default function DrillForm({
                 value={loadout}
                 onChangeText={setLoadout}
                 placeholder="e.g. 2×10"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 maxLength={255}
               />
               {errors.loadout && <Text style={styles.warningText}>{errors.loadout}</Text>}
@@ -207,7 +207,7 @@ export default function DrillForm({
                 value={instructorNotes}
                 onChangeText={setInstructorNotes}
                 placeholder="Optional coaching notes"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 multiline
                 numberOfLines={2}
               />
@@ -220,7 +220,7 @@ export default function DrillForm({
                 value={distanceYards}
                 onChangeText={setDistanceYards}
                 placeholder="7"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 keyboardType="numeric"
               />
             </View>
@@ -232,7 +232,7 @@ export default function DrillForm({
                 value={targetSpec}
                 onChangeText={setTargetSpec}
                 placeholder='e.g., IPSC, 3" dot'
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
               />
             </View>
 
@@ -260,7 +260,7 @@ export default function DrillForm({
                     value={timeLimitSeconds}
                     onChangeText={setTimeLimitSeconds}
                     placeholder="e.g., 7"
-                    placeholderTextColor={themes.white}
+                    placeholderTextColor={themes.textMuted}
                     keyboardType="numeric"
                   />
                 </View>
@@ -271,7 +271,7 @@ export default function DrillForm({
                     value={passingStandard}
                     onChangeText={setPassingStandard}
                     placeholder="e.g., 3.5 seconds, 45 points"
-                    placeholderTextColor={themes.white}
+                    placeholderTextColor={themes.textMuted}
                   />
                 </View>
               </>
@@ -284,7 +284,7 @@ export default function DrillForm({
                 value={displayOrder}
                 onChangeText={setDisplayOrder}
                 placeholder="1"
-                placeholderTextColor={themes.white}
+                placeholderTextColor={themes.textMuted}
                 keyboardType="numeric"
                 maxLength={2}
               />

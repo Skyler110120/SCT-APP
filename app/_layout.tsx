@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Slot } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -20,6 +21,12 @@ import {
   Oswald_500Medium,
   Oswald_600SemiBold,
 } from "@expo-google-fonts/oswald";
+
+if (!__DEV__) {
+  console.log = () => {};
+  console.debug = () => {};
+  console.info = () => {};
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -55,7 +62,8 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themes.background }}>
+        <StatusBar style="light" />
         <ActivityIndicator size="large" color={themes.vegasGold} />
       </View>
     );
@@ -63,6 +71,7 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
+      <StatusBar style="light" />
       <AuthProvider>
           <Slot />
           <GlobalErrorReporter />

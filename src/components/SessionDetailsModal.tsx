@@ -260,7 +260,11 @@ export default function SessionDetailsModal({
             <Text style={styles.sessionModalTitle}>{session.course_title || session.title}</Text>
           </View>
 
-          <View style={styles.sessionModalBody}>
+          <ScrollView
+            style={styles.sessionModalScroll}
+            contentContainerStyle={styles.sessionModalBody}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.infoCard}>
               <View style={styles.rowLayout}>
                 <View style={styles.flexEqual}>
@@ -359,7 +363,7 @@ export default function SessionDetailsModal({
                           <ActivityIndicator size="small" color={themes.vegasGold} />
                         </View>
                       ) : pc.classWithDrills ? (
-                        <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
+                        <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
                           <Text style={[styles.infoValueSecondary, { marginBottom: 4 }]}>
                             {pc.classWithDrills.title || `Week ${pc.classWithDrills.week_index}`}
                           </Text>
@@ -424,7 +428,7 @@ export default function SessionDetailsModal({
                 )}
               </View>
             )}
-          </View>
+          </ScrollView>
 
           {isInstructor ? renderInstructorActions() : renderStudentActions()}
         </View>

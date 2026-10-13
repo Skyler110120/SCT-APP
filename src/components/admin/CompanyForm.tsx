@@ -107,7 +107,7 @@ const CompanyForm = ({
               value={formData.name}
               onChangeText={(text) => handleChange("name", text)}
               placeholder="Enter company name"
-              placeholderTextColor={themes.white}
+              placeholderTextColor={themes.textMuted}
             />
             {errors.name && (
               <Text style={styles.errorText}>{errors.name}</Text>
@@ -123,7 +123,7 @@ const CompanyForm = ({
               value={formData.website || ""}
               onChangeText={(text) => handleChange("website", text)}
               placeholder="https://example.com"
-              placeholderTextColor={themes.white}
+              placeholderTextColor={themes.textMuted}
               keyboardType="url"
             />
             {errors.website && (

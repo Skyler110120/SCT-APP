@@ -248,7 +248,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
             <Text style={styles.editModalTitle}>Edit Profile</Text>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.formGroup}>
-                <Text style={styles.inputLabel}>EmailAdress</Text>
+                <Text style={styles.inputLabel}>Email Address</Text>
                 <TextInput
                   style={getInputStyle('email')}
                   value={formData.email}
@@ -256,7 +256,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="Enter your email"
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -274,7 +274,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
                   onFocus={() => setFocusedField('phone_number')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="Enter your phone number"
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   keyboardType="phone-pad"
                 />
                 {errors.phone_number && (
@@ -306,7 +306,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
                   onFocus={() => setFocusedField('bio')}
                   onBlur={() => setFocusedField(null)}
                   placeholder="Tell us about yourself"
-                  placeholderTextColor={themes.white}
+                  placeholderTextColor={themes.textMuted}
                   multiline={true}
                   numberOfLines={4}
                   maxLength={500}
@@ -340,7 +340,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
                 {isSubmitting ? (
                   <ActivityIndicator size="small" color="#000" />
                 ) : (
-                  <Text style={styles.editModalButtonText}>Save Change</Text>
+                  <Text style={styles.editModalButtonText}>Save Changes</Text>
                 )}
               </TouchableOpacity>
             </View>

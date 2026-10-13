@@ -226,7 +226,7 @@ const CreateEventModal: React.FC<modalProps> = ({
               onChangeText={(text) => handleChange("title", text)}
               maxLength={255}
               placeholder="Enter Event Title"
-              placeholderTextColor={themes.white}
+              placeholderTextColor={themes.textMuted}
               textAlign="center"
               style={[
                 styles.modalTextInput,
@@ -243,7 +243,7 @@ const CreateEventModal: React.FC<modalProps> = ({
               onChangeText={(text) => handleChange("description", text)}
               maxLength={500}
               placeholder="Event Description"
-              placeholderTextColor={themes.white}
+              placeholderTextColor={themes.textMuted}
               textAlign="center"
               multiline={true}
               numberOfLines={4}

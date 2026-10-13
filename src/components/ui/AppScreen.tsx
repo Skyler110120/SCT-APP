@@ -1,11 +1,11 @@
 import React from "react";
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   View,
   ViewProps,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { theme } from "@/src/context/themes";
 
 interface AppScreenProps extends ViewProps {

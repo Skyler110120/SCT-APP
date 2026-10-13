@@ -6,10 +6,11 @@ export const bookingModalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0,7)",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   modalContent: {
     width: "90%",
+    maxHeight: "90%",
     padding: 20,
     borderWidth: 2,
     borderRadius: 20,
@@ -47,18 +48,20 @@ export const bookingModalStyles = StyleSheet.create({
     backgroundColor: themes.black,
   },
   sessionText: {
-    fontSize: 28,
+    flexShrink: 1,
+    fontSize: 18,
     fontFamily: "Chakra-Regular",
     color: themes.white
   },
   selectionIndicator: {
+    marginLeft: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     backgroundColor: themes.vegasGold,
   },
   selectionIndicatorText: {
-    fontSize: 20,
+    fontSize: 13,
     fontFamily: "Chakra-Bold",
     color: themes.black,
   },

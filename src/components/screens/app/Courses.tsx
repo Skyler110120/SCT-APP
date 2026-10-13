@@ -6,12 +6,12 @@ import {
   FlatList,
   Linking,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import CourseOverviewCard from "@/src/components/CourseOverviewCard";

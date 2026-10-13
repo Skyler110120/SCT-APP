@@ -15,12 +15,12 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import CourseForm from "@/src/components/masterAdmin/CourseForm";
 import CourseList from "@/src/components/masterAdmin/CourseList";

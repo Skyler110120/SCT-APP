@@ -6,28 +6,28 @@ export const detailModalStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0,7)",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   sessionModalContent: {
     width: "95%",
     minHeight: 300,
     maxHeight: "85%",
     flexDirection: "column",
-    padding: 24,
+    padding: 20,
     borderWidth: 2,
     borderRadius: 20,
     backgroundColor: themes.black,
     borderColor: themes.vegasGold,
   },
   sessionModalTitle: {
-    fontSize: 36,
+    fontSize: 26,
     fontFamily: "Chakra-BoldItalic",
     textAlign: "center",
     marginBottom: 8,
     color: themes.vegasGold,
   },
   sessionModalSubtitle: {
-    fontSize: 28,
+    fontSize: 20,
     fontFamily: "Chakra-Bold",
     textAlign: "center",
     marginBottom: 16,
@@ -76,22 +76,22 @@ export const detailModalStyles = StyleSheet.create({
     flex: 1,
   },
   sessionButtonTextPrimary: {
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   sessionButtonTextSecondary: {
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
   sessionButtonTextDestructive: {
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   infoCard: {
-    padding: 20,
+    padding: 14,
     marginBottom: 16,
     borderRadius: 16,
     borderWidth: 1,
@@ -99,14 +99,14 @@ export const detailModalStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   infoCardSecondary: {
-    padding: 20,
+    padding: 14,
     backgroundColor: themes.black,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: themes.vegasGold,
   },
   infoCardTertiary: {
-    padding: 20,
+    padding: 14,
     backgroundColor: themes.black,
     borderRadius: 16,
     borderWidth: 1,
@@ -114,33 +114,33 @@ export const detailModalStyles = StyleSheet.create({
   },
   infoLabel: {
     marginBottom: 4,
-    fontSize: 24,
+    fontSize: 16,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
   infoValuePrimary: {
-    fontSize: 20,
+    fontSize: 15,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   infoValueSecondary: {
     marginBottom: 4,
-    fontSize: 24,
+    fontSize: 18,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
   infoValueTertiary: {
-    fontSize: 24,
+    fontSize: 15,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
   infoValueSubtle: {
-    fontSize: 24,
+    fontSize: 14,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
   statusBadge: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 20,
     alignItems: 'center',
@@ -148,7 +148,7 @@ export const detailModalStyles = StyleSheet.create({
   },
   statusBadgeText: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 13,
     fontFamily: "Chakra-Bold",
     color: themes.white,
   },
@@ -158,7 +158,7 @@ export const detailModalStyles = StyleSheet.create({
   },
   rowLayout: {
     flexDirection: "row",
-    gap: 16,
+    gap: 12,
   },
   spacingSmall: {
     marginBottom: 8
@@ -169,8 +169,12 @@ export const detailModalStyles = StyleSheet.create({
   spacingLarge: {
     marginBottom: 24
   },
-  sessionModalBody: {
+  sessionModalScroll: {
+    flexShrink: 1,
     marginBottom: 16,
+  },
+  sessionModalBody: {
+    flexGrow: 1,
   },
   flexEqual: {
     flex: 1

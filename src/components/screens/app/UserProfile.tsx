@@ -14,18 +14,22 @@ import { UserRole } from "@/src/types/enums";
 import { formatDateString } from "@/src/utils/dateTimeUtils";
 import { openStripeHostedUrl } from "@/src/utils/safeExternalUrl";
 import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { PRIVACY_POLICY_URL } from "@/src/config";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
-  SafeAreaView,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function InstructorProfile() {
   const { logout, user } = useAuth();
@@ -590,6 +594,15 @@ export default function InstructorProfile() {
                     </Text>
                   </TouchableOpacity>
                 )}
+
+                <TouchableOpacity
+                  style={{ alignSelf: "center", paddingVertical: 12, paddingHorizontal: 16 }}
+                  onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
+                >
+                  <Text style={{ color: themes.textMuted, fontFamily: "Inter_500Medium", fontSize: 14, textDecorationLine: "underline" }}>
+                    Privacy Policy
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
             {user?.role === UserRole.STUDENT && (
@@ -736,7 +749,8 @@ export default function InstructorProfile() {
         transparent
         onRequestClose={() => setShowPasswordModal(false)}
       >
-        <View
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={{
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.6)",
@@ -829,7 +843,7 @@ export default function InstructorProfile() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal
@@ -838,7 +852,8 @@ export default function InstructorProfile() {
         transparent
         onRequestClose={closeDeleteModal}
       >
-        <View
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={{
             flex: 1,
             backgroundColor: "rgba(0,0,0,0.6)",
@@ -906,7 +921,7 @@ export default function InstructorProfile() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

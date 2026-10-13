@@ -284,7 +284,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
 
               <View style={{ marginBottom: 16 }}>
                 <Text style={styles.modalTitle}>
-                  Your Current Availabilites:
+                  Your Current Availabilities:
                 </Text>
                 {availabilities.length === 0 ? (
                   <Text style={styles.modalText}>No availabilities set.</Text>

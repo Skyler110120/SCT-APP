@@ -22,6 +22,7 @@ import {
   ClassDrillCreate,
 } from "@/src/types/course.drills.types";
 import { CourseAdminView } from "@/src/types/course.types";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { themes } from "@/src/context/themes";
 import DrillPickerModal from "./DrillPickerModal";
 import ClassFormModal from "./ClassFormModal";
@@ -302,7 +303,7 @@ export default function CourseStructureBuilderModal({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <SafeAreaView style={styles.overlay}>
         <View style={styles.container}>
           <View style={styles.header}>
             {canGoBack ? (
@@ -537,7 +538,7 @@ export default function CourseStructureBuilderModal({
           onSelect={handleDrillPicked}
           alreadyInClassIds={(selectedClass?.class_drills ?? []).map((cd) => cd.drill_id)}
         />
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }

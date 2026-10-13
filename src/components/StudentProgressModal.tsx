@@ -8,12 +8,12 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { logger } from "@/src/utils/logger";
 
 type ValidIconName = "check-circle" | "clock-o" | "circle-o";

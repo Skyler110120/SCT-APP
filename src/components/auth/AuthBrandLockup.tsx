@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     letterSpacing: 2,
     fontSize: 56,
-    lineHeight: 58,
+    lineHeight: 70,
     fontFamily: theme.typography.family.headingSemiBold,
     textAlign: "center",
     textShadowColor: "rgba(197,179,88,0.24)",
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
   },
   shortNameCompact: {
     fontSize: 44,
-    lineHeight: 46,
+    lineHeight: 56,
   },
 });

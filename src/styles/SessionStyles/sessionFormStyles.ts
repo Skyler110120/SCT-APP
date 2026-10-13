@@ -146,7 +146,7 @@ export const sessionFormStyles = StyleSheet.create({
   },
   sliderSegment: {
     flex: 1,
-    height: 36,
+    minHeight: 36,
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",

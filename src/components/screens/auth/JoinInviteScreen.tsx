@@ -4,13 +4,13 @@ import {
   Alert,
   Image,
   Platform,
-  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -412,7 +412,7 @@ const s = StyleSheet.create({
   },
   input: {
     width: "100%",
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -424,7 +424,9 @@ const s = StyleSheet.create({
   },
   primaryButton: {
     width: "100%",
-    height: 54,
+    minHeight: 54,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     marginTop: 4,
     backgroundColor: themes.vegasGold,
     borderRadius: 12,
@@ -433,7 +435,8 @@ const s = StyleSheet.create({
   },
   primaryButtonText: {
     fontFamily: "Chakra-semiBoldItalic",
-    fontSize: 20,
-    color: themes.white,
+    fontSize: 18,
+    color: themes.black,
+    textAlign: "center",
   },
 });

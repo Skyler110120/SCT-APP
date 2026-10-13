@@ -19,7 +19,7 @@ const variantStyles: Record<TextVariant, TextStyle> = {
   display: {
     fontFamily: theme.typography.family.headingSemiBold,
     fontSize: theme.typography.size["2xl"],
-    lineHeight: 34,
+    lineHeight: 36,
     color: theme.colors.textPrimary,
     letterSpacing: 0.3,
   },

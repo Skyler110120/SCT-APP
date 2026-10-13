@@ -6,7 +6,9 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -98,7 +100,10 @@ export function InviteCodeModal({
       animationType="slide"
       onRequestClose={handleModalClose}
     >
-      <View style={styles.modalOverlay}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.modalOverlay}
+      >
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Join Your Company</Text>
 
@@ -111,7 +116,7 @@ export function InviteCodeModal({
             <TextInput
               style={[styles.textInput, error && styles.errorText]}
               placeholder="Enter invite code"
-              placeholderTextColor={themes.white}
+              placeholderTextColor={themes.textMuted}
               value={code}
               onChangeText={(text) => {
                 setCode(text);
@@ -149,7 +154,7 @@ export function InviteCodeModal({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
