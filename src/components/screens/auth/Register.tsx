@@ -190,11 +190,6 @@ export default function RegisterScreen() {
         program_cadence: role === UserRole.STUDENT ? selectedCadence : undefined,
       };
 
-      await onboardingService.saveOnboardingData(
-        "registrationData",
-        registrationData
-      );
-
       const signupData = await onboardingService.createSignupDataFromOnboarding(
         registrationData
       );

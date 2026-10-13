@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { View, ActivityIndicator, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
@@ -37,6 +38,11 @@ export default function RootLayout() {
     "Chakra-semiBoldItalic": Inter_600SemiBold,
     "Chakra-Medium": Inter_500Medium,
   });
+
+  // Older builds persisted the full signup form, including the plaintext password, under this key.
+  useEffect(() => {
+    AsyncStorage.removeItem('onboarding_registrationData').catch(() => {});
+  }, []);
 
   // iOS keeps the Stripe in-app browser on top when its page deep-links back into the app.
   useEffect(() => {

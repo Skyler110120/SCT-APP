@@ -272,6 +272,7 @@ export const onboardingService = {
         "onboarding_selected_course",
         "onboarding_selected_cadence",
         "onboarding_form_data",
+        "onboarding_registrationData",
       ];
 
       await AsyncStorage.multiRemove(keysToRemove);
