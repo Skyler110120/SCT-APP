@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   Event,
   UpdateEventRequest,
@@ -27,7 +28,7 @@ export const eventService = {
       console.error("Error fetching event:", error);
       return {
         success: false,
-        error: "An error occurred while fetching the event",
+        error: getApiErrorMessage(error, "An error occurred while fetching the event"),
       };
     }
   },
@@ -49,7 +50,7 @@ export const eventService = {
       console.log("Error fetching events:", error);
       return {
         success: false,
-        error: "An error occurred while fetching events",
+        error: getApiErrorMessage(error, "An error occurred while fetching events"),
       };
     }
   },
@@ -80,7 +81,7 @@ export const eventService = {
       console.error("Error fetching events by date range:", error);
       return {
         success: false,
-        error: "An error occurred while fetching events by date range",
+        error: getApiErrorMessage(error, "An error occurred while fetching events by date range"),
       };
     }
   },
@@ -105,7 +106,7 @@ export const eventService = {
       console.error("Error creating event:", error);
       return {
         success: false,
-        error: "An error occurred while creating the event",
+        error: getApiErrorMessage(error, "An error occurred while creating the event"),
       };
     }
   },
@@ -122,7 +123,7 @@ export const eventService = {
   ): Promise<EventResponse> {
     try {
       const data: Event = await apiFetch<Event>(`/events/${eventId}`, {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(updateData),
       });
 
@@ -134,7 +135,7 @@ export const eventService = {
       console.error("Error updating event:", error);
       return {
         success: false,
-        error: "An error occurred while updating the event",
+        error: getApiErrorMessage(error, "An error occurred while updating the event"),
       };
     }
   },
@@ -158,7 +159,7 @@ export const eventService = {
       console.error("Error deleting event:", error);
       return {
         success: false,
-        error: "An error occurred while deleting the event",
+        error: getApiErrorMessage(error, "An error occurred while deleting the event"),
       };
     }
   },

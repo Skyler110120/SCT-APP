@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import { authStorage } from "./authStorage";
 import {
   Company,
@@ -30,7 +31,7 @@ export const companyService = {
     console.error("Error fetching company:", error);
     return {
       success: false,
-      error: "An error occurred while fetching the company",
+      error: getApiErrorMessage(error, "An error occurred while fetching the company"),
     };
   }
 },
@@ -50,7 +51,7 @@ export const companyService = {
       console.error("Error fetching companies:", error);
       return {
         success: false,
-        error: "An error occurred while fetching companies",
+        error: getApiErrorMessage(error, "An error occurred while fetching companies"),
       };
     }
   },
@@ -77,7 +78,7 @@ export const companyService = {
       console.error("Error creating company:", error);
       return {
         success: false,
-        error: "An error occurred while creating the company",
+        error: getApiErrorMessage(error, "An error occurred while creating the company"),
       };
     }
   },
@@ -105,7 +106,7 @@ export const companyService = {
       console.error("Error updating company:", error);
       return {
         success: false,
-        error: "An error occurred while updating the company",
+        error: getApiErrorMessage(error, "An error occurred while updating the company"),
       };
     }
   },
@@ -126,7 +127,7 @@ export const companyService = {
       console.error("Error fetching invite codes:", error);
       return {
         success: false,
-        error: "An error occurred while fetching invite codes",
+        error: getApiErrorMessage(error, "An error occurred while fetching invite codes"),
       };
     }
   },
@@ -198,7 +199,7 @@ export const companyService = {
       console.error("Error creating ivite code:", error);
       return {
         success: false,
-        error: "An error occurred while creating the invite code",
+        error: getApiErrorMessage(error, "An error occurred while creating the invite code"),
       };
     }
   },

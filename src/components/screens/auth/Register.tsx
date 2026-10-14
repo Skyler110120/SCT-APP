@@ -130,9 +130,15 @@ export default function RegisterScreen() {
     loadCourses();
   };
 
+  const returnToInviteCode = () => {
+    lastProcessedCompanyRef.current = null;
+    setCompanyInfo(null);
+    setCurrentStep("invite-code");
+  };
+
   const handleBack = () => {
     if (currentStep === "course-selection") {
-      setCurrentStep("invite-code");
+      returnToInviteCode();
       setSelectedCourse(null);
       setCourses([]);
     } else if (currentStep === "cadence-selection") {
@@ -142,7 +148,7 @@ export default function RegisterScreen() {
       if (role === UserRole.STUDENT) {
         setCurrentStep("cadence-selection");
       } else {
-        setCurrentStep("invite-code");
+        returnToInviteCode();
       }
     }
   };

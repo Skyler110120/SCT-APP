@@ -95,15 +95,15 @@ export async function checkAndNotifyWednesdayBookingReminder(
     const res = await sessionService.getMyCalendarSessions({
       start_date: startDate,
       end_date: endDate,
+      include_completed: true,
     });
     if (!res.success || !res.data) return;
 
-    const scheduled = (res.data || []).filter(
-      (s) =>
-        s.status?.toLowerCase() === "scheduled" ||
-        s.status?.toLowerCase() === "in_progress"
-    );
-    if (scheduled.length > 0) return;
+    const sessionsThisWeek = (res.data || []).filter((s) => {
+      const status = s.status?.toLowerCase();
+      return status === "scheduled" || status === "in_progress" || status === "completed";
+    });
+    if (sessionsThisWeek.length > 0) return;
 
     const Notifications = await getNotificationsModule();
     if (!Notifications) return;

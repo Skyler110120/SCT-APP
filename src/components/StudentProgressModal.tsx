@@ -1,7 +1,7 @@
 import { themes } from "@/src/context/themes";
 import { studentProgressModalStyles as styles } from "@/src/styles/CoursePageStyles/studentProgressModalStyles";
 import { UserRole } from "@/src/types/enums";
-import { StudentWeeklyProgress } from "@/src/types/enrollment.types";
+import { ProgressionDecision, StudentWeeklyProgress, WeeklyProgressUpdateRequest } from "@/src/types/enrollment.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -31,7 +31,7 @@ interface StudentProgressModalProps {
   canUpdate: boolean;
   userRole?: UserRole;
   onClose: () => void;
-  onUpdateProgress: (data: any) => Promise<void>;
+  onUpdateProgress: (data: WeeklyProgressUpdateRequest) => Promise<void>;
 }
 
 const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
@@ -95,7 +95,7 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
             try {
               await onUpdateProgress({
                 enrollment_id: student.enrollment_id,
-                new_week: student.current_week + 1,
+                decision: ProgressionDecision.APPROVED,
                 notes: `Advanced by ${userRole ?? "system"} on ${new Date().toLocaleDateString()}`,
               });
             } catch (error) {
@@ -307,6 +307,7 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
                         ]}
                         onPress={() => handleUpdateProgress(student)}
                         disabled={isUpdatingThis}
+                        testID={`advance-student-${student.enrollment_id}`}
                       >
                         {isUpdatingThis ? (
                           <ActivityIndicator

@@ -37,12 +37,17 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
+jest.mock("@/src/services/api", () => ({
+  setUnauthorizedHandler: jest.fn(),
+}));
+
 jest.mock("@/src/services/authService", () => ({
   authService: {
     checkAuth: jest.fn(),
     login: jest.fn(),
     getCurrentUser: jest.fn(),
     logout: jest.fn(),
+    clearAuthData: jest.fn(),
   },
 }));
 
@@ -190,7 +195,7 @@ describe("AuthContext — login", () => {
       data: sampleUserInfo,
     });
 
-    let loginResult: boolean | undefined;
+    let loginResult: { success: boolean; error?: string } | undefined;
     await renderProvider(jest.fn(), async (api) => {
       loginResult = await api.login({ email: "a@b.com", password: "x" });
     });
@@ -205,7 +210,7 @@ describe("AuthContext — login", () => {
     await waitFor(() =>
       expect(screen.getByTestId("authed").props.children).toBe("true")
     );
-    expect(loginResult).toBe(true);
+    expect(loginResult?.success).toBe(true);
     expect(mockGetCurrentUser).toHaveBeenCalledWith("new-tk");
   });
 
@@ -215,7 +220,7 @@ describe("AuthContext — login", () => {
       error: "Invalid credentials",
     } as any);
 
-    let loginResult: boolean | undefined;
+    let loginResult: { success: boolean; error?: string } | undefined;
     await renderProvider(jest.fn(), async (api) => {
       loginResult = await api.login({ email: "a@b.com", password: "x" });
     });
@@ -226,7 +231,7 @@ describe("AuthContext — login", () => {
       await Promise.resolve();
     });
 
-    expect(loginResult).toBe(false);
+    expect(loginResult?.success).toBe(false);
     await waitFor(() =>
       expect(screen.getByTestId("error").props.children).toBe("Invalid credentials")
     );
@@ -244,7 +249,7 @@ describe("AuthContext — login", () => {
       error: "Unable to fetch profile",
     });
 
-    let loginResult: boolean | undefined;
+    let loginResult: { success: boolean; error?: string } | undefined;
     await renderProvider(jest.fn(), async (api) => {
       loginResult = await api.login({ email: "a@b.com", password: "x" });
     });
@@ -256,7 +261,7 @@ describe("AuthContext — login", () => {
       await Promise.resolve();
     });
 
-    expect(loginResult).toBe(false);
+    expect(loginResult?.success).toBe(false);
     await waitFor(() =>
       expect(screen.getByTestId("error").props.children).toBe(
         "Unable to fetch profile"
@@ -267,7 +272,7 @@ describe("AuthContext — login", () => {
   it("returns false with a generic message when the service throws", async () => {
     mockLogin.mockRejectedValueOnce(new Error("network down"));
 
-    let loginResult: boolean | undefined;
+    let loginResult: { success: boolean; error?: string } | undefined;
     await renderProvider(jest.fn(), async (api) => {
       loginResult = await api.login({ email: "a@b.com", password: "x" });
     });
@@ -278,7 +283,7 @@ describe("AuthContext — login", () => {
       await Promise.resolve();
     });
 
-    expect(loginResult).toBe(false);
+    expect(loginResult?.success).toBe(false);
     await waitFor(() =>
       expect(screen.getByTestId("error").props.children).toBe(
         "Network error occurred during login"

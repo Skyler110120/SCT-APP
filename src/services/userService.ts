@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch, type ApiError } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   User,
   UserUpdate,
@@ -39,7 +40,7 @@ export const userService = {
       console.error("Error fetching users:", error);
       return {
         success: false,
-        error: "An error occurred while fetching users",
+        error: getApiErrorMessage(error, "An error occurred while fetching users"),
       };
     }
   },
@@ -61,7 +62,7 @@ export const userService = {
       console.error(`Error fetching user ${userId}:`, error);
       return {
         success: false,
-        error: "An error occurred while fetching user",
+        error: getApiErrorMessage(error, "An error occurred while fetching user"),
       };
     }
   },
@@ -90,7 +91,7 @@ export const userService = {
       console.error(`Error updating user ${userId}:`, error);
       return {
         success: false,
-        error: "An error occurred while updating user",
+        error: getApiErrorMessage(error, "An error occurred while updating user"),
       };
     }
   },
@@ -119,7 +120,7 @@ export const userService = {
       console.error(`Error updating password for user ${userId}:`, error);
       return {
         success: false,
-        error: "An error occurred while updating the password",
+        error: getApiErrorMessage(error, "An error occurred while updating the password"),
       };
     }
   },
@@ -184,7 +185,7 @@ export const userService = {
       );
       return {
         success: false,
-        error: "An error occurred while removing the user",
+        error: getApiErrorMessage(error, "An error occurred while removing the user"),
       };
     }
   },
@@ -219,7 +220,7 @@ export const userService = {
       console.error(`Error updating instructor permissions for ${userId}:`, error);
       return {
         success: false,
-        error: "An error occurred while updating instructor permissions",
+        error: getApiErrorMessage(error, "An error occurred while updating instructor permissions"),
       };
     }
   },
@@ -237,7 +238,7 @@ export const userService = {
       console.error(`Error approving user account ${userId}:`, error);
       return {
         success: false,
-        error: "An error occurred while approving the user account",
+        error: getApiErrorMessage(error, "An error occurred while approving the user account"),
       };
     }
   },
@@ -262,7 +263,7 @@ export const userService = {
       );
       return {
         success: false,
-        error: "An error occurred while fetching instructors",
+        error: getApiErrorMessage(error, "An error occurred while fetching instructors"),
       };
     }
   },
@@ -286,7 +287,7 @@ export const userService = {
       console.error(`Error fetching user ${userId} with instructor:`, error);
       return {
         success: false,
-        error: "An error occurred while fetching user with instructor",
+        error: getApiErrorMessage(error, "An error occurred while fetching user with instructor"),
       };
     }
   },
@@ -313,7 +314,7 @@ export const userService = {
       );
       return {
         success: false,
-        error: "An error occurred while fetching instructor with students",
+        error: getApiErrorMessage(error, "An error occurred while fetching instructor with students"),
       };
     }
   },
@@ -340,7 +341,7 @@ export const userService = {
       console.error(`Error assigning student to instructor:`, error);
       return {
         success: false,
-        error: "An error occurred while assigning instructor",
+        error: getApiErrorMessage(error, "An error occurred while assigning instructor"),
       };
     }
   },
@@ -369,7 +370,7 @@ export const userService = {
       );
       return {
         success: false,
-        error: "An error occurred while unassigning instructor",
+        error: getApiErrorMessage(error, "An error occurred while unassigning instructor"),
       };
     }
   },

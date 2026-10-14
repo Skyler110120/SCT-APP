@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   ProfileDetailed,
   ProfileCreateRequest,
@@ -31,7 +32,7 @@ export const profileService = {
       console.error("Error fetching profile:", error);
       return {
         success: false,
-        error: "Error occurred while fetching profile",
+        error: getApiErrorMessage(error, "Error occurred while fetching profile"),
       };
     }
   },
@@ -63,7 +64,7 @@ export const profileService = {
       console.error("Error updating profile:", error);
       return {
         success: false,
-        error: "Error occurred while updating profile",
+        error: getApiErrorMessage(error, "Error occurred while updating profile"),
       };
     }
   },
@@ -90,7 +91,7 @@ export const profileService = {
       console.error("Error fetching user profile:", error);
       return {
         success: false,
-        error: "Error occurred while fetching user profile",
+        error: getApiErrorMessage(error, "Error occurred while fetching user profile"),
       };
     }
   },
@@ -131,7 +132,7 @@ export const profileService = {
         console.error("Error fetching instructors:", error);
         return {
             success: false,
-            error: "Error occurred while fetching instructors",
+            error: getApiErrorMessage(error, "Error occurred while fetching instructors"),
         }
     }
   }

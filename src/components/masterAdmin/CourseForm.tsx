@@ -25,7 +25,7 @@ import {
   View,
 } from "react-native";
 import { materialService } from "@/src/services/materialService";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import {
   MAX_PDF_SCRIPT_SIZE_BYTES,
   formatBytes,
@@ -135,7 +135,7 @@ export default function CourseForm({
         return;
       }
       const file = pickResult.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(file.uri, { size: true });
+      const fileInfo = await FileSystem.getInfoAsync(file.uri);
       const size = (fileInfo as { size?: number }).size;
       if (typeof size === "number" && size > MAX_PDF_SCRIPT_SIZE_BYTES) {
         Alert.alert(
@@ -189,7 +189,7 @@ export default function CourseForm({
         return;
       }
       const file = pickResult.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(file.uri, { size: true });
+      const fileInfo = await FileSystem.getInfoAsync(file.uri);
       const size = (fileInfo as { size?: number }).size;
       if (typeof size === "number" && size > MAX_PDF_SCRIPT_SIZE_BYTES) {
         Alert.alert(

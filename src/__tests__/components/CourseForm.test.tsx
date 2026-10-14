@@ -7,11 +7,11 @@ import CourseForm from "@/src/components/masterAdmin/CourseForm";
 import { materialService } from "@/src/services/materialService";
 import { CourseAdminView } from "@/src/types/course.types";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { MAX_PDF_SCRIPT_SIZE_BYTES } from "@/src/constants/uploadLimits";
 
 jest.mock("expo-document-picker", () => ({ getDocumentAsync: jest.fn().mockResolvedValue({ canceled: true }) }));
-jest.mock("expo-file-system", () => ({ getInfoAsync: jest.fn().mockResolvedValue({ size: 1000 }) }));
+jest.mock("expo-file-system/legacy", () => ({ getInfoAsync: jest.fn().mockResolvedValue({ size: 1000 }) }));
 
 jest.mock("@/src/services/materialService", () => ({
   materialService: {

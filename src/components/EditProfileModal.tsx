@@ -122,7 +122,7 @@ export default function EditProfileModal({ visible, isSubmitting = false, profil
     if (formData.email && formData.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email.trim())) {
-        newErrors.email = "Please enter a vaild email address";
+        newErrors.email = "Please enter a valid email address";
       }
     }
 

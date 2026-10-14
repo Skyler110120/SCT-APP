@@ -40,11 +40,25 @@ import { CreateEventRequest, Event } from "@/src/types/event.types";
 import { SessionDetailed } from "@/src/types/sessions.types";
 
 import {
+  createLocalDate,
   formatDateForAPI,
   formatDateRange,
   formatDateString,
   formatTimeString
 } from "@/src/utils/dateTimeUtils";
+
+const toLocalDateKey = (isoString: string) => formatDateForAPI(new Date(isoString));
+
+const isUnavailableRow = (availability: Availability) =>
+  (availability.status ?? "").toLowerCase() === "unavailable";
+
+/** Month bounds for a YYYY-MM-DD string, padded a day each side because the API filters by UTC date. */
+const getPaddedMonthRange = (dateString: string) => {
+  const date = createLocalDate(dateString);
+  const start = new Date(date.getFullYear(), date.getMonth(), 0);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  return { start, end };
+};
 import { isTestSessionRequired } from "@/src/utils/sessionRules";
 
 interface Session {
@@ -65,16 +79,16 @@ export default function CalendarScreen() {
   const bottomContentPadding = insets.bottom + 150;
 
   const goToPrevMonth = () => {
-    const d = new Date(visibleMonth + "T00:00:00");
+    const d = createLocalDate(visibleMonth);
     d.setDate(1);
     d.setMonth(d.getMonth() - 1);
-    setVisibleMonth(d.toISOString().split("T")[0]);
+    setVisibleMonth(formatDateForAPI(d));
   };
   const goToNextMonth = () => {
-    const d = new Date(visibleMonth + "T00:00:00");
+    const d = createLocalDate(visibleMonth);
     d.setDate(1);
     d.setMonth(d.getMonth() + 1);
-    setVisibleMonth(d.toISOString().split("T")[0]);
+    setVisibleMonth(formatDateForAPI(d));
   };
 
   const screenWidth = Dimensions.get("window").width;
@@ -87,12 +101,12 @@ export default function CalendarScreen() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-  const today = new Date().toISOString().split("T")[0];
+  const today = formatDateForAPI(new Date());
   const [selectedDate, setSelectedDate] = useState(today);
   const firstOfThisMonth = (() => {
     const d = new Date();
     d.setDate(1);
-    return d.toISOString().split("T")[0];
+    return formatDateForAPI(d);
   })();
   const [visibleMonth, setVisibleMonth] = useState(firstOfThisMonth);
 
@@ -174,7 +188,7 @@ export default function CalendarScreen() {
 
     setIsLoadingEvents(true);
     try {
-      const selectedDateObject = new Date(selectedDate);
+      const selectedDateObject = createLocalDate(selectedDate);
       const startOfMonth = new Date(
         selectedDateObject.getFullYear(),
         selectedDateObject.getMonth(),
@@ -186,7 +200,7 @@ export default function CalendarScreen() {
         0,
         23,
         59,
-        99,
+        59,
         999
       );
 
@@ -213,21 +227,11 @@ export default function CalendarScreen() {
     setIsLoadingSessions(true);
 
     try {
-      const selectedDateObject = new Date(selectedDate);
-      const startOfMonth = new Date(
-        selectedDateObject.getFullYear(),
-        selectedDateObject.getMonth(),
-        1
-      );
-      const endOfMonth = new Date(
-        selectedDateObject.getFullYear(),
-        selectedDateObject.getMonth() + 1,
-        0
-      );
+      const { start, end } = getPaddedMonthRange(selectedDate);
 
       const response = await sessionService.getMyCalendarSessions({
-        start_date: formatDateForAPI(startOfMonth),
-        end_date: formatDateForAPI(endOfMonth),
+        start_date: formatDateForAPI(start),
+        end_date: formatDateForAPI(end),
       });
 
       if (response.success && response.data) {
@@ -258,19 +262,9 @@ export default function CalendarScreen() {
 
   const loadCompanyAvailabilities = async () => {
     try {
-      const selectedDateObject = new Date(selectedDate);
-      const startOfMonth = new Date(
-        selectedDateObject.getFullYear(),
-        selectedDateObject.getMonth(),
-        1
-      );
-      const endOfMonth = new Date(
-        selectedDateObject.getFullYear(),
-        selectedDateObject.getMonth() + 1,
-        0
-      );
-      const startDateString = formatDateForAPI(startOfMonth);
-      const endDateString = formatDateForAPI(endOfMonth);
+      const { start, end } = getPaddedMonthRange(selectedDate);
+      const startDateString = formatDateForAPI(start);
+      const endDateString = formatDateForAPI(end);
       const response =
         await instructorAvailabilityService.getCompanyAvailability(
           startDateString,
@@ -435,30 +429,54 @@ export default function CalendarScreen() {
   };
 
   const handleCreateAvailabilitySubmit = async (
-    availabilityData: CreateAvailabilityRequest
+    availabilityRequests: CreateAvailabilityRequest[]
   ) => {
+    if (availabilityRequests.length === 0) return;
     setIsSubmittingAvailability(true);
+    const isAdminCreate = user?.role === UserRole.ADMIN && !!selectedInstructorForAdmin;
     try {
-      const response =
-        user?.role === UserRole.ADMIN && selectedInstructorForAdmin
-          ? await instructorAvailabilityService.createAvailabilityAsAdmin({
-              ...availabilityData,
-              instructor_id: selectedInstructorForAdmin,
-            })
-          : await instructorAvailabilityService.createAvailability(
-              availabilityData
-            );
+      const responses = await Promise.all(
+        availabilityRequests.map((availabilityData) =>
+          isAdminCreate
+            ? instructorAvailabilityService.createAvailabilityAsAdmin({
+                ...availabilityData,
+                instructor_id: selectedInstructorForAdmin!,
+              })
+            : instructorAvailabilityService.createAvailability(availabilityData)
+        )
+      );
 
-      if (response.success && response.data) {
-        if (user?.role === UserRole.ADMIN && selectedInstructorForAdmin) {
-          await loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
+      const created = responses
+        .map((response) => (response.success ? response.data : undefined))
+        .filter((availability): availability is Availability => !!availability);
+      const failures = responses.filter((response) => !response.success);
+
+      if (created.length > 0) {
+        if (isAdminCreate) {
+          await loadAdminInstructorAvailabilities(selectedInstructorForAdmin!);
         } else {
-          setAvailabilities((prev) => [...prev, response.data!]);
+          setAvailabilities((prev) => [...prev, ...created]);
         }
+      }
+
+      if (failures.length === 0) {
         setShowAvailabilityModal(false);
-        Alert.alert("Success", "Availability created successfully");
+        Alert.alert(
+          "Success",
+          created.length > 1
+            ? `${created.length} availability windows created`
+            : "Availability created successfully"
+        );
       } else {
-        Alert.alert("Error", response.error || "Failed to create availability");
+        const reasons = Array.from(
+          new Set(failures.map((f) => f.error || "Failed to create availability"))
+        ).join("\n");
+        Alert.alert(
+          created.length > 0 ? "Some days failed" : "Error",
+          created.length > 0
+            ? `${created.length} created, ${failures.length} failed:\n${reasons}`
+            : reasons
+        );
       }
     } catch (error) {
       console.error("Error creating availability:", error);
@@ -521,14 +539,9 @@ export default function CalendarScreen() {
     }
   };
 
-  const eventsForSelectedDate = events.filter((event) => {
-    const eventDate = new Date(event.start_time);
-    const selectedDateObj = new Date(selectedDate + "T00:00:00");
-
-    const eventDateString = eventDate.toISOString().split("T")[0];
-    const selectedDateString = selectedDateObj.toISOString().split("T")[0];
-    return eventDateString === selectedDateString;
-  });
+  const eventsForSelectedDate = events.filter(
+    (event) => toLocalDateKey(event.start_time) === selectedDate
+  );
 
   const getDateObject = (dateString: string) => {
     const [year, month, day] = dateString.split("-").map(Number);
@@ -583,12 +596,14 @@ export default function CalendarScreen() {
   const showInstructorFilter =
     user?.role === UserRole.STUDENT && instructorsFromAvailability.length > 1;
 
-  const displayAvailabilitiesForSelectedDate =
-    instructorFilterId == null
-      ? availabilitiesForSelectedDate
-      : availabilitiesForSelectedDate.filter(
-          (a) => a.instructor_id === instructorFilterId
-        );
+  const unavailableBlocksForSelectedDate =
+    availabilitiesForSelectedDate.filter(isUnavailableRow);
+
+  const displayAvailabilitiesForSelectedDate = availabilitiesForSelectedDate.filter(
+    (a) =>
+      (user?.role !== UserRole.STUDENT || !isUnavailableRow(a)) &&
+      (instructorFilterId == null || a.instructor_id === instructorFilterId)
+  );
 
   useEffect(() => {
     if (user) {
@@ -603,6 +618,24 @@ export default function CalendarScreen() {
     }
   }, [selectedDate, user]);
 
+  const selectedMonthKey = selectedDate.slice(0, 7);
+  const loadedAvailabilityMonthRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    if (loadedAvailabilityMonthRef.current === null) {
+      loadedAvailabilityMonthRef.current = selectedMonthKey;
+      return;
+    }
+    if (loadedAvailabilityMonthRef.current === selectedMonthKey) return;
+    loadedAvailabilityMonthRef.current = selectedMonthKey;
+    const showsCompanyAvailability =
+      user.role === UserRole.STUDENT ||
+      (user.role === UserRole.ADMIN && !showAdminAvailabilityManagement);
+    if (!canManageOwnAvailability && showsCompanyAvailability) {
+      loadCompanyAvailabilities();
+    }
+  }, [selectedMonthKey, user]);
+
   const handleAvailabilityPress = (availability: Availability) => {
     if (user?.role === UserRole.STUDENT) {
       setSelectedAvailabilityForBooking(availability);
@@ -616,9 +649,12 @@ export default function CalendarScreen() {
   };
 
   const handleBookingSuccess = (session: SessionDetailed) => {
-    setSessions((prevSessions) => [...prevSessions, session]);
+    setSessions((prevSessions) => [
+      ...prevSessions.filter((s) => s.id !== session.id),
+      session,
+    ]);
     setShowSessionBookingModal(false);
-    Alert.alert("Success", "Training session booked successfully");
+    loadSessionsForMonth();
   };
 
   const handleSessionCancel = async (sessionId: number) => {
@@ -688,12 +724,10 @@ export default function CalendarScreen() {
 
   const datesWithActivity = new Set<string>();
   events.forEach((event) => {
-    const dateStr = new Date(event.start_time).toISOString().split("T")[0];
-    datesWithActivity.add(dateStr);
+    datesWithActivity.add(toLocalDateKey(event.start_time));
   });
   sessions.forEach((session) => {
-    const dateStr = new Date(session.start_time).toISOString().split("T")[0];
-    datesWithActivity.add(dateStr);
+    datesWithActivity.add(toLocalDateKey(session.start_time));
   });
 
   const markedDates: Record<
@@ -717,15 +751,9 @@ export default function CalendarScreen() {
     };
   }
 
-  const sessionsForSelectedDate = sessions.filter((session) => {
-    const sessionDate = new Date(session.start_time);
-    const selectedDateObj = new Date(selectedDate + "T00:00:00");
-
-    const sessionDateString = sessionDate.toISOString().split("T")[0];
-    const selectedDateString = selectedDateObj.toISOString().split("T")[0];
-
-    return sessionDateString === selectedDateString;
-  });
+  const sessionsForSelectedDate = sessions.filter(
+    (session) => toLocalDateKey(session.start_time) === selectedDate
+  );
 
   const renderActionButtons = () => {
     const buttons = [];
@@ -925,6 +953,7 @@ export default function CalendarScreen() {
                   >
                     <View style={styles.availabilityInfo}>
                       <Text style={styles.sessionText}>
+                        {isUnavailableRow(availability) ? "Unavailable: " : ""}
                         {formatTimeString(availability.start_time)} -{" "}
                         {formatTimeString(availability.end_time)}{" "}
                         {formatDateRange(
@@ -1047,9 +1076,9 @@ export default function CalendarScreen() {
                 hideArrows={true}
                 onMonthChange={(month) => {
                   if (month?.dateString) {
-                    const d = new Date(month.dateString + "T00:00:00");
+                    const d = createLocalDate(month.dateString);
                     d.setDate(1);
-                    setVisibleMonth(d.toISOString().split("T")[0]);
+                    setVisibleMonth(formatDateForAPI(d));
                   }
                 }}
                 renderHeader={() => {
@@ -1228,7 +1257,7 @@ export default function CalendarScreen() {
                             >
                               <View >
                                 <Text style={styles.sessionText}>
-                                  Available:{" "}
+                                  {isUnavailableRow(availability) ? "Unavailable" : "Available"}:{" "}
                                   {formatTimeString(availability.start_time)} -{" "}
                                   {formatTimeString(availability.end_time)}
                                 </Text>
@@ -1313,6 +1342,7 @@ export default function CalendarScreen() {
           <SessionBookingModal
             visible={showSessionBookingModal}
             availability={selectedAvailabilityForBooking}
+            unavailableBlocks={unavailableBlocksForSelectedDate}
             selectedDate={selectedDate}
             instructorId={selectedAvailabilityForBooking?.instructor_id ?? 0}
             onClose={() => {

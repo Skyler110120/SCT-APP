@@ -30,7 +30,7 @@ type AvailabilityModalProps = {
   mode: "create" | "edit" | "delete";
   selectedAvailability?: Availability | null;
   onClose: () => void;
-  onCreate: (availability: CreateAvailabilityRequest) => void;
+  onCreate: (availabilities: CreateAvailabilityRequest[]) => void;
   onDelete: (availabilityId: number) => void;
   onUpdate: (
     availabilityId: number,
@@ -40,6 +40,12 @@ type AvailabilityModalProps = {
 
 /** Session length is fixed at 1 hour; availability = one session slot. */
 const SESSION_DURATION_HOURS = 1;
+
+function minutesBetween(startTime: string, endTime: string): number {
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  return eh * 60 + em - (sh * 60 + sm);
+}
 
 function addHoursToTimeString(timeStr: string, hours: number): string {
   const [h, m] = timeStr.split(":").map(Number);
@@ -94,6 +100,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [durationHours, setDurationHours] = useState<number>(SESSION_DURATION_HOURS);
 
   const formatDateToLocalString = (date: Date): string => {
     const year = date.getFullYear();
@@ -113,9 +120,13 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
       if (mode === "edit" && selectedAvailability) {
         setSelectedDays([toJsDayOfWeek(selectedAvailability.day_of_week)]);
         const start = selectedAvailability.start_time;
+        const existingMinutes = minutesBetween(start, selectedAvailability.end_time);
+        const existingHours =
+          existingMinutes > 0 ? existingMinutes / 60 : SESSION_DURATION_HOURS;
+        setDurationHours(existingHours);
         setFormData({
           start_time: start,
-          end_time: addHoursToTimeString(start, SESSION_DURATION_HOURS),
+          end_time: addHoursToTimeString(start, existingHours),
           start_date: selectedAvailability.start_date,
           end_date: selectedAvailability.end_date || undefined,
         });
@@ -123,6 +134,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
         const today = new Date();
         const todayString = formatDateToLocalString(today);
         const defaultStart = "09:00";
+        setDurationHours(SESSION_DURATION_HOURS);
         setSelectedDays([]);
         setFormData({
           start_time: defaultStart,
@@ -142,7 +154,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     setFormData((prev) => {
       const next = { ...prev, [field]: value };
       if (field === "start_time" && typeof value === "string") {
-        next.end_time = addHoursToTimeString(value, SESSION_DURATION_HOURS);
+        next.end_time = addHoursToTimeString(value, durationHours);
       }
       return next;
     });
@@ -204,16 +216,15 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
         };
         onUpdate(selectedAvailability.id, updateAvailability);
       } else if (mode === "create" && onCreate) {
-        selectedDays.forEach((day) => {
-          const newAvailability: CreateAvailabilityRequest = {
+        onCreate(
+          selectedDays.map((day) => ({
             start_time: formData.start_time,
             end_time: formData.end_time,
             start_date: formData.start_date,
             end_date: formData.end_date || undefined,
             day_of_week: toBackendDayOfWeek(day),
-          };
-          onCreate(newAvailability);
-        });
+          }))
+        );
       }
     }
   };

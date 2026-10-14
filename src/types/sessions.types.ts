@@ -137,6 +137,7 @@ export interface SessionParticipantOut {
 export interface CalendarSessionsRequest {
     start_date: string;
     end_date: string;
+    include_completed?: boolean;
 }
 
 export interface CalendarSessionsResponse extends SessionListResponse {}

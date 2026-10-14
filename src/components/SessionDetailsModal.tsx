@@ -18,6 +18,8 @@ import {
   View
 } from "react-native";
 
+const CHECK_IN_OPENS_MINUTES_BEFORE = 15;
+
 interface SessionDetailsModalProps {
   visible: boolean;
   session: SessionDetailed | null;
@@ -151,6 +153,16 @@ export default function SessionDetailsModal({
   const canBeCancelled = session.can_be_cancelled;
   const canBeStarted = session.can_be_completed && isInstructor;
 
+  const startMs = new Date(session.start_time).getTime();
+  const endMs = new Date(session.end_time).getTime();
+  const nowMs = Date.now();
+  const checkInOpensMs = startMs - CHECK_IN_OPENS_MINUTES_BEFORE * 60 * 1000;
+  const normalizedStatus = (session.status ?? "").toLowerCase();
+  const isActiveStatus =
+    normalizedStatus === "scheduled" || normalizedStatus === "in_progress";
+  const checkInOpen = isActiveStatus && nowMs >= checkInOpensMs && nowMs <= endMs;
+  const checkInUpcoming = isActiveStatus && nowMs < checkInOpensMs;
+
   const getStatusColor = (status: string) => {
     if (status === "scheduled" || status === "SCHEDULED") {
       return themes.vegasGold;
@@ -164,14 +176,29 @@ export default function SessionDetailsModal({
   };
   const renderStudentActions = () => (
     <View style={styles.columnLayout}>
-      <TouchableOpacity
-        style={styles.sessionButtonPrimary}
-        onPress={() => (onCheckIn ? onCheckIn(session.id) : onReviewMaterials())}
-      >
-        <Text style={styles.sessionButtonTextPrimary}>
-          {onCheckIn ? "Check In" : "Review Materials"}
-        </Text>
-      </TouchableOpacity>
+      {onCheckIn && checkInOpen ? (
+        <TouchableOpacity
+          style={styles.sessionButtonPrimary}
+          onPress={() => onCheckIn(session.id)}
+        >
+          <Text style={styles.sessionButtonTextPrimary}>Check In</Text>
+        </TouchableOpacity>
+      ) : (
+        <>
+          {onCheckIn && checkInUpcoming && (
+            <Text style={[styles.infoValueTertiary, { textAlign: "center", marginBottom: 8 }]}>
+              Check-in opens at {formatTimeString(new Date(checkInOpensMs).toISOString())}
+              {" "}on {formatDateString(new Date(checkInOpensMs))}.
+            </Text>
+          )}
+          <TouchableOpacity
+            style={styles.sessionButtonPrimary}
+            onPress={onReviewMaterials}
+          >
+            <Text style={styles.sessionButtonTextPrimary}>Review Materials</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       <View style={styles.rowLayout}>
         {canBeCancelled && (

@@ -59,6 +59,10 @@ export default function Courses() {
   const [studentProgress, setStudentProgress] = useState<
     StudentWeeklyProgress[]
   >([]);
+  const [myEnrollment, setMyEnrollment] = useState<{
+    current_week: number;
+    progress_percentage: number;
+  } | null>(null);
   const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true);
   const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -114,6 +118,10 @@ export default function Courses() {
 
       if (response.success && response.data && response.data.course) {
         const enrollmentData = response.data;
+        setMyEnrollment({
+          current_week: enrollmentData.current_week,
+          progress_percentage: enrollmentData.progress_percentage,
+        });
 
         const studentCourse: CourseView = {
           ...enrollmentData.course,
@@ -125,6 +133,7 @@ export default function Courses() {
         setSelectedCourse(studentCourse);
       } else {
         console.warn("No enrolled course found");
+        setMyEnrollment(null);
         setCourses([]);
         setError("No enrolled course found. Please contact your administrator");
       }
@@ -266,8 +275,8 @@ export default function Courses() {
 
     if (!hasPdfMaterial) {
       Alert.alert(
-        "No Plan Availabile",
-        "Student PDF materials have notbeen uploaded for this course yet."
+        "No Plan Available",
+        "Student PDF materials have not been uploaded for this course yet."
       );
       return;
     }
@@ -413,8 +422,10 @@ export default function Courses() {
           courseTitle: enrolledCourse.title,
           totalWeeks: enrolledCourse.total_weeks || 24,
           videosAvailable: enrolledCourse.videos?.length || 0,
-          currentWeek: myProgress?.current_week || 0,
-          progressPercentage: Math.round(myProgress?.progress_percentage || 0),
+          currentWeek: myEnrollment?.current_week ?? myProgress?.current_week ?? 0,
+          progressPercentage: Math.round(
+            myEnrollment?.progress_percentage ?? myProgress?.progress_percentage ?? 0
+          ),
         };
       } else {
         return {

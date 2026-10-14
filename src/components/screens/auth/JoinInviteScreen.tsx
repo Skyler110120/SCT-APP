@@ -18,7 +18,7 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import Images from "@/src/assets/images";
 import { themes } from "@/src/context/themes";
 import { onboardingInviteService } from "@/src/services/onboardingInviteService";
-import { authService } from "@/src/services/authService";
+import { useAuth } from "@/src/context/AuthContext";
 import type { InviteTokenValidation } from "@/src/types/onboardingInvite.types";
 
 type Step = "validating" | "cadence-selection" | "registration" | "error";
@@ -26,6 +26,7 @@ type Step = "validating" | "cadence-selection" | "registration" | "error";
 /** Email invite join flow: validate token → register (no OTP). */
 export default function JoinInviteScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const { token } = useLocalSearchParams<{ token: string }>();
 
   const [step, setStep] = useState<Step>("validating");
@@ -76,8 +77,8 @@ export default function JoinInviteScreen() {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+    if (password.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters");
       return;
     }
     if ((inviteData?.role || "").toUpperCase() === "STUDENT" && !selectedCadence) {
@@ -100,7 +101,7 @@ export default function JoinInviteScreen() {
       });
 
       if (result.success) {
-        const loginResult = await authService.login({
+        const loginResult = await login({
           email: email.trim().toLowerCase(),
           password,
         });
@@ -126,7 +127,7 @@ export default function JoinInviteScreen() {
     } finally {
       setIsRegistering(false);
     }
-  }, [token, email, password, confirmPassword, firstName, lastName, inviteData, router]);
+  }, [token, email, password, confirmPassword, firstName, lastName, inviteData, selectedCadence, login, router]);
 
   if (step === "validating") {
     return (

@@ -29,6 +29,19 @@ jest.mock("@/src/services/sessionService", () => ({
   },
 }));
 
+jest.mock("@/src/context/AuthContext", () => ({
+  useAuth: () => ({ user: { id: 7, company_id: 3 } }),
+}));
+
+jest.mock("@/src/services/companyService", () => ({
+  companyService: {
+    getCompany: jest.fn().mockResolvedValue({
+      success: true,
+      data: { id: 3, booking_lock_hours: 24 },
+    }),
+  },
+}));
+
 jest.mock("@/src/styles/CalendarPageStyles/StudentCalendar/bookingModalStyles", () => ({
   bookingModalStyles: new Proxy({}, { get: () => ({}) }),
 }));
@@ -48,6 +61,7 @@ const mockBookDirectSession =
 
 const availability = {
   id: 1,
+  instructor_id: 42,
   start_time: "09:00",
   end_time: "12:00", // 9, 10, 11 hour slots (3 hours -> 3 slots)
   // any other fields the component may read are not used
@@ -56,7 +70,7 @@ const availability = {
 async function renderModal(overrides: any = {}) {
   const onClose = jest.fn();
   const onBookingSuccess = jest.fn();
-  const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const futureDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   const dateString = `${futureDate.getFullYear()}-${String(
     futureDate.getMonth() + 1
   ).padStart(2, "0")}-${String(futureDate.getDate()).padStart(2, "0")}`;
@@ -65,6 +79,7 @@ async function renderModal(overrides: any = {}) {
     <SessionBookingModal
       visible
       availability={availability}
+      unavailableBlocks={overrides.unavailableBlocks}
       selectedDate={overrides.selectedDate ?? dateString}
       instructorId={42}
       onClose={onClose}
@@ -100,36 +115,43 @@ describe("SessionBookingModal — time-slot generation", () => {
   });
 });
 
-describe("SessionBookingModal — past-time guard", () => {
-  it("shows the 'Time Not Available' Alert and clears the selection when the chosen slot is in the past", async () => {
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(
-      (_title, _msg, buttons) => {
-        if (Array.isArray(buttons)) {
-          const ok = buttons.find((b) => b.text === "OK");
-          ok?.onPress?.();
-        }
-      }
-    );
+describe("SessionBookingModal — unbookable slots", () => {
+  const toDateString = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate()
+    ).padStart(2, "0")}`;
 
-    // Yesterday's date guarantees every slot is in the past.
+  it("marks past slots as passed and does not book them", async () => {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const yesterdayString = `${yesterday.getFullYear()}-${String(
-      yesterday.getMonth() + 1
-    ).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+    await renderModal({ selectedDate: toDateString(yesterday) });
 
-    await renderModal({ selectedDate: yesterdayString });
-
-    fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
+    fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM.*passed/i));
     fireEvent.press(screen.getByText("Book Session"));
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      "Time Not Available",
-      expect.stringMatching(/time slot has already passed/i),
-      expect.any(Array)
-    );
     expect(mockBookDirectSession).not.toHaveBeenCalled();
+  });
 
-    alertSpy.mockRestore();
+  it("marks slots inside the booking lock window as too soon to book", async () => {
+    const soon = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    await renderModal({ selectedDate: toDateString(soon) });
+
+    // Every slot on a date within 24h of now is either passed or locked.
+    expect(screen.queryAllByText(/too soon to book|passed/i).length).toBeGreaterThan(0);
+    fireEvent.press(screen.getAllByText(/too soon to book|passed/i)[0]);
+    fireEvent.press(screen.getByText("Book Session"));
+    expect(mockBookDirectSession).not.toHaveBeenCalled();
+  });
+
+  it("hides slots that fall fully inside an instructor unavailable block", async () => {
+    await renderModal({
+      unavailableBlocks: [
+        { id: 9, instructor_id: availability.instructor_id, start_time: "10:00", end_time: "11:00", status: "unavailable" },
+      ],
+    });
+
+    expect(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i)).toBeTruthy();
+    expect(screen.queryByText(/10:00\s*AM\s*-\s*11:00\s*AM/i)).toBeNull();
+    expect(screen.getByText(/11:00\s*AM\s*-\s*12:00\s*PM/i)).toBeTruthy();
   });
 });
 
@@ -227,5 +249,41 @@ describe("SessionBookingModal — week picker visibility", () => {
 
     await renderModal();
     expect(screen.getByText("Course week:")).toBeTruthy();
+  });
+});
+
+describe("SessionBookingModal — week sent with booking", () => {
+  async function bookFirstSlot() {
+    mockBookDirectSession.mockResolvedValueOnce({ success: true, data: { id: 1 } as any });
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    await renderModal();
+    fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
+    await act(async () => {
+      fireEvent.press(screen.getByText("Book Session"));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    alertSpy.mockRestore();
+    return mockBookDirectSession.mock.calls[0][0];
+  }
+
+  it("defaults to next_week_to_book when the current week is already booked", async () => {
+    mockGetMyEnrolledCourse.mockResolvedValueOnce({
+      success: true,
+      data: { current_week: 4, next_week_to_book: 5 } as any,
+    });
+
+    const payload = await bookFirstSlot();
+    expect(payload.week_number).toBe(5);
+  });
+
+  it("falls back to current_week when next_week_to_book is missing", async () => {
+    mockGetMyEnrolledCourse.mockResolvedValueOnce({
+      success: true,
+      data: { current_week: 4 } as any,
+    });
+
+    const payload = await bookFirstSlot();
+    expect(payload.week_number).toBe(4);
   });
 });

@@ -5,8 +5,28 @@ import { instructorDashboardStyles as styles } from "@/src/styles/DashboardPageS
 import { sessionService } from "@/src/services/sessionService";
 import { SessionDetailed } from "@/src/types/sessions.types";
 import { UserRole } from "@/src/types/enums";
-import { formatTimeString } from "@/src/utils/dateTimeUtils";
+import { formatDateForAPI, formatTimeString } from "@/src/utils/dateTimeUtils";
 import { isTestSessionRequired } from "@/src/utils/sessionRules";
+
+const CHECK_IN_OPENS_MINUTES_BEFORE = 15;
+
+const isSameDay = (date1: Date, date2: Date) =>
+  date1.getFullYear() === date2.getFullYear() &&
+  date1.getMonth() === date2.getMonth() &&
+  date1.getDate() === date2.getDate();
+
+const getCheckInOpensAt = (session: SessionDetailed) =>
+  new Date(new Date(session.start_time).getTime() - CHECK_IN_OPENS_MINUTES_BEFORE * 60 * 1000);
+
+const isCheckInOpen = (session: SessionDetailed) => {
+  const status = (session.status ?? "").toLowerCase();
+  if (status !== "scheduled" && status !== "in_progress") return false;
+  const now = Date.now();
+  return (
+    now >= getCheckInOpensAt(session).getTime() &&
+    now <= new Date(session.end_time).getTime()
+  );
+};
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -46,20 +66,25 @@ export default function InstructorDashboard() {
   const loadSessions = useCallback(async () => {
     setIsLoadingSessions(true);
     try {
-      const startOfDay = new Date(selectedDay);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(selectedDay);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      const formatDate = (d: Date) => d.toISOString().split("T")[0];
+      const dayBefore = new Date(selectedDay);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      const dayAfter = new Date(selectedDay);
+      dayAfter.setDate(dayAfter.getDate() + 1);
 
       const response = await sessionService.getMyCalendarSessions({
-        start_date: formatDate(startOfDay),
-        end_date: formatDate(endOfDay),
+        start_date: formatDateForAPI(dayBefore),
+        end_date: formatDateForAPI(dayAfter),
       });
 
       if (response.success && response.data) {
-        setSessions(response.data);
+        setSessions(
+          response.data
+            .filter((s) => isSameDay(new Date(s.start_time), selectedDay))
+            .sort(
+              (a, b) =>
+                new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+            )
+        );
       }
     } catch (err) {
       console.error("Error loading dashboard sessions:", err);
@@ -101,14 +126,6 @@ export default function InstructorDashboard() {
     return day < 10 ? `0${day}` : `${day}`;
   };
 
-  const isSameDay = (date1: Date, date2: Date) => {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
-    );
-  };
-
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -123,6 +140,16 @@ export default function InstructorDashboard() {
 
   const handleSessionPress = (session: SessionDetailed) => {
     if (user?.role === UserRole.STUDENT) {
+      if (!isCheckInOpen(session)) {
+        const opensAt = getCheckInOpensAt(session);
+        Alert.alert(
+          "Check-in not open",
+          opensAt.getTime() > Date.now()
+            ? `Check-in opens at ${formatTimeString(opensAt.toISOString())} (15 minutes before your session).`
+            : "Check-in for this session has closed."
+        );
+        return;
+      }
       router.push({
         pathname: "/company/session-check-in",
         params: { sessionId: session.id.toString() },
@@ -230,7 +257,9 @@ export default function InstructorDashboard() {
                 <View style={styles.classInfoSection}>
                   <Text style={styles.classTimeText}>
                     {formatTimeString(session.start_time)}{" "}
-                    {session.student_name || "Student"}
+                    {user?.role === UserRole.STUDENT
+                      ? session.instructor_name || "Instructor"
+                      : session.student_name || "Student"}
                   </Text>
                   <Text style={styles.classTimeText}>
                     {session.course_title || session.title || "Training Session"}
@@ -242,7 +271,11 @@ export default function InstructorDashboard() {
 
                 <View style={styles.viewButtonSection}>
                   <Text style={styles.viewButtonText}>
-                    {session.status === "IN_PROGRESS" || session.status === "in_progress"
+                    {user?.role === UserRole.STUDENT
+                      ? isCheckInOpen(session)
+                        ? "CHECK IN"
+                        : "VIEW"
+                      : session.status === "IN_PROGRESS" || session.status === "in_progress"
                       ? "RESUME"
                       : "START"}
                   </Text>

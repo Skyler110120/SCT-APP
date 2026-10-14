@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AdminCreateAvailabilityRequest,
   Availability,
@@ -27,7 +28,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to fetch availability:", error);
       return {
         success: false,
-        error: "Failed to fetch availability",
+        error: getApiErrorMessage(error, "Failed to fetch availability"),
       };
     }
   },
@@ -60,7 +61,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to fetch availability for calendar:", error);
       return {
         success: false,
-        error: "Failed to fetch availability for calendar",
+        error: getApiErrorMessage(error, "Failed to fetch availability for calendar"),
       };
     }
   },
@@ -76,6 +77,7 @@ export const instructorAvailabilityService = {
     try {
       const data: Availability = await apiFetch<Availability>(`/availability`, {
         method: "POST",
+        suppressGlobalError: true,
         body: JSON.stringify(availability),
       });
 
@@ -87,7 +89,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to create availability:", error);
       return {
         success: false,
-        error: "Failed to create availability",
+        error: getApiErrorMessage(error, "Failed to create availability"),
       };
     }
   },
@@ -101,6 +103,7 @@ export const instructorAvailabilityService = {
     try {
       const data: Availability = await apiFetch<Availability>(`/availability/admin`, {
         method: "POST",
+        suppressGlobalError: true,
         body: JSON.stringify(availability),
       });
       return {
@@ -111,7 +114,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to create availability as admin:", error);
       return {
         success: false,
-        error: "Failed to create availability as admin",
+        error: getApiErrorMessage(error, "Failed to create availability as admin"),
       };
     }
   },
@@ -131,6 +134,7 @@ export const instructorAvailabilityService = {
         `/availability/${availabilityId}`,
         {
           method: "PATCH",
+          suppressGlobalError: true,
           body: JSON.stringify(availabilityUpdate),
         }
       );
@@ -143,7 +147,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to update availability:", error);
       return {
         success: false,
-        error: "Failed to update availability",
+        error: getApiErrorMessage(error, "Failed to update availability"),
       };
     }
   },
@@ -185,7 +189,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to fetch instructor availability for admin:", error);
       return {
         success: false,
-        error: "Failed to fetch instructor availability for admin",
+        error: getApiErrorMessage(error, "Failed to fetch instructor availability for admin"),
       };
     }
   },
@@ -203,6 +207,7 @@ export const instructorAvailabilityService = {
         `/availability/${availabilityId}`,
         {
           method: "DELETE",
+          suppressGlobalError: true,
         }
       );
       
@@ -214,7 +219,7 @@ export const instructorAvailabilityService = {
       console.error("Failed to delete availability:", error);
       return {
         success: false,
-        error: "Failed to delete availability",
+        error: getApiErrorMessage(error, "Failed to delete availability"),
       };
     }
   },

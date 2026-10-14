@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
-import { apiFetch } from './api';
+import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InstructorStudentsResponse } from '@/src/types/auth.types';
 
@@ -24,7 +25,7 @@ export const instructorService = {
             console.error("Error fetching instructor students:", error);
             return {
                 success: false,
-                error: "Network error. Please check your connection and try again later."
+                error: getApiErrorMessage(error, "Network error. Please check your connection and try again later.")
             }
         }
     }

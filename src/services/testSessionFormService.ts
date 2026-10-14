@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   TestSessionForm,
   CreateTestSessionFormRequest,
@@ -33,7 +34,7 @@ export const testSessionFormService = {
       console.error("Error creating test session form:", error);
       return {
         success: false,
-        error: "Failed to create test session form",
+        error: getApiErrorMessage(error, "Failed to create test session form"),
       };
     }
   },
@@ -63,7 +64,7 @@ export const testSessionFormService = {
       console.error("Error updating test session form:", error);
       return {
         success: false,
-        error: "Failed to update test session form",
+        error: getApiErrorMessage(error, "Failed to update test session form"),
       };
     }
   },
@@ -101,7 +102,7 @@ export const testSessionFormService = {
       console.error("Error completing test session form:", error);
       return {
         success: false,
-        error: "An unexpected error occurred",
+        error: getApiErrorMessage(error, "An unexpected error occurred"),
       };
     }
   },
@@ -123,7 +124,7 @@ export const testSessionFormService = {
       console.error("Error fetching test session form:", error);
       return {
         success: false,
-        error: "Failed to fetch test session form",
+        error: getApiErrorMessage(error, "Failed to fetch test session form"),
       };
     }
   },
@@ -144,7 +145,7 @@ export const testSessionFormService = {
       console.error("Error fetching test session forms:", error);
       return {
         success: false,
-        error: "Failed to fetch test session forms",
+        error: getApiErrorMessage(error, "Failed to fetch test session forms"),
       };
     }
   },

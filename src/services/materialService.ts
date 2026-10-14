@@ -7,6 +7,7 @@
 // legacy submodule preserves the original call shape.
 import * as FileSystem from "expo-file-system/legacy";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   MaterialAccessRequest,
   MaterialAccessResponse,
@@ -42,7 +43,7 @@ export const materialService = {
       console.error("Error fetching material info:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching material info",
+        error: getApiErrorMessage(error, "Network error occurred while fetching material info"),
       };
     }
   },
@@ -83,7 +84,7 @@ export const materialService = {
       console.error("Error getting PDF access:", error);
       return {
         success: false,
-        error: "Network error occurred while getting PDF access",
+        error: getApiErrorMessage(error, "Network error occurred while getting PDF access"),
       };
     }
   },
@@ -117,7 +118,7 @@ export const materialService = {
       console.error("Error getting instructor script access:", error);
       return {
         success: false,
-        error: "Network error occurred while getting instructor script access",
+        error: getApiErrorMessage(error, "Network error occurred while getting instructor script access"),
       };
     }
   },
@@ -142,7 +143,7 @@ export const materialService = {
       console.error("Error requesting upload URL:", error);
       return {
         success: false,
-        error: "Failed to get upload URL",
+        error: getApiErrorMessage(error, "Failed to get upload URL"),
       };
     }
   },
@@ -182,7 +183,7 @@ export const materialService = {
       console.error("Error uploading file:", error);
       return {
         success: false,
-        error: "Upload failed. Please try again.",
+        error: getApiErrorMessage(error, "Upload failed. Please try again."),
       };
     }
   },
@@ -205,7 +206,7 @@ export const materialService = {
       console.error("Error getting video access:", error);
       return {
         success: false,
-        error: "Failed to get video access",
+        error: getApiErrorMessage(error, "Failed to get video access"),
       };
     }
   },

@@ -1,4 +1,6 @@
+import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
+import { companyService } from "@/src/services/companyService";
 import { courseService } from "@/src/services/courseService";
 import { sessionService } from "@/src/services/sessionService";
 import { bookingModalStyles as styles } from "@/src/styles/CalendarPageStyles/StudentCalendar/bookingModalStyles";
@@ -18,11 +20,19 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+
+const DEFAULT_BOOKING_LOCK_HOURS = 24;
+
+const timeToMinutes = (time: string): number => {
+  const [h, m] = time.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
 
 interface SessionBookingModalProps {
   visible: boolean;
   availability: Availability | null;
+  /** Instructor "unavailable" rows that apply to the selected date. */
+  unavailableBlocks?: Availability[];
   selectedDate: string;
   instructorId: number;
   onClose: () => void;
@@ -32,27 +42,51 @@ interface SessionBookingModalProps {
 export default function SessionBookingModal({
   visible,
   availability,
+  unavailableBlocks = [],
   selectedDate,
   instructorId,
   onClose,
   onBookingSuccess,
 }: SessionBookingModalProps) {
+  const { user } = useAuth();
   const [selectedStartTime, setSelectedStartTime] = useState<string>("");
   const [isBooking, setIsBooking] = useState<boolean>(false);
   const [currentWeek, setCurrentWeek] = useState<number | null>(null);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
+  const [bookingLockHours, setBookingLockHours] = useState<number>(
+    DEFAULT_BOOKING_LOCK_HOURS
+  );
+
+  useEffect(() => {
+    setSelectedStartTime("");
+  }, [availability?.id, selectedDate]);
+
+  useEffect(() => {
+    if (!visible || !user?.company_id) return;
+    companyService
+      .getCompany(user.company_id)
+      .then((res) => {
+        if (res.success && typeof res.data?.booking_lock_hours === "number") {
+          setBookingLockHours(res.data.booking_lock_hours);
+        }
+      })
+      .catch(() => {});
+  }, [visible, user?.company_id]);
 
   useEffect(() => {
     if (!visible) {
       setCurrentWeek(null);
       setSelectedWeek(1);
+      setSelectedStartTime("");
       return;
     }
     courseService.getMyEnrolledCourse().then((res) => {
       if (res.success && res.data?.current_week != null) {
         const cw = res.data.current_week;
         setCurrentWeek(cw);
-        setSelectedWeek(cw);
+        setSelectedWeek(
+          typeof res.data.next_week_to_book === "number" ? res.data.next_week_to_book : cw
+        );
       } else {
         setCurrentWeek(null);
         setSelectedWeek(1);
@@ -89,10 +123,27 @@ export default function SessionBookingModal({
       const timeString = `${slotStartHour
         .toString()
         .padStart(2, "0")}:${slotStartMinute.toString().padStart(2, "0")}`;
-      slots.push(timeString);
+      const blocked = unavailableBlocks.some(
+        (block) =>
+          block.instructor_id === availability.instructor_id &&
+          timeToMinutes(block.start_time) <= time &&
+          timeToMinutes(block.end_time) >= time + SLOT_DURATION
+      );
+      if (!blocked) slots.push(timeString);
     }
     return slots;
   };
+
+  const getSlotStart = (dateString: string, timeString: string): Date => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return new Date(year, month - 1, day, hours, minutes);
+  };
+
+  /** Mirrors the backend rule rejecting bookings that start within booking_lock_hours. */
+  const isSlotLocked = (dateString: string, timeString: string): boolean =>
+    getSlotStart(dateString, timeString).getTime() <=
+    Date.now() + bookingLockHours * 60 * 60 * 1000;
 
   const calculateEndTime = (startTime: string) => {
     const [startHour, startMinute] = startTime.split(":").map(Number);
@@ -110,15 +161,7 @@ export default function SessionBookingModal({
         const [hours, minutes] = timeString.split(":").map(Number);
         const slotDateTime = new Date(year, month - 1, day, hours, minutes);
 
-        const now = new Date();
-
-        console.log("Simple time check: ", {
-            now: now.toLocaleString(),
-            slotTime: slotDateTime.toLocaleString(),
-            isPast: slotDateTime < now
-        })
-
-        return slotDateTime < now;
+        return slotDateTime < new Date();
     } catch (error) {
         console.error("Error checking time:", error)
         return false;
@@ -135,6 +178,14 @@ export default function SessionBookingModal({
         Alert.alert(
             "Time Not Available",
             "This time slot has already passed. Please select a future time slot.",
+            [{ text: "OK", onPress: () => setSelectedStartTime("")}]
+        );
+        return;
+    }
+    if (isSlotLocked(selectedDate, selectedStartTime)) {
+        Alert.alert(
+            "Time Not Available",
+            `Sessions must be booked at least ${bookingLockHours} hours in advance. Please select a later time slot.`,
             [{ text: "OK", onPress: () => setSelectedStartTime("")}]
         );
         return;
@@ -192,30 +243,35 @@ export default function SessionBookingModal({
           {currentWeek != null && (
             <View style={{ marginBottom: 12 }}>
               <Text style={styles.modalText}>Course week:</Text>
-              <Picker
-                selectedValue={selectedWeek}
-                onValueChange={(v) => setSelectedWeek(Number(v))}
-                style={{ color: themes.white }}
-                itemStyle={{ color: themes.white, height: 120 }}
-              >
-                {Array.from({ length: 24 }, (_, i) => i + 1).map((w) => (
-                  <Picker.Item key={w} label={`Week ${w}${w === currentWeek ? " (current)" : ""}`} value={w} />
-                ))}
-              </Picker>
+              <Text style={[styles.modalText, { color: themes.vegasGold }]}>
+                Week {selectedWeek}
+              </Text>
             </View>
           )}
           <Text style={styles.modalText}>
             Available: {formatTimeString(availability?.start_time || "")} - {formatTimeString(availability?.end_time || "")}
           </Text>
-          <Text style={[styles.modalText, { fontSize: 18, marginBottom: 20 }]}>
+          <Text style={[styles.modalText, { fontSize: 18, marginBottom: 8 }]}>
             Select a 1-hour time slot:
           </Text>
+          {bookingLockHours > 0 && (
+            <Text style={[styles.modalText, { fontSize: 13, opacity: 0.7, marginBottom: 12 }]}>
+              Sessions must be booked at least {bookingLockHours} hour
+              {bookingLockHours === 1 ? "" : "s"} in advance.
+            </Text>
+          )}
 
           <ScrollView style={{ maxHeight: 300, flexShrink: 1, marginBottom: 20 }}>
+            {timeSlots.length === 0 && (
+              <Text style={styles.sessionText}>No open time slots for this date.</Text>
+            )}
             {timeSlots.map((startTime, index) => {
               const endTime = calculateEndTime(startTime);
               const formattedStartTime = formatTimeString(startTime);
               const formattedEndTime = formatTimeString(endTime);
+              const isPast = isTimeSlotInPast(selectedDate, startTime);
+              const isLocked = !isPast && isSlotLocked(selectedDate, startTime);
+              const isUnbookable = isPast || isLocked;
 
               return (
                 <TouchableOpacity
@@ -224,11 +280,14 @@ export default function SessionBookingModal({
                     styles.sessionCard,
                     selectedStartTime === startTime &&
                       styles.sessionCardSelected,
+                    isUnbookable && { opacity: 0.45 },
                   ]}
                   onPress={() => setSelectedStartTime(startTime)}
+                  disabled={isUnbookable}
                 >
                   <Text style={styles.sessionText}>
                     {formattedStartTime} - {formattedEndTime}
+                    {isPast ? "  (passed)" : isLocked ? "  (too soon to book)" : ""}
                   </Text>
                   {selectedStartTime === startTime && (
                     <View style={styles.selectionIndicator}>

@@ -146,7 +146,7 @@ describe("eventService.updateEvent", () => {
     expect(result.success).toBe(true);
     expect(result.data?.title).toBe("Updated Event Title");
     expect(mockApiFetch).toHaveBeenCalledWith("/events/3", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(updateData),
     });
   });
@@ -157,7 +157,7 @@ describe("eventService.updateEvent", () => {
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
     expect(mockApiFetch).toHaveBeenCalledWith("/events/3", {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify(updateData),
     });
   });

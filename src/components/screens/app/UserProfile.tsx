@@ -51,6 +51,7 @@ export default function InstructorProfile() {
   const [subscriptionStatus, setSubscriptionStatus] =
     useState<SubscriptionStatusData | null>(null);
   const [enrollmentId, setEnrollmentId] = useState<number | null>(null);
+  const [paymentRequired, setPaymentRequired] = useState(true);
   const [enrolledCourseId, setEnrolledCourseId] = useState<number | null>(null);
   const [isLoadingBilling, setIsLoadingBilling] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
@@ -107,10 +108,13 @@ export default function InstructorProfile() {
   const loadBillingData = async () => {
     setIsLoadingBilling(true);
     try {
-      const [subscriptionResponse, enrollmentResponse] = await Promise.all([
-        paymentService.getSubscriptionStatus(),
-        courseService.getMyEnrolledCourse(),
-      ]);
+      const enrollmentResponse = await courseService.getMyEnrolledCourse();
+      if (enrollmentResponse.success && enrollmentResponse.data?.payment_required === false) {
+        setPaymentRequired(false);
+        return;
+      }
+      setPaymentRequired(true);
+      const subscriptionResponse = await paymentService.getSubscriptionStatus();
       setSubscriptionStatus(subscriptionResponse);
       if (enrollmentResponse.success && enrollmentResponse.data?.course?.id) {
         setEnrollmentId(enrollmentResponse.data.id);
@@ -605,7 +609,7 @@ export default function InstructorProfile() {
                 </TouchableOpacity>
               </View>
             </View>
-            {user?.role === UserRole.STUDENT && (
+            {user?.role === UserRole.STUDENT && paymentRequired && (
               <View
                 style={[
                   styles.profileContentContainer,

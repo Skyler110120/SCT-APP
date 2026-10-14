@@ -19,7 +19,7 @@ import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, state } = useAuth();
+  const { login } = useAuth();
 
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: "",
@@ -47,9 +47,12 @@ export default function LoginScreen() {
     setIsLoading(true);
     setLoginError("");
     try {
-      const success = await login(credentials);
-      if (!success) {
-        setLoginError(state.error || "Invalid credentials");
+      const result = await login({
+        ...credentials,
+        email: credentials.email.trim(),
+      });
+      if (!result.success) {
+        setLoginError(result.error || "Invalid credentials");
 
         setCredentials((prev) => ({
           ...prev,
@@ -104,7 +107,10 @@ export default function LoginScreen() {
                     value={credentials.email}
                     onChangeText={(text) => handleChange("email", text)}
                     autoCapitalize="none"
+                    autoCorrect={false}
                     autoComplete="username"
+                    keyboardType="email-address"
+                    textContentType="emailAddress"
                   />
                   <AppInput
                     label="Password"

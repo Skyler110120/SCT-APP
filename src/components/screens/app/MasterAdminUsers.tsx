@@ -3,6 +3,7 @@ import BottomNavBar from "@/src/components/NavBar";
 import UserActionModal from "@/src/components/user/AdminUserActionModal";
 import UserFilters from "@/src/components/user/AdminUserFilters";
 import UserTable from "@/src/components/user/AdminUserTable";
+import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { userService } from "@/src/services/userService";
 import { adminManageUsersStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminManageUsersStyles";
@@ -19,6 +20,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MasterAdminUsers() {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -158,6 +160,7 @@ export default function MasterAdminUsers() {
                   users={filteredUsers}
                   onRemoveAction={handleRemoveAction}
                   onRoleAction={handleRoleAction}
+                  currentUserId={user?.id}
                 />
               )}
             </View>

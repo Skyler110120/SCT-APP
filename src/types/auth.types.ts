@@ -35,6 +35,8 @@ export interface User extends InstructorPermissionSet {
 }
 
 export interface UserInfo extends InstructorPermissionSet {
+  /** `/auth/me` returns `user_id`; `id` is kept for older payloads. */
+  user_id?: number;
   id: number;
   email: string;
   first_name: string;
@@ -125,6 +127,8 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
+  /** HTTP status of the failed request, when known. */
+  status?: number;
 }
 
 export type AuthResponse = ApiResponse<User>;

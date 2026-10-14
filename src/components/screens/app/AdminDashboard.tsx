@@ -78,7 +78,10 @@ export default function AdminDashboard() {
         companyService.getCompany(companyId),
         courseService.getCourseForSelection(),
         onboardingInviteService.listInvites(companyId),
-        paymentService.getConnectStatus(companyId),
+        paymentService.getConnectStatus(companyId).catch((statusError) => {
+          console.error("Error fetching payment status:", statusError);
+          return null;
+        }),
       ]);
 
       if (companyResponse.success && companyResponse.data) {
@@ -96,7 +99,7 @@ export default function AdminDashboard() {
       if (invitesResponse.success && invitesResponse.data) {
         setEmailInvites(invitesResponse.data);
       }
-      if (paymentStatusResponse.payment_enabled !== undefined) {
+      if (paymentStatusResponse?.payment_enabled !== undefined) {
         setPaymentStatus(paymentStatusResponse);
       } else {
         setPaymentStatus(null);

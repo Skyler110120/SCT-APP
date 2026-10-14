@@ -15,6 +15,13 @@ async function clearAuthData(): Promise<void> {
   }
 }
 
+let unauthorizedHandler: (() => void) | null = null;
+
+/** Registered by AuthProvider so an expired session also clears in-memory auth state. */
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
 export class ApiError extends Error {
   status: number;
   detail?: string;
@@ -24,6 +31,18 @@ export class ApiError extends Error {
     this.status = status;
     this.detail = detail;
   }
+}
+
+function extractErrorDetail(data: any): string | undefined {
+  const detail = data?.detail ?? data?.message;
+  if (typeof detail === "string" && detail.trim()) return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => (typeof item === "string" ? item : item?.msg))
+      .filter((msg): msg is string => typeof msg === "string" && !!msg.trim());
+    if (messages.length) return messages.join("\n");
+  }
+  return undefined;
 }
 
 // Helper function to normalize API paths
@@ -58,10 +77,10 @@ function normalizeApiPath(path: string, method?: string): string {
   const rootEndpoints = [
     '/companies', '/users', '/courses', '/events',
     '/instructors', '/auth', '/profiles', '/onboarding',
-    '/sessions', '/session-forms', '/test-session-forms',
+    '/session-forms', '/test-session-forms',
     '/availability', '/materials', '/drills',
     '/technical-fundamentals', '/course-drills',
-    '/payments', '/webhooks', '/issue-reports',
+    '/payments', '/webhooks',
   ];
   
   // Check if this is a root-level endpoint without trailing slash
@@ -226,21 +245,17 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
       if (response.status === 401){
         if(normalizedPath !== "/auth/login" && normalizedPath !== "/auth/login/"){
           await clearAuthData();
-          router.replace("/login");
+          if (unauthorizedHandler) {
+            unauthorizedHandler();
+          } else {
+            router.replace("/login");
+          }
         }
         const message =
           normalizedPath === "/auth/login" || normalizedPath === "/auth/login/"
             ? "Invalid credentials"
             : "Unauthorized";
         throw new ApiError(401, message);
-      }
-
-      if (response.status === 403) {
-          throw new Error("Forbidden access")
-      }
-
-      if (response.status === 409) {
-        throw new ApiError(409, "Request Conflict")
       }
 
       let data: any = null;
@@ -250,15 +265,25 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
         // 204 No Content
       }
 
+      const serverDetail = extractErrorDetail(data);
+
+      if (response.status === 403) {
+        throw new ApiError(403, serverDetail || "Forbidden access", serverDetail);
+      }
+
+      if (response.status === 409) {
+        throw new ApiError(409, serverDetail || "Request Conflict", serverDetail);
+      }
+
       if (!response.ok) {
         logger.error(`[apiFetch] ${response.status}`, data);
         
         const msg =
-          data?.detail ||
-          data?.message ||
+          serverDetail ||
           `Request failed with status ${response.status}`;
 
-        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
+        // Client errors (4xx) are expected outcomes the calling screen reports itself.
+        if (response.status >= 500 && !path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
           emitGlobalError(
             buildGlobalErrorEvent({
               message: msg,
@@ -269,7 +294,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
             })
           );
         }
-        throw new ApiError(response.status, msg, data?.detail);
+        throw new ApiError(response.status, msg, serverDetail);
       }
 
       return data;
@@ -289,7 +314,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
             })
           );
         }
-        throw new ApiError(408, `Request timeout - unable to reach server at ${API_URL}`);
+        throw new ApiError(408, "The request timed out. Please try again.");
       }
       
       if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
@@ -304,7 +329,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
             })
           );
         }
-        throw new ApiError(0, `Network error - cannot reach server at ${API_URL}. Check your connection and ensure the API is running.`);
+        throw new ApiError(0, "Cannot reach the server. Check your connection and try again.");
       }
       
       // Re-throw ApiError as-is

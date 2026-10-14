@@ -9,11 +9,11 @@ interface UserTableProps {
   users: User[];
   onRemoveAction: (user: User) => void;
   onRoleAction: (user: User) => void;
-  onApproveAction: (user: User) => void;
-  onPermissionsAction: (user: User) => void;
-  onCapacityAction: (user: User) => void;
-  canManageInstructorPermissions: boolean;
-  canManageInstructorCapacity: boolean;
+  onApproveAction?: (user: User) => void;
+  onPermissionsAction?: (user: User) => void;
+  onCapacityAction?: (user: User) => void;
+  canManageInstructorPermissions?: boolean;
+  canManageInstructorCapacity?: boolean;
   currentUserId?: number;
 }
 
@@ -32,7 +32,12 @@ const UserTable: React.FC<UserTableProps> = ({
     return `${user.first_name} ${user.last_name}`.trim();
   };
 
-  const renderItem = ({ item }: { item: User }) => (
+  const renderItem = ({ item }: { item: User }) => {
+    const isSelf = currentUserId != null && currentUserId === item.id;
+    const isMasterAdmin = String(item.role).toUpperCase() === "MASTER_ADMIN";
+    const canModify = !isSelf && !isMasterAdmin;
+
+    return (
     <View style={styles.userRow}>
       <View style={styles.userInfo}>
         <Text style={styles.userName} numberOfLines={1}>
@@ -56,7 +61,7 @@ const UserTable: React.FC<UserTableProps> = ({
       </View>
 
       <View style={styles.userActions}>
-        {(item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
+        {onApproveAction && (item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => onApproveAction(item)}
@@ -65,6 +70,7 @@ const UserTable: React.FC<UserTableProps> = ({
             <Text style={styles.actionText}>Approve Access</Text>
           </TouchableOpacity>
         )}
+        {canModify && (
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onRoleAction(item)}
@@ -72,7 +78,8 @@ const UserTable: React.FC<UserTableProps> = ({
           <FontAwesome name="user" size={20} color={themes.vegasGold} />
           <Text style={styles.actionText}>Change Role</Text>
         </TouchableOpacity>
-        {item.role === "INSTRUCTOR" && canManageInstructorPermissions && (
+        )}
+        {onPermissionsAction && item.role === "INSTRUCTOR" && canManageInstructorPermissions && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => onPermissionsAction(item)}
@@ -82,7 +89,7 @@ const UserTable: React.FC<UserTableProps> = ({
             <Text style={styles.actionText}>Permissions</Text>
           </TouchableOpacity>
         )}
-        {item.role === "INSTRUCTOR" && canManageInstructorCapacity && (
+        {onCapacityAction && item.role === "INSTRUCTOR" && canManageInstructorCapacity && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => onCapacityAction(item)}
@@ -93,6 +100,7 @@ const UserTable: React.FC<UserTableProps> = ({
           </TouchableOpacity>
         )}
 
+        {canModify && (
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => onRemoveAction(item)}
@@ -111,9 +119,11 @@ const UserTable: React.FC<UserTableProps> = ({
            Remove from Company
           </Text>
         </TouchableOpacity>
+        )}
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.tableContainer}>

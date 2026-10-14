@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ApiError, apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   InviteCodeValidationResponse,
   CompanyInfo,
@@ -55,7 +56,7 @@ export const onboardingService = {
       logger.error("Invite code validation error:", error);
       return {
         success: false,
-        error: "An error occurred while validating the invite code",
+        error: getApiErrorMessage(error, "An error occurred while validating the invite code"),
       };
     }
   },
@@ -81,7 +82,7 @@ export const onboardingService = {
       logger.error("Get instructors error:", error);
       return {
         success: false,
-        error: "An error occurred while fetching instructors",
+        error: getApiErrorMessage(error, "An error occurred while fetching instructors"),
       };
     }
   },
@@ -135,7 +136,7 @@ export const onboardingService = {
       logger.error("Enhanced signup error:", error);
       return {
         success: false,
-        error: "Error occurred during account creation",
+        error: getApiErrorMessage(error, "Error occurred during account creation"),
       };
     }
   },
@@ -179,7 +180,7 @@ export const onboardingService = {
           : null;
 
       const signupData: EnhancedSignupData = {
-        email: registrationData.email,
+        email: String(registrationData.email ?? "").trim().toLowerCase(),
         password: registrationData.password,
         first_name: registrationData.first_name,
         last_name: registrationData.last_name,
@@ -222,7 +223,7 @@ export const onboardingService = {
       logger.error("Complete legacy onboarding error:", error);
       return {
         success: false,
-        error: "Network error occurred during onboarding",
+        error: getApiErrorMessage(error, "Network error occurred during onboarding"),
       };
     }
   },

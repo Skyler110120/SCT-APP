@@ -7,7 +7,7 @@
  *  - Sort order: completed last, then descending by week, then by name
  *  - Advance button hidden once student is at week 24
  *  - Advance button hidden when caller cannot update
- *  - Advance dispatches onUpdateProgress with current_week + 1
+ *  - Advance dispatches onUpdateProgress with the enrollment id and an approved decision
  */
 import React from "react";
 import { Alert } from "react-native";
@@ -183,12 +183,25 @@ describe("StudentProgressModal", () => {
   });
 });
 
-// NOTE: the advance-week affordance is an icon-only TouchableOpacity (no
-// accessible label / testID). It is structurally rendered only when
-// `canUpdate=true && student.current_week < 24`, and triggers Alert.alert
-// before calling onUpdateProgress({ enrollment_id, new_week: current+1 }). The
-// React-Native testing library has no stable selector for the icon button
-// without a source-side testID, so we leave that branch verified end-to-end
-// in QA + the live build. The visible-state guards above (Completed / In
-// Progress / All filtering) catch the most common regression: shipping wrong
-// students into the wrong column.
+describe("StudentProgressModal advance action", () => {
+  it("sends the enrollment id with an approved decision", async () => {
+    const onUpdateProgress = jest.fn().mockResolvedValue(undefined);
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    render(
+      <StudentProgressModal
+        {...baseProps}
+        students={[student({ enrollment_id: 7, current_week: 3 })]}
+        onUpdateProgress={onUpdateProgress}
+      />
+    );
+
+    fireEvent.press(screen.getByTestId("advance-student-7"));
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => Promise<void> }[];
+    await buttons.find((b) => b.text === "Advance")!.onPress!();
+
+    expect(onUpdateProgress).toHaveBeenCalledWith(
+      expect.objectContaining({ enrollment_id: 7, decision: "approved" })
+    );
+    alertSpy.mockRestore();
+  });
+});

@@ -123,17 +123,32 @@ describe("apiFetch", () => {
     expect(arg.status).toBe(500);
   });
 
-  it("throws a generic Error for 403 (no ApiError, no global emit)", async () => {
+  it("throws an ApiError with the server detail for 403 (no global emit)", async () => {
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 403,
       json: async () => ({ detail: "no" }),
     } as Response);
 
+    await expect(apiFetch("/protected")).rejects.toMatchObject({
+      status: 403,
+      message: "no",
+      detail: "no",
+    });
+    expect(mockEmitGlobalError).not.toHaveBeenCalled();
+  });
+
+  it("falls back to 'Forbidden access' for 403 without a detail", async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      json: async () => ({}),
+    } as Response);
+
     await expect(apiFetch("/protected")).rejects.toThrow("Forbidden access");
   });
 
-  it("throws an ApiError with status 409 for conflict responses", async () => {
+  it("throws an ApiError with the server detail for 409 conflicts (no global emit)", async () => {
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 409,
@@ -142,7 +157,39 @@ describe("apiFetch", () => {
 
     await expect(apiFetch("/sessions")).rejects.toMatchObject({
       status: 409,
+      message: "duplicate",
+      detail: "duplicate",
+    });
+    expect(mockEmitGlobalError).not.toHaveBeenCalled();
+  });
+
+  it("falls back to 'Request Conflict' for 409 without a detail", async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => {
+        throw new Error("no body");
+      },
+    } as unknown as Response);
+
+    await expect(apiFetch("/sessions")).rejects.toMatchObject({
+      status: 409,
       message: "Request Conflict",
+    });
+  });
+
+  it("joins FastAPI validation error messages into the detail", async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        detail: [{ msg: "field required" }, { msg: "value is not a valid integer" }],
+      }),
+    } as Response);
+
+    await expect(apiFetch("/sessions", { suppressGlobalError: true })).rejects.toMatchObject({
+      status: 422,
+      detail: "field required\nvalue is not a valid integer",
     });
   });
 

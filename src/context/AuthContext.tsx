@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useReducer,
 } from "react";
+import { setUnauthorizedHandler } from "../services/api";
 import { authService } from "../services/authService";
 import { onboardingService } from "../services/onboardingService";
 import {
@@ -19,9 +20,14 @@ import { UserRole } from "../types/enums";
 import { EnhancedSignupData, EnhancedSignupUser } from "../types/onboarding.types";
 import { logger } from "../utils/logger";
 
+export interface LoginResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AuthContextType {
   state: AuthState;
-  login: (credentials: LoginCredentials) => Promise<boolean>;
+  login: (credentials: LoginCredentials) => Promise<LoginResult>;
   register: (data: EnhancedSignupData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateUser: (userData: UserUpdate) => void;
@@ -104,7 +110,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 const convertUserInfoToUser = (userInfo: UserInfo): User => {
   return {
-    id: userInfo.id,
+    id: userInfo.user_id ?? userInfo.id,
     email: userInfo.email,
     first_name: userInfo.first_name,
     last_name: userInfo.last_name,
@@ -173,6 +179,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    setUnauthorizedHandler(() => dispatch({ type: "AUTH_LOGOUT" }));
+    return () => setUnauthorizedHandler(null);
+  }, []);
+
+  useEffect(() => {
     const checkAuth = async () => {
       try {
         logger.debug("Checking authentication status...");
@@ -200,7 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []); // Empty dependency array means "run once on mount"
 
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const login = async (credentials: LoginCredentials): Promise<LoginResult> => {
     try {
       logger.debug("Starting login process");
       
@@ -208,26 +219,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (!loginResult.success || !loginResult.data) {
         logger.debug("Login failed:", loginResult.error);
-        dispatch({
-          type: "AUTH_ERROR",
-          payload: loginResult.error || "Invalid credentials",
-        });
-        return false;
+        const error = loginResult.error || "Invalid credentials";
+        dispatch({ type: "AUTH_ERROR", payload: error });
+        return { success: false, error };
       }
 
       logger.debug("Login successful, fetching user profile");
 
-      dispatch({ type: "AUTH_LOADING" });
-      
       const userResult = await authService.getCurrentUser(loginResult.data.access_token);
 
       if (!userResult.success || !userResult.data) {
         logger.debug("Failed to fetch user data:", userResult.error);
-        dispatch({
-          type: "AUTH_ERROR",
-          payload: userResult.error || "Failed to fetch user data",
-        });
-        return false;
+        await authService.clearAuthData();
+        const error = userResult.error || "Failed to fetch user data";
+        dispatch({ type: "AUTH_ERROR", payload: error });
+        return { success: false, error };
       }
 
       logger.debug("User profile fetched successfully");
@@ -242,15 +248,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       });
       
-      return true;
+      return { success: true };
 
     } catch (error) {
       logger.error("Login error:", error);
-      dispatch({
-        type: "AUTH_ERROR",
-        payload: "Network error occurred during login",
-      });
-      return false;
+      const message = "Network error occurred during login";
+      dispatch({ type: "AUTH_ERROR", payload: message });
+      return { success: false, error: message };
     }
   };
 

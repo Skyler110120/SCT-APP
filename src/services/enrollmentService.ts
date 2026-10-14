@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   WeeklyProgressUpdateRequest,
   EnrollmentResponse,
@@ -28,7 +29,7 @@ export const enrollmentService = {
         console.error("Error fetching student progress:", error);
         return {
             success: false,
-            error: "Network error occurred while fetching student progress"
+            error: getApiErrorMessage(error, "Network error occurred while fetching student progress")
         }
     }
   },
@@ -58,7 +59,7 @@ export const enrollmentService = {
         console.error("Error updating student progress:", error);
         return {
             success: false,
-            error: "Network error occurred while updating student progress"
+            error: getApiErrorMessage(error, "Network error occurred while updating student progress")
         }
     }
   }

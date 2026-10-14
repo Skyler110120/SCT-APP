@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   SessionDetailed,
   DirectBookingRequest,
@@ -32,7 +33,9 @@ export const sessionService = {
         end_time: request.end_time,
       });
 
-      const data = await apiFetch(`/sessions/check-availability?${params}`);
+      const data = await apiFetch(`/sessions/check-availability?${params}`, {
+        method: "POST",
+      });
 
       console.log("Availability check result:", data);
 
@@ -44,7 +47,7 @@ export const sessionService = {
       console.error("Error checking instructor availability:", error);
       return {
         success: false,
-        error: "Error occurred while checking availability",
+        error: getApiErrorMessage(error, "Error occurred while checking availability"),
       };
     }
   },
@@ -63,6 +66,7 @@ export const sessionService = {
       const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/direct-book`, {
         method: "POST",
         body: JSON.stringify(bookingData),
+        suppressGlobalError: true,
       });
 
       console.log("Session booked successfully:", data);
@@ -76,7 +80,10 @@ export const sessionService = {
       console.error("Error booking session:", error);
       return {
         success: false,
-        error: "Network error occurred while booking session",
+        error: getApiErrorMessage(
+          error,
+          "Unable to book session. Please check your connection and try again."
+        ),
       };
     }
   },
@@ -124,7 +131,7 @@ export const sessionService = {
       console.error("Error fetching sessions:", error);
       return {
         success: false,
-        error: "Error occurred while fetching sessions",
+        error: getApiErrorMessage(error, "Error occurred while fetching sessions"),
       };
     }
   },
@@ -150,7 +157,7 @@ export const sessionService = {
       console.error("Error fetching session by ID:", error);
       return {
         success: false,
-        error: "Error occurred while fetching session details",
+        error: getApiErrorMessage(error, "Error occurred while fetching session details"),
       };
     }
   },
@@ -172,6 +179,7 @@ export const sessionService = {
       const data: SessionDetailed = await apiFetch<SessionDetailed>(`/sessions/${sessionId}`, {
         method: "PUT",
         body: JSON.stringify(updateData),
+        suppressGlobalError: true,
       });
 
       console.log("Session updated successfully:", data);
@@ -183,7 +191,7 @@ export const sessionService = {
       console.error("Error updating session:", error);
       return {
         success: false,
-        error: "Network error occurred while updating session",
+        error: getApiErrorMessage(error, "Network error occurred while updating session"),
       };
     }
   },
@@ -199,6 +207,7 @@ export const sessionService = {
 
       const data = await apiFetch(`/sessions/${sessionId}/cancel`, {
         method: "POST",
+        suppressGlobalError: true,
       });
 
       console.log("Session cancelled successfully:");
@@ -212,7 +221,7 @@ export const sessionService = {
       console.error("Error cancelling session:", error);
       return {
         success: false,
-        error: "Network error occurred while cancelling session",
+        error: getApiErrorMessage(error, "Network error occurred while cancelling session"),
       };
     }
   },
@@ -243,7 +252,7 @@ export const sessionService = {
       console.error("Error marking session as completed:", error);
       return {
         success: false,
-        error: "Network error occurred while marking session as completed",
+        error: getApiErrorMessage(error, "Network error occurred while marking session as completed"),
       };
     }
   },
@@ -263,6 +272,9 @@ export const sessionService = {
         start_date: request.start_date,
         end_date: request.end_date,
       });
+      if (request.include_completed) {
+        params.append("include_completed", "true");
+      }
 
       const data: SessionDetailed[] = await apiFetch<SessionDetailed[]>(`/sessions/calendar?${params}`);
 
@@ -275,7 +287,7 @@ export const sessionService = {
       console.error("Error fetching calendar sessions:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching calendar sessions",
+        error: getApiErrorMessage(error, "Network error occurred while fetching calendar sessions"),
       };
     }
   },

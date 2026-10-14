@@ -6,16 +6,21 @@ import { sessionService } from "../../services/sessionService";
 import { SessionStatus } from "../../types/enums";
 
 // Mock the api module so no real HTTP calls are made
-jest.mock("../../services/api", () => ({
-  apiFetch: jest.fn(),
-  ApiError: class ApiError extends Error {
+jest.mock("../../services/api", () => {
+  class ApiError extends Error {
     status: number;
-    constructor(status: number, message: string) {
+    detail?: string;
+    constructor(status: number, message: string, detail?: string) {
       super(message);
       this.status = status;
+      this.detail = detail;
     }
-  },
-}));
+  }
+  return {
+    apiFetch: jest.fn(),
+    ApiError,
+  };
+});
 
 // Mock React Native modules that don't exist in Jest environment
 jest.mock("react-native", () => ({ Platform: { OS: "ios" } }));
@@ -85,6 +90,24 @@ describe("sessionService.bookDirectSession", () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
+  });
+
+  it("surfaces the server's message when booking is rejected", async () => {
+    const { ApiError } = jest.requireMock("../../services/api");
+    const detail =
+      "You can only book one session per calendar week (Sunday–Saturday). You already have a session in that week.";
+    mockApiFetch.mockRejectedValueOnce(new ApiError(409, detail, detail));
+
+    const result = await sessionService.bookDirectSession({
+      instructor_id: 10,
+      title: "Session",
+      description: "",
+      start_time: "2026-03-01T10:00:00Z",
+      end_time: "2026-03-01T12:00:00Z",
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(detail);
   });
 });
 

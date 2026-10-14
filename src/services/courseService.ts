@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   CourseSummary,
   CourseInstructorView,
@@ -43,7 +44,7 @@ export const courseService = {
       console.error("Error fetching courses for selection:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching courses",
+        error: getApiErrorMessage(error, "Network error occurred while fetching courses"),
       };
     }
   },
@@ -75,7 +76,7 @@ export const courseService = {
       console.error("Error enrolling in course:", error);
       return {
         success: false,
-        error: "Network error occurred during enrollment",
+        error: getApiErrorMessage(error, "Network error occurred during enrollment"),
       };
     }
   },
@@ -100,7 +101,7 @@ export const courseService = {
       console.error("Error fetching enrolled course:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching enrolled course",
+        error: getApiErrorMessage(error, "Network error occurred while fetching enrolled course"),
       };
     }
   },
@@ -123,7 +124,7 @@ export const courseService = {
       console.error("Error fetching instructor courses:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching instructor courses",
+        error: getApiErrorMessage(error, "Network error occurred while fetching instructor courses"),
       };
     }
   },
@@ -146,7 +147,7 @@ export const courseService = {
       console.error("Error fetching admin courses:", error);
       return {
         success: false,
-        error: "Network error occurred while fetching admin courses",
+        error: getApiErrorMessage(error, "Network error occurred while fetching admin courses"),
       };
     }
   },
@@ -174,7 +175,7 @@ export const courseService = {
       console.error("Error creating course:", error);
       return {
         success: false,
-        error: "Network error occurred while creating course",
+        error: getApiErrorMessage(error, "Network error occurred while creating course"),
       };
     }
   },
@@ -208,7 +209,7 @@ export const courseService = {
       console.error("Error updating course:", error);
       return {
         success: false,
-        error: "Network error occurred while updating course",
+        error: getApiErrorMessage(error, "Network error occurred while updating course"),
       };
     }
   },
@@ -236,7 +237,7 @@ export const courseService = {
       console.error("Error deleting course:", error);
       return {
         success: false,
-        error: "Network error occurred while deleting course",
+        error: getApiErrorMessage(error, "Network error occurred while deleting course"),
       };
     }
   },
@@ -270,7 +271,7 @@ export const courseService = {
       console.error("Error adding video to course:", error);
       return {
         success: false,
-        error: "Network error occurred while adding video to course",
+        error: getApiErrorMessage(error, "Network error occurred while adding video to course"),
       };
     }
   },
@@ -304,7 +305,7 @@ export const courseService = {
       console.error("Error updating video:", error);
       return {
         success: false,
-        error: "Network error occurred while updating video",
+        error: getApiErrorMessage(error, "Network error occurred while updating video"),
       };
     }
   },
@@ -332,7 +333,7 @@ export const courseService = {
       console.error("Error removing video:", error);
       return {
         success: false,
-        error: "Network error occurred while removing video",
+        error: getApiErrorMessage(error, "Network error occurred while removing video"),
       };
     }
   },

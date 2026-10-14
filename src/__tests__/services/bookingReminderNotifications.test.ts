@@ -120,6 +120,7 @@ describe("checkAndNotifyWednesdayBookingReminder", () => {
     expect(mockGetCalendar).toHaveBeenCalledWith({
       start_date: "2026-06-14",
       end_date: "2026-06-20",
+      include_completed: true,
     });
   });
 

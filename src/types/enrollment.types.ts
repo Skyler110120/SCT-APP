@@ -37,6 +37,7 @@ export interface StudentEnrollment {
 
 export interface EnrollmentWithCourse extends StudentEnrollment {
     course: CourseStudentView;
+    next_week_to_book?: number;
 }
 
 export interface StudentWeeklyProgress {
@@ -73,7 +74,9 @@ export interface EnrollmentCreateRequest {
 }
 
 export interface WeeklyProgressUpdateRequest {
-    student_id: number;
+    enrollment_id?: number;
+    student_id?: number;
+    course_id?: number;
     decision: ProgressionDecision;
     notes?: string;
 }

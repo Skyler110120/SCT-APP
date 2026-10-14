@@ -9,6 +9,7 @@ import {
   MessageResponse,
 } from "../types/auth.types";
 import { apiFetch } from "./api";
+import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import { authStorage } from "./authStorage";
 import { logger } from "../utils/logger";
 
@@ -32,7 +33,7 @@ export const authService = {
       logger.debug("Attempting login");
 
       const formData = new FormData();
-      formData.append("username", credentials.email.toLowerCase());
+      formData.append("username", credentials.email.trim().toLowerCase());
       formData.append("password", credentials.password);
 
       const tokenData = await apiFetch(`/auth/login`, {
@@ -62,7 +63,7 @@ export const authService = {
       }
       return {
         success: false,
-        error: "An error occurred during login",
+        error: getApiErrorMessage(error, "An error occurred during login"),
       };
     }
   },
@@ -93,9 +94,11 @@ export const authService = {
       };
     } catch (error) {
       logger.error("Get current user error:", error);
+      const status = (error as { status?: unknown })?.status;
       return {
         success: false,
-        error: "An error occurred while fetching user profile",
+        error: getApiErrorMessage(error, "An error occurred while fetching user profile"),
+        status: typeof status === "number" ? status : undefined,
       };
     }
   },
@@ -130,7 +133,7 @@ export const authService = {
       logger.error("Refresh user info error:", error);
       return {
         success: false,
-        error: "An error occurred while refreshing user information",
+        error: getApiErrorMessage(error, "An error occurred while refreshing user information"),
       };
     }
   },
@@ -150,8 +153,17 @@ export const authService = {
       const user = await this.getCurrentUser(token);
 
       if (!user.success || !user.data) {
-        logger.debug("Token validation failed");
-        await this.clearAuthData();
+        if (user.status === 401) {
+          logger.debug("Token validation failed");
+          await this.clearAuthData();
+          return null;
+        }
+        // Offline, timeout, or server error: keep the session and use the cached profile.
+        const cached = await authStorage.getUserDataJson();
+        if (cached) {
+          logger.debug("Using cached user profile; /auth/me unavailable");
+          return { token, user: JSON.parse(cached) as UserInfo };
+        }
         return null;
       }
 

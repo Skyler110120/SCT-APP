@@ -63,7 +63,7 @@ export function InviteCodeModal({
       } else if (typeof error === "string") {
         setError(error);
       } else {
-        setError("An unexpected error occured. Please try again.");
+        setError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setIsValidating(false);

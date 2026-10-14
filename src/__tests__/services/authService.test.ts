@@ -15,6 +15,7 @@ jest.mock("../../services/authStorage", () => ({
     setTokenData: jest.fn(),
     getTokenDataJson: jest.fn(),
     setUserData: jest.fn(),
+    getUserDataJson: jest.fn(),
     clearAuthData: jest.fn(),
   },
 }));
@@ -213,13 +214,29 @@ describe("authService.checkAuth", () => {
     expect(mockApiFetch).not.toHaveBeenCalled();
   });
 
-  it("returns null and clears auth when token validation fails", async () => {
-    mockApiFetch.mockRejectedValueOnce(new Error("Unauthorized"));
+  it("returns null and clears auth when the token is rejected (401)", async () => {
+    mockApiFetch.mockRejectedValueOnce(
+      Object.assign(new Error("Unauthorized"), { status: 401 })
+    );
 
     const result = await authService.checkAuth();
 
     expect(result).toBeNull();
     expect(mockClearAuthData).toHaveBeenCalled();
+  });
+
+  it("keeps the session with the cached profile when the server is unreachable", async () => {
+    mockApiFetch.mockRejectedValueOnce(
+      Object.assign(new Error("Network error"), { status: 0 })
+    );
+    (authStorage.getUserDataJson as jest.Mock).mockResolvedValueOnce(
+      JSON.stringify(mockUserData)
+    );
+
+    const result = await authService.checkAuth();
+
+    expect(result).toEqual({ token: "mock-token", user: mockUserData });
+    expect(mockClearAuthData).not.toHaveBeenCalled();
   });
 });
 
