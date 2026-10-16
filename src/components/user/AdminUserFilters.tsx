@@ -1,9 +1,14 @@
 import { themes } from "@/src/context/themes";
 import { adminUserFiltersStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminUserFiltersStyles";
 import { UserRole } from "@/src/types/auth.types";
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import { Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface UserFiltersProps {
   searchQuery: string;
@@ -11,6 +16,13 @@ interface UserFiltersProps {
   roleFilter: string;
   setRoleFilter: (role: string) => void;
 }
+
+const ROLE_OPTIONS: { label: string; value: string }[] = [
+  { label: "All", value: "all" },
+  { label: "Student", value: UserRole.STUDENT },
+  { label: "Instructor", value: UserRole.INSTRUCTOR },
+  { label: "Admin", value: UserRole.ADMIN },
+];
 
 const UserFilters: React.FC<UserFiltersProps> = ({
   searchQuery,
@@ -25,31 +37,56 @@ const UserFilters: React.FC<UserFiltersProps> = ({
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>Search</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name or email"
-            placeholderTextColor={themes.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+          <View style={styles.searchRow}>
+            <TextInput
+              style={[styles.searchInput, styles.searchInputFlex]}
+              placeholder="Search by name or email"
+              placeholderTextColor={themes.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={() => Keyboard.dismiss()}
+              accessibilityRole="button"
+              accessibilityLabel="Apply search"
+            >
+              <Text style={styles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>Role</Text>
-          <View style={styles.filterPickerContainer}>
-            <Picker
-              selectedValue={roleFilter}
-              onValueChange={(value) => setRoleFilter(value)}
-              style={styles.filterPicker}
-              dropdownIconColor={themes.vegasGold}
-            >
-              <Picker.Item label="All Roles" value="all" />
-              <Picker.Item label="Student" value={UserRole.STUDENT} />
-              <Picker.Item label="Instructor" value={UserRole.INSTRUCTOR} />
-              <Picker.Item label="Admin" value={UserRole.ADMIN} />
-            </Picker>
+          <View style={styles.roleChipRow}>
+            {ROLE_OPTIONS.map((option) => {
+              const selected = roleFilter === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.roleChip, selected && styles.roleChipSelected]}
+                  onPress={() => setRoleFilter(option.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                >
+                  <Text
+                    style={[
+                      styles.roleChipText,
+                      selected && styles.roleChipTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </View>

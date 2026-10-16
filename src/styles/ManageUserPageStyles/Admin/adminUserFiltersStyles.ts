@@ -30,6 +30,11 @@ export const adminUserFiltersStyles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     color: themes.textSecondary,
   },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   searchInput: {
     padding: 12,
     borderRadius: 8,
@@ -39,14 +44,42 @@ export const adminUserFiltersStyles = StyleSheet.create({
     color: themes.white,
     fontFamily: "Inter_400Regular",
   },
-  filterPickerContainer: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: themes.borderStrong,
-    backgroundColor: themes.backgroundSoft,
-    overflow: "hidden",
+  searchInputFlex: {
+    flex: 1,
   },
-  filterPicker: {
-    color: themes.white,
+  searchButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: themes.vegasGold,
+  },
+  searchButtonText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.black,
+  },
+  roleChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  roleChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: "transparent",
+  },
+  roleChipSelected: {
+    backgroundColor: themes.vegasGold,
+  },
+  roleChipText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.vegasGold,
+  },
+  roleChipTextSelected: {
+    color: themes.black,
   },
 });

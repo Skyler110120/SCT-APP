@@ -1,6 +1,6 @@
 import { themes } from "@/src/context/themes";
 import { adminUserTableStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/AdminUserTableStyles";
-import { User } from "@/src/types/auth.types";
+import { User, UserRole } from "@/src/types/auth.types";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
@@ -34,7 +34,9 @@ const UserTable: React.FC<UserTableProps> = ({
 
   const renderItem = ({ item }: { item: User }) => {
     const isSelf = currentUserId != null && currentUserId === item.id;
-    const isMasterAdmin = String(item.role).toUpperCase() === "MASTER_ADMIN";
+    // API enum is MASTERADMIN (UserRole.MASTER_ADMIN), not MASTER_ADMIN.
+    const roleKey = String(item.role).toUpperCase().replace(/_/g, "");
+    const isMasterAdmin = roleKey === "MASTERADMIN" || item.role === UserRole.MASTER_ADMIN;
     const canModify = !isSelf && !isMasterAdmin;
 
     return (
@@ -134,11 +136,13 @@ const UserTable: React.FC<UserTableProps> = ({
         </View>
       ) : (
         <FlatList
+          style={{ flex: 1 }}
           data={users}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           contentContainerStyle={styles.listContent}
+          keyboardShouldPersistTaps="handled"
         />
       )}
     </View>

@@ -118,16 +118,30 @@ export const adminUserActionModalStyles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     color: themes.white,
   },
-  modalPickerContainer: {
+  roleChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
     marginBottom: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: themes.borderStrong,
-    backgroundColor: themes.backgroundSoft,
-    overflow: "hidden",
   },
-  modalPicker: {
-    color: themes.white,
+  roleChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    backgroundColor: "transparent",
+  },
+  roleChipSelected: {
+    backgroundColor: themes.vegasGold,
+  },
+  roleChipText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.vegasGold,
+  },
+  roleChipTextSelected: {
+    color: themes.black,
   },
   buttonContainer: {
     flexDirection: "row",

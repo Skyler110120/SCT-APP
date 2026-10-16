@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { Calendar } from "react-native-calendars";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -825,32 +824,43 @@ export default function CalendarScreen() {
         {user?.role === UserRole.ADMIN && (
           <View style={styles.instructorFilterRow}>
             <Text style={styles.instructorFilterLabel}>Instructor</Text>
-            <View style={styles.instructorFilterPickerWrap}>
-              <Picker
-                selectedValue={selectedInstructorForAdmin ?? "none"}
-                onValueChange={(value) => {
-                  const nextValue = value === "none" ? null : (value as number);
-                  setSelectedInstructorForAdmin(nextValue);
-                  if (nextValue && showAdminAvailabilityManagement) {
-                    loadAdminInstructorAvailabilities(nextValue);
-                  }
-                }}
-                style={styles.instructorFilterPicker}
-                dropdownIconColor={themes.vegasGold}
-              >
-                {companyInstructors.length === 0 ? (
-                  <Picker.Item label="No instructors found" value="none" />
-                ) : (
-                  companyInstructors.map((instructor) => (
-                    <Picker.Item
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.instructorChipRow}
+            >
+              {companyInstructors.length === 0 ? (
+                <Text style={styles.instructorFilterLabel}>No instructors found</Text>
+              ) : (
+                companyInstructors.map((instructor) => {
+                  const selected = selectedInstructorForAdmin === instructor.id;
+                  return (
+                    <TouchableOpacity
                       key={instructor.id}
-                      label={`${instructor.first_name} ${instructor.last_name}`}
-                      value={instructor.id}
-                    />
-                  ))
-                )}
-              </Picker>
-            </View>
+                      style={[
+                        styles.instructorChip,
+                        selected && styles.instructorChipSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedInstructorForAdmin(instructor.id);
+                        if (showAdminAvailabilityManagement) {
+                          loadAdminInstructorAvailabilities(instructor.id);
+                        }
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.instructorChipText,
+                          selected && styles.instructorChipTextSelected,
+                        ]}
+                      >
+                        {instructor.first_name} {instructor.last_name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </ScrollView>
           </View>
         )}
         <View style={styles.buttonContainer}>{buttons}</View>
@@ -1207,32 +1217,53 @@ export default function CalendarScreen() {
                             <Text style={styles.instructorFilterLabel}>
                               Filter by instructor
                             </Text>
-                            <View style={styles.instructorFilterPickerWrap}>
-                              <Picker
-                                selectedValue={
-                                  instructorFilterId ?? "all"
-                                }
-                                onValueChange={(value) =>
-                                  setInstructorFilterId(
-                                    value === "all" ? null : (value as number)
-                                  )
-                                }
-                                style={styles.instructorFilterPicker}
-                                dropdownIconColor={themes.vegasGold}
+                            <ScrollView
+                              horizontal
+                              showsHorizontalScrollIndicator={false}
+                              contentContainerStyle={styles.instructorChipRow}
+                            >
+                              <TouchableOpacity
+                                style={[
+                                  styles.instructorChip,
+                                  instructorFilterId == null &&
+                                    styles.instructorChipSelected,
+                                ]}
+                                onPress={() => setInstructorFilterId(null)}
                               >
-                                <Picker.Item
-                                  label="All instructors"
-                                  value="all"
-                                />
-                                {instructorsFromAvailability.map(({ id, name }) => (
-                                  <Picker.Item
+                                <Text
+                                  style={[
+                                    styles.instructorChipText,
+                                    instructorFilterId == null &&
+                                      styles.instructorChipTextSelected,
+                                  ]}
+                                >
+                                  All
+                                </Text>
+                              </TouchableOpacity>
+                              {instructorsFromAvailability.map(({ id, name }) => {
+                                const selected = instructorFilterId === id;
+                                return (
+                                  <TouchableOpacity
                                     key={id}
-                                    label={name}
-                                    value={id}
-                                  />
-                                ))}
-                              </Picker>
-                            </View>
+                                    style={[
+                                      styles.instructorChip,
+                                      selected && styles.instructorChipSelected,
+                                    ]}
+                                    onPress={() => setInstructorFilterId(id)}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.instructorChipText,
+                                        selected &&
+                                          styles.instructorChipTextSelected,
+                                      ]}
+                                    >
+                                      {name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              })}
+                            </ScrollView>
                           </View>
                         )}
                         <Text style={styles.sectionSubtitle}>

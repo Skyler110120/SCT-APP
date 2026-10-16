@@ -215,17 +215,30 @@ export const calendarScreenStyles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     color: themes.white,
   },
-  instructorFilterPickerWrap: {
-    flex: 1,
-    minHeight: 44,
+  instructorChipRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 4,
+  },
+  instructorChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: themes.vegasGold,
-    borderRadius: 10,
     backgroundColor: themes.black,
-    justifyContent: "center",
   },
-  instructorFilterPicker: {
-    color: themes.white,
+  instructorChipSelected: {
+    backgroundColor: themes.vegasGold,
+  },
+  instructorChipText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.vegasGold,
+  },
+  instructorChipTextSelected: {
+    color: themes.black,
   },
   sectionSubtitle: {
     marginBottom: 12,

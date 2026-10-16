@@ -1,9 +1,13 @@
-import { themes } from "@/src/context/themes";
 import { adminUserActionModalStyles as styles } from "@/src/styles/ManageUserPageStyles/Admin/adminUserActionModalStyles";
 import { InstructorPermissionUpdate, User, UserRole } from "@/src/types/auth.types";
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
+
+const ROLE_OPTIONS: { label: string; value: UserRole }[] = [
+  { label: "Student", value: UserRole.STUDENT },
+  { label: "Instructor", value: UserRole.INSTRUCTOR },
+  { label: "Admin", value: UserRole.ADMIN },
+];
 
 interface UserActionModalProps {
   visible: boolean;
@@ -248,20 +252,31 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
                   {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </Text>
                 <Text style={styles.roleLabel}>Select New Role: </Text>
-                <View style={styles.modalPickerContainer}>
-                  <Picker
-                    selectedValue={newRole || user.role}
-                    onValueChange={(value) => setNewRole(value as UserRole)}
-                    style={styles.modalPicker}
-                    dropdownIconColor={themes.vegasGold}
-                  >
-                    <Picker.Item label="Student" value={UserRole.STUDENT} />
-                    <Picker.Item
-                      label="Instructor"
-                      value={UserRole.INSTRUCTOR}
-                    />
-                    <Picker.Item label="Admin" value={UserRole.ADMIN} />
-                  </Picker>
+                <View style={styles.roleChipRow}>
+                  {ROLE_OPTIONS.map((option) => {
+                    const selected = (newRole || user.role) === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.roleChip,
+                          selected && styles.roleChipSelected,
+                        ]}
+                        onPress={() => setNewRole(option.value)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                      >
+                        <Text
+                          style={[
+                            styles.roleChipText,
+                            selected && styles.roleChipTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </>
             )}
