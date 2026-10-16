@@ -1,6 +1,5 @@
 import { themes } from "@/src/context/themes";
 import { instructorStudentFiltersStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorStudentFiltersStyles";
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
 import {
   Keyboard,
@@ -10,12 +9,20 @@ import {
   View,
 } from "react-native";
 
+export type StudentStatusFilter = "all" | "active" | "inactive";
+
 interface InstructorStudentFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  statusFilter: string;
-  setStatusFilter: (status: string) => void;
+  statusFilter: StudentStatusFilter;
+  setStatusFilter: (status: StudentStatusFilter) => void;
 }
+
+const STATUS_OPTIONS: { label: string; value: StudentStatusFilter }[] = [
+  { label: "All", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Inactive", value: "inactive" },
+];
 
 const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
   searchQuery,
@@ -37,7 +44,7 @@ const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
           <View style={styles.searchRow}>
             <TextInput
               style={[styles.searchInput, styles.searchInputFlex]}
-              placeholder="Search by student name or email"
+              placeholder="Search by name or email"
               placeholderTextColor={themes.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -62,17 +69,31 @@ const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>Status</Text>
-          <View style={styles.filterPickerContainer}>
-            <Picker
-              selectedValue={statusFilter}
-              onValueChange={(value) => setStatusFilter(value)}
-              style={styles.filterPicker}
-              dropdownIconColor={themes.vegasGold}
-            >
-              <Picker.Item label="All Students" value="all" />
-              <Picker.Item label="Active Students" value="active" />
-              <Picker.Item label="Inactive Students" value="inactive" />
-            </Picker>
+          <View style={styles.statusChipRow}>
+            {STATUS_OPTIONS.map((option) => {
+              const selected = statusFilter === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.statusChip,
+                    selected && styles.statusChipSelected,
+                  ]}
+                  onPress={() => setStatusFilter(option.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                >
+                  <Text
+                    style={[
+                      styles.statusChipText,
+                      selected && styles.statusChipTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </View>

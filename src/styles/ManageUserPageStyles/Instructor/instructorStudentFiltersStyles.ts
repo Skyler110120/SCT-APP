@@ -4,29 +4,28 @@ import { themes } from "@/src/context/themes";
 export const instructorStudentFiltersStyles = StyleSheet.create({
   filterContainer: {
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderRadius: 8,
     borderWidth: 1,
     backgroundColor: "transparent",
     borderColor: themes.vegasGold,
   },
   filterSectionTitle: {
-    marginBottom: 16,
-    fontSize: 24,
+    marginBottom: 12,
+    fontSize: 22,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
   },
   filterRow: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   filterItem: {
     flex: 1,
-    marginHorizontal: 4,
   },
   filterLabel: {
     marginBottom: 8,
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
@@ -58,14 +57,28 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
     fontFamily: "Chakra-Bold",
     color: themes.black,
   },
-  filterPickerContainer: {
-    borderRadius: 8,
+  statusChipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  statusChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: themes.vegasGold,
     backgroundColor: "transparent",
-    overflow: "hidden",
   },
-  filterPicker: {
-    color: themes.white,
+  statusChipSelected: {
+    backgroundColor: themes.vegasGold,
+  },
+  statusChipText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Bold",
+    color: themes.vegasGold,
+  },
+  statusChipTextSelected: {
+    color: themes.black,
   },
 });

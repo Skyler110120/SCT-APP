@@ -8,16 +8,13 @@ const isCompact = width < 420;
 export const instructorStudentTableStyles = StyleSheet.create({
   tableContainer: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: themes.vegasGold,
-    borderRadius: 8,
     backgroundColor: "transparent",
-    overflow: "hidden",
   },
   tableSectionTitle: {
-    padding: 16,
+    paddingVertical: 12,
+    marginBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor:  themes.vegasGold,
+    borderBottomColor: themes.vegasGold,
     fontSize: isCompact ? 22 : 28,
     fontFamily: "Chakra-Bold",
     color: themes.vegasGold,
