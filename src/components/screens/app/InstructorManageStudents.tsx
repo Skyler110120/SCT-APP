@@ -82,12 +82,10 @@ export default function InstructorStudents() {
       );
     }
 
-    if (statusFilter !== "all") {
-      if (statusFilter === "active") {
-        filtered = filtered.filter(student => student.is_active && student.has_completed_onboarding)
-      } else if (statusFilter === "inactive") {
-        filtered = filtered.filter(student => !student.is_active)
-      }
+    if (statusFilter === "active") {
+      filtered = filtered.filter((student) => student.is_active);
+    } else if (statusFilter === "inactive") {
+      filtered = filtered.filter((student) => !student.is_active);
     }
 
     setFilteredStudents(filtered);

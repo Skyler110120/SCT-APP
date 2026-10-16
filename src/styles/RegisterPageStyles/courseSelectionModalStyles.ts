@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
 
-export const courseSelectionModalStyles = StyleSheet. create({
+export const courseSelectionModalStyles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -15,13 +15,13 @@ export const courseSelectionModalStyles = StyleSheet. create({
     backgroundColor: themes.black,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: themes. vegasGold,
+    borderColor: themes.vegasGold,
   },
   courseSelectionModal: {
     width: '90%',
     maxWidth: 500,
-    minHeight: '40%',
-    maxHeight: '85%'
+    height: '80%',
+    maxHeight: '85%',
   },
   modalHeader: {
     flexDirection:  'row',
@@ -113,7 +113,8 @@ export const courseSelectionModalStyles = StyleSheet. create({
     color: themes.white,
   },
   courseScrollView: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
     marginBottom: 15,
   },
   courseCard: {
@@ -143,7 +144,7 @@ export const courseSelectionModalStyles = StyleSheet. create({
     justifyContent: 'center',
     borderRadius: 8,
     marginRight: 12,
-    backgroundColor: themes. vegasGold + '20',
+    backgroundColor: themes.vegasGold + '20',
   },
   courseTitleContainer: {
     flex: 1,
@@ -181,7 +182,7 @@ export const courseSelectionModalStyles = StyleSheet. create({
     color: themes.white,
   },
   selectedGunTypeText: {
-    color: themes. black,
+    color: themes.black,
   },
   courseDescription: {
     fontSize: 14,
@@ -190,7 +191,7 @@ export const courseSelectionModalStyles = StyleSheet. create({
     marginBottom: 12,
   },
   selectedCourseDescription: {
-    color: themes. black,
+    color: themes.black,
   },
   courseFooter: {
     flexDirection: 'row',

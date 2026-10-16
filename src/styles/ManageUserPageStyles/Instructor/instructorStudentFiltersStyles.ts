@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
 
-export const instructorStudentFiltersStyles = StyleSheet. create({
+export const instructorStudentFiltersStyles = StyleSheet.create({
   filterContainer: {
     padding: 16,
     marginBottom: 16,
@@ -30,6 +30,11 @@ export const instructorStudentFiltersStyles = StyleSheet. create({
     fontFamily: "Chakra-Regular",
     color: themes.white,
   },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   searchInput: {
     padding: 12,
     borderRadius: 8,
@@ -38,6 +43,20 @@ export const instructorStudentFiltersStyles = StyleSheet. create({
     backgroundColor: "transparent",
     color: themes.white,
     fontFamily: "Chakra-Regular",
+  },
+  searchInputFlex: {
+    flex: 1,
+  },
+  searchButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: themes.vegasGold,
+  },
+  searchButtonText: {
+    fontSize: 14,
+    fontFamily: "Chakra-Bold",
+    color: themes.black,
   },
   filterPickerContainer: {
     borderRadius: 8,

@@ -2,7 +2,13 @@ import { themes } from "@/src/context/themes";
 import { instructorStudentFiltersStyles as styles } from "@/src/styles/ManageUserPageStyles/Instructor/instructorStudentFiltersStyles";
 import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import { Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface InstructorStudentFiltersProps {
   searchQuery: string;
@@ -17,6 +23,10 @@ const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
   statusFilter,
   setStatusFilter,
 }) => {
+  const dismissSearchKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   return (
     <View style={styles.filterContainer}>
       <Text style={styles.filterSectionTitle}>Find Students</Text>
@@ -24,13 +34,28 @@ const InstructorStudentFilters: React.FC<InstructorStudentFiltersProps> = ({
       <View style={styles.filterRow}>
         <View style={styles.filterItem}>
           <Text style={styles.filterLabel}>Search</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by student name or email"
-            placeholderTextColor={themes.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+          <View style={styles.searchRow}>
+            <TextInput
+              style={[styles.searchInput, styles.searchInputFlex]}
+              placeholder="Search by student name or email"
+              placeholderTextColor={themes.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+              onSubmitEditing={dismissSearchKeyboard}
+            />
+            <TouchableOpacity
+              style={styles.searchButton}
+              onPress={dismissSearchKeyboard}
+              accessibilityRole="button"
+              accessibilityLabel="Apply search"
+            >
+              <Text style={styles.searchButtonText}>Search</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

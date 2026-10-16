@@ -203,7 +203,9 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
 
       <ScrollView
         style={styles.courseScrollView}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
       >
         {courses.map(renderCourseCard)}
       </ScrollView>

@@ -15,7 +15,7 @@ import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { PRIVACY_POLICY_URL } from "@/src/config";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Alert,
   Image,
@@ -60,33 +60,6 @@ export default function RegisterScreen() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const lastProcessedCompanyRef = useRef<{ companyId: number; role: UserRole } | null>(null);
-
-  const handleInviteCodeSuccess = async (company: CompanyInfo) => {
-    const resolvedRole = company.role || UserRole.STUDENT;
-    setCompanyInfo(company);
-    setRole(resolvedRole);
-    await onboardingService.saveSelectedRole(resolvedRole);
-  };
-
-  useEffect(() => {
-    if (!role || !companyInfo) return;
-
-    const currentKey = { companyId: companyInfo.company_id, role };
-    const lastKey = lastProcessedCompanyRef.current;
-    if (lastKey?.companyId === currentKey.companyId && lastKey?.role === currentKey.role) return;
-    lastProcessedCompanyRef.current = currentKey;
-
-    if (currentStep !== "invite-code") return;
-
-    if (role === UserRole.STUDENT) {
-      setCurrentStep("course-selection");
-      loadCourses();
-    } else {
-      setCurrentStep("registration");
-    }
-  }, [role, companyInfo, currentStep]);
-
   const handleInviteCodeCancel = () => {
     router.back();
   };
@@ -96,15 +69,38 @@ export default function RegisterScreen() {
     try {
       const result = await courseService.getCourseForSelection();
       if (result.success && result.data) {
-        setCourses(result.data);
+        setCourses(Array.isArray(result.data) ? result.data : []);
+        if (!result.data.length) {
+          Alert.alert(
+            "No Courses",
+            "No training courses are available yet. Please try again or contact your administrator."
+          );
+        }
       } else {
+        setCourses([]);
         Alert.alert("Error", result.error || "Failed to load courses");
       }
     } catch (error) {
       console.error("Error loading courses:", error);
+      setCourses([]);
       Alert.alert("Error", "Failed to load courses. Please try again.");
     } finally {
       setCoursesLoading(false);
+    }
+  };
+
+  const handleInviteCodeSuccess = async (company: CompanyInfo) => {
+    const resolvedRole = company.role || UserRole.STUDENT;
+    setCompanyInfo(company);
+    setRole(resolvedRole);
+    await onboardingService.saveSelectedRole(resolvedRole);
+
+    // Load courses immediately (same as web) — do not rely on a useEffect race.
+    if (resolvedRole === UserRole.STUDENT) {
+      setCurrentStep("course-selection");
+      await loadCourses();
+    } else {
+      setCurrentStep("registration");
     }
   };
 
@@ -131,8 +127,9 @@ export default function RegisterScreen() {
   };
 
   const returnToInviteCode = () => {
-    lastProcessedCompanyRef.current = null;
     setCompanyInfo(null);
+    setCourses([]);
+    setSelectedCourse(null);
     setCurrentStep("invite-code");
   };
 

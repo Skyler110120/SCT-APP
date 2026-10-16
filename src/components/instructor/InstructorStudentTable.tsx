@@ -76,9 +76,9 @@ const InstructorStudentTable: React.FC<InstructorStudentTableProps> = ({
             color={themes.vegasGold}
             style={{ marginBottom: 16 }}
           />
-          <Text style={styles.emptyStateText}>No students assigned</Text>
+          <Text style={styles.emptyStateText}>No students found</Text>
           <Text style={[styles.emptyStateText, { fontSize: 14, marginTop: 8 }]}>
-            Students will appear here once they book one of your sessions.
+            Try clearing your search or choosing a different status filter.
           </Text>
         </View>
       ) : (
