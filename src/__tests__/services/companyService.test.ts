@@ -212,3 +212,21 @@ describe("companyService.getOnboardingLink", () => {
     expect(result.error).toBeDefined();
   });
 });
+
+describe("companyService.deleteCompany", () => {
+  beforeEach(() => mockApiFetch.mockReset());
+
+  it("sends DELETE to the company endpoint", async () => {
+    mockApiFetch.mockResolvedValueOnce(undefined);
+    const result = await companyService.deleteCompany(7);
+    expect(mockApiFetch).toHaveBeenCalledWith("/companies/7", { method: "DELETE" });
+    expect(result).toEqual({ success: true });
+  });
+
+  it("returns an error when the API rejects", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("Forbidden"));
+    const result = await companyService.deleteCompany(7);
+    expect(result.success).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+});

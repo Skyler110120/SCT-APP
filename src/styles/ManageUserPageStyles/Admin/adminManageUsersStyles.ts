@@ -1,5 +1,10 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+
+const { height: windowHeight } = Dimensions.get("window");
+
+/** Tall enough that several user rows are visible; page can still scroll to reveal more of the box. */
+export const USERS_LIST_BOX_HEIGHT = Math.max(420, Math.round(windowHeight * 0.62));
 
 export const adminManageUsersStyles = StyleSheet.create({
   container: {
@@ -10,25 +15,31 @@ export const adminManageUsersStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-  content:  {
+  pageScroll: {
     flex: 1,
-    padding: 16,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    // Leave room above the bottom nav so the list box isn't cramped.
+    paddingBottom: 110,
   },
   pageTitle: {
-    marginBottom: 24,
+    marginBottom: 12,
     textAlign: "center",
     fontSize: 30,
     fontFamily: "Oswald_600SemiBold",
     color: themes.vegasGold,
   },
   tableSection: {
-    flex: 1,
-    marginTop: 8,
+    height: USERS_LIST_BOX_HEIGHT,
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent:  "center",
-    alignItems:  "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 12,
@@ -55,7 +66,7 @@ export const adminManageUsersStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
     borderRadius: 6,
   },
-  retryButtonText:  {
+  retryButtonText: {
     fontSize: 14,
     fontFamily: "Oswald_500Medium",
     color: themes.black,

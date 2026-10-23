@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,14 +15,17 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
 import InstructorAvailabilityModal from "@/src/components/instructor/InstructorAvailabilityModal";
+import TimeOffModal from "@/src/components/instructor/TimeOffModal";
 import BottomNavBar from "@/src/components/NavBar";
 import SessionBookingModal from "@/src/components/SessionBookingModal";
 import SessionDetailsModal from "@/src/components/SessionDetailsModal";
+import StudentCancelSessionModal from "@/src/components/student/StudentCancelSessionModal";
 
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { calendarScreenStyles as styles } from "@/src/styles/CalendarPageStyles/calendarScreen";
 
+import { courseService } from "@/src/services/courseService";
 import { eventService } from "@/src/services/eventService";
 import { instructorAvailabilityService } from "@/src/services/instructorAvailabilityService";
 import { sessionService } from "@/src/services/sessionService";
@@ -37,19 +40,43 @@ import {
 import { User } from "@/src/types/auth.types";
 import { CreateEventRequest, Event } from "@/src/types/event.types";
 import { SessionDetailed } from "@/src/types/sessions.types";
+import { BookingTrackContext, BookingWeekState } from "@/src/types/bookingTrack.types";
+import { EnrollmentWithCourse } from "@/src/types/enrollment.types";
 
 import {
+  buildWeekStateMap,
+  buildWeeksWithSession,
+  resolveAnchorWeekStart,
+  resolveRecommendedWeekStart,
+} from "@/src/utils/bookingTrack";
+import {
+  addDays,
   createLocalDate,
   formatDateForAPI,
   formatDateRange,
   formatDateString,
-  formatTimeString
+  formatTimeString,
+  getWeekBounds,
 } from "@/src/utils/dateTimeUtils";
+
+type TrackMarker = "booked" | "bookNow" | "skipRisk" | null;
+
+const TRACK_MARKER_COLORS: Record<Exclude<TrackMarker, null>, string> = {
+  booked: "rgba(74, 222, 128, 0.22)",
+  bookNow: "rgba(197, 179, 88, 0.30)",
+  skipRisk: "rgba(248, 113, 113, 0.25)",
+};
 
 const toLocalDateKey = (isoString: string) => formatDateForAPI(new Date(isoString));
 
 const isUnavailableRow = (availability: Availability) =>
   (availability.status ?? "").toLowerCase() === "unavailable";
+
+/** API times like "09:00:00" or "09:00". */
+const timeToMinutes = (timeStr: string) => {
+  const [h, m] = timeStr.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
 
 /** Month bounds for a YYYY-MM-DD string, padded a day each side because the API filters by UTC date. */
 const getPaddedMonthRange = (dateString: string) => {
@@ -58,8 +85,6 @@ const getPaddedMonthRange = (dateString: string) => {
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
   return { start, end };
 };
-import { isTestSessionRequired } from "@/src/utils/sessionRules";
-
 interface Session {
   id: number;
   time: string;
@@ -71,9 +96,14 @@ interface Session {
 export default function CalendarScreen() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const isInstructor = user?.role === UserRole.INSTRUCTOR;
   const canManageOwnAvailability =
-    user?.role === UserRole.INSTRUCTOR &&
-    Boolean(user.can_manage_own_availability);
+    isInstructor && Boolean(user?.can_manage_own_availability);
+  const canManageOwnTimeOff =
+    isInstructor && Boolean(user?.can_manage_own_time_off);
+  const canManageOtherInstructorAvailability =
+    isAdmin || (isInstructor && Boolean(user?.can_manage_others_availability));
   const availabilityScrollViewRef = useRef<ScrollView>(null);
   const bottomContentPadding = insets.bottom + 150;
 
@@ -108,6 +138,14 @@ export default function CalendarScreen() {
     return formatDateForAPI(d);
   })();
   const [visibleMonth, setVisibleMonth] = useState(firstOfThisMonth);
+
+  const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
+  useEffect(() => {
+    const requested = Array.isArray(dateParam) ? dateParam[0] : dateParam;
+    if (!requested || !/^\d{4}-\d{2}-\d{2}$/.test(requested)) return;
+    setSelectedDate(requested);
+    setVisibleMonth(`${requested.slice(0, 7)}-01`);
+  }, [dateParam]);
 
   const [showAvailabilityManagement, setShowAvailabilityManagement] =
     useState<boolean>(false);
@@ -150,6 +188,10 @@ export default function CalendarScreen() {
   const [selectedInstructorForAdmin, setSelectedInstructorForAdmin] = useState<
     number | null
   >(null);
+  const [studentEnrollment, setStudentEnrollment] = useState<EnrollmentWithCourse | null>(null);
+  const [studentSessionToCancel, setStudentSessionToCancel] = useState<SessionDetailed | null>(null);
+  const [showTimeOffModal, setShowTimeOffModal] = useState(false);
+  const [timeOffInstructorId, setTimeOffInstructorId] = useState<number | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -164,12 +206,11 @@ export default function CalendarScreen() {
         promises.push(loadSessionsForMonth());
       }
 
-      if (canManageOwnAvailability) {
-        promises.push(loadMyAvailabilities());
-      } else if (user?.role === UserRole.STUDENT || user?.role === UserRole.ADMIN) {
-        promises.push(loadCompanyAvailabilities());
+      promises.push(loadCalendarAvailabilities());
+      if (user?.role === UserRole.STUDENT) {
+        promises.push(loadStudentEnrollment());
       }
-      if (user?.role === UserRole.ADMIN && user?.company_id) {
+      if (canManageOtherInstructorAvailability && user?.company_id) {
         promises.push(loadCompanyInstructors(user.company_id));
       }
 
@@ -283,6 +324,39 @@ export default function CalendarScreen() {
     }
   };
 
+  const loadStudentEnrollment = async () => {
+    const response = await courseService.getMyEnrolledCourse();
+    setStudentEnrollment(response.success && response.data ? response.data : null);
+  };
+
+  const loadAssignedInstructorAvailabilities = async (instructorId: number) => {
+    try {
+      const { start, end } = getPaddedMonthRange(selectedDate);
+      const response = await instructorAvailabilityService.getAvailabilityForCalendar(
+        instructorId,
+        formatDateForAPI(start),
+        formatDateForAPI(end)
+      );
+      if (response.success && response.data) {
+        setAvailabilities(response.data);
+      } else {
+        console.error("Failed to load instructor availabilities:", response.error);
+      }
+    } catch (loadError) {
+      console.error("Error loading instructor availabilities:", loadError);
+    }
+  };
+
+  /** What the calendar view shows outside of the manage panels (mirrors web CalendarPage). */
+  const loadCalendarAvailabilities = async () => {
+    if (canManageOtherInstructorAvailability) return loadCompanyAvailabilities();
+    if (isInstructor) return loadMyAvailabilities();
+    if (user?.role === UserRole.STUDENT && user.instructor_id) {
+      return loadAssignedInstructorAvailabilities(user.instructor_id);
+    }
+    return loadCompanyAvailabilities();
+  };
+
   const loadCompanyInstructors = async (companyId: number) => {
     try {
       const response = await userService.getInstructorsByCompany(companyId);
@@ -313,6 +387,9 @@ export default function CalendarScreen() {
 
   const handleSelectDate = (day: any) => {
     setSelectedDate(day.dateString);
+    if (showAvailabilityManagement && canManageOtherInstructorAvailability) {
+      loadCalendarAvailabilities();
+    }
     setShowAvailabilityManagement(false);
     setSelectedAvailabilityForActions(null);
   };
@@ -331,45 +408,57 @@ export default function CalendarScreen() {
     setShowCreateEventModal(true);
   };
 
-  const handleManageAvailability = () => {
-    if (user?.role === UserRole.INSTRUCTOR) {
-      if (!canManageOwnAvailability) {
-        Alert.alert(
-          "Permission Denied",
-          "You do not have permission to manage availability."
-        );
-        return;
-      }
-      const newShowState = !showAvailabilityManagement;
-      setShowAvailabilityManagement(newShowState);
-      setShowAdminAvailabilityManagement(false);
-      if (!newShowState) {
-        setSelectedAvailabilityForActions(null);
-      }
+  const handleManageOwnAvailability = () => {
+    if (!canManageOwnAvailability) {
+      Alert.alert(
+        "Permission Denied",
+        "You do not have permission to manage availability."
+      );
       return;
     }
+    const newShowState = !showAvailabilityManagement;
+    setShowAvailabilityManagement(newShowState);
+    setShowAdminAvailabilityManagement(false);
+    setSelectedAvailabilityForActions(null);
+    if (newShowState) {
+      loadMyAvailabilities();
+    } else {
+      loadCalendarAvailabilities();
+    }
+  };
 
-    if (user?.role === UserRole.ADMIN) {
-      if (!selectedInstructorForAdmin) {
-        Alert.alert("Select Instructor", "Choose an instructor to manage first.");
-        return;
-      }
-      const newShowState = !showAdminAvailabilityManagement;
-      setShowAdminAvailabilityManagement(newShowState);
-      setShowAvailabilityManagement(false);
-      setSelectedAvailabilityForActions(null);
-      if (newShowState) {
-        loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
-      } else {
-        loadCompanyAvailabilities();
-      }
+  const handleManageOtherAvailability = () => {
+    if (!canManageOtherInstructorAvailability) {
+      Alert.alert(
+        "Permission Denied",
+        "You do not have permission to manage other instructors' availability."
+      );
       return;
     }
+    if (!selectedInstructorForAdmin) {
+      Alert.alert("Select Instructor", "Choose an instructor to manage first.");
+      return;
+    }
+    const newShowState = !showAdminAvailabilityManagement;
+    setShowAdminAvailabilityManagement(newShowState);
+    setShowAvailabilityManagement(false);
+    setSelectedAvailabilityForActions(null);
+    if (newShowState) {
+      loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
+    } else {
+      loadCalendarAvailabilities();
+    }
+  };
 
-    Alert.alert(
-      "Permission Denied",
-      "Only instructors or admins can manage availability"
-    );
+  const reloadAfterTimeOff = () => {
+    if (showAdminAvailabilityManagement && selectedInstructorForAdmin) {
+      loadAdminInstructorAvailabilities(selectedInstructorForAdmin);
+    } else if (showAvailabilityManagement) {
+      loadMyAvailabilities();
+    } else {
+      loadCalendarAvailabilities();
+    }
+    loadSessionsForMonth();
   };
 
   const handleSelectAvailabilityForActions = (availability: Availability) => {
@@ -432,7 +521,8 @@ export default function CalendarScreen() {
   ) => {
     if (availabilityRequests.length === 0) return;
     setIsSubmittingAvailability(true);
-    const isAdminCreate = user?.role === UserRole.ADMIN && !!selectedInstructorForAdmin;
+    const isAdminCreate =
+      showAdminAvailabilityManagement && !!selectedInstructorForAdmin;
     try {
       const responses = await Promise.all(
         availabilityRequests.map((availabilityData) =>
@@ -593,14 +683,30 @@ export default function CalendarScreen() {
   }, [availabilities]);
 
   const showInstructorFilter =
-    user?.role === UserRole.STUDENT && instructorsFromAvailability.length > 1;
+    ((user?.role === UserRole.STUDENT && !user.instructor_id) ||
+      canManageOtherInstructorAvailability) &&
+    instructorsFromAvailability.length > 1;
 
   const unavailableBlocksForSelectedDate =
     availabilitiesForSelectedDate.filter(isUnavailableRow);
 
+  /** A slot is blocked only when it lies fully inside an unavailable window (matches backend). */
+  const isCoveredByTimeOff = (a: Availability) => {
+    const start = timeToMinutes(a.start_time);
+    const end = timeToMinutes(a.end_time);
+    return unavailableBlocksForSelectedDate.some(
+      (u) =>
+        u.instructor_id === a.instructor_id &&
+        timeToMinutes(u.start_time) <= start &&
+        timeToMinutes(u.end_time) >= end
+    );
+  };
+
   const displayAvailabilitiesForSelectedDate = availabilitiesForSelectedDate.filter(
     (a) =>
-      (user?.role !== UserRole.STUDENT || !isUnavailableRow(a)) &&
+      (isUnavailableRow(a)
+        ? user?.role !== UserRole.STUDENT
+        : !isCoveredByTimeOff(a)) &&
       (instructorFilterId == null || a.instructor_id === instructorFilterId)
   );
 
@@ -627,11 +733,8 @@ export default function CalendarScreen() {
     }
     if (loadedAvailabilityMonthRef.current === selectedMonthKey) return;
     loadedAvailabilityMonthRef.current = selectedMonthKey;
-    const showsCompanyAvailability =
-      user.role === UserRole.STUDENT ||
-      (user.role === UserRole.ADMIN && !showAdminAvailabilityManagement);
-    if (!canManageOwnAvailability && showsCompanyAvailability) {
-      loadCompanyAvailabilities();
+    if (!showAvailabilityManagement && !showAdminAvailabilityManagement) {
+      loadCalendarAvailabilities();
     }
   }, [selectedMonthKey, user]);
 
@@ -654,6 +757,21 @@ export default function CalendarScreen() {
     ]);
     setShowSessionBookingModal(false);
     loadSessionsForMonth();
+    if (user?.role === UserRole.STUDENT) loadStudentEnrollment();
+  };
+
+  /** After any cancel the API may also cancel later bookings, so reload rather than patch state. */
+  const reloadAfterCancel = () => {
+    loadSessionsForMonth();
+    if (user?.role === UserRole.STUDENT) loadStudentEnrollment();
+    if (!showAvailabilityManagement && !showAdminAvailabilityManagement) {
+      loadCalendarAvailabilities();
+    }
+  };
+
+  const handleStudentRequestCancel = (session: SessionDetailed) => {
+    setShowSessionDetailsModal(false);
+    setStudentSessionToCancel(session);
   };
 
   const handleSessionCancel = async (sessionId: number) => {
@@ -667,12 +785,7 @@ export default function CalendarScreen() {
         );
         setShowSessionDetailsModal(false);
         Alert.alert("Success", "Session cancelled successfully");
-
-        if (user?.role === UserRole.INSTRUCTOR) {
-          await loadMyAvailabilities();
-        } else if (user?.instructor_id) {
-          await loadCompanyAvailabilities();
-        }
+        reloadAfterCancel();
       } else {
         Alert.alert("Error", response.error || "Failed to cancel session");
       }
@@ -695,19 +808,8 @@ export default function CalendarScreen() {
   };
 
   const handleBeginSession = (sessionId: number) => {
-    const selectedSession = sessions.find((session) => session.id === sessionId);
-    const weekNumber =
-      selectedSession?.week_number ?? selectedSession?.enrollment_current_week;
-    const useTestSession =
-      selectedSession?.is_test_session_required ??
-      isTestSessionRequired(
-        weekNumber,
-        selectedSession?.course_total_weeks,
-        selectedSession?.final_month_initial_test_passed
-      );
-
     router.push({
-      pathname: useTestSession ? "/company/test-session-form" : "/company/session-form",
+      pathname: "/company/session-form",
       params: { sessionId: sessionId.toString() },
     });
     setShowSessionDetailsModal(false);
@@ -729,26 +831,82 @@ export default function CalendarScreen() {
     datesWithActivity.add(toLocalDateKey(session.start_time));
   });
 
+  const isStudentCalendar = user?.role === UserRole.STUDENT && !!studentEnrollment;
+  const visibleMonthStartWeek = getWeekBounds(createLocalDate(visibleMonth)).startDate;
+  const visibleMonthEndWeek = (() => {
+    const d = createLocalDate(visibleMonth);
+    return getWeekBounds(new Date(d.getFullYear(), d.getMonth() + 1, 0)).startDate;
+  })();
+  const studentWeeksWithSession = useMemo(() => buildWeeksWithSession(sessions), [sessions]);
+  const studentWeekStateMap = useMemo(() => {
+    if (!isStudentCalendar || !studentEnrollment) return new Map<string, BookingWeekState>();
+    const todayWeekStart = getWeekBounds(new Date()).startDate;
+    const context: BookingTrackContext = {
+      currentWeekStart: todayWeekStart,
+      cadence: studentEnrollment.program_cadence === "BIWEEKLY" ? "BIWEEKLY" : "WEEKLY",
+      anchorWeekStart: resolveAnchorWeekStart(
+        studentEnrollment.cadence_anchor_date,
+        studentEnrollment.enrolled_at,
+        todayWeekStart
+      ),
+      baselineWeeksMissed:
+        typeof studentEnrollment.weeks_missed === "number" ? studentEnrollment.weeks_missed : 0,
+      weeksWithSession: studentWeeksWithSession,
+    };
+    const recommended = resolveRecommendedWeekStart(studentEnrollment.next_week_to_book, context);
+    return buildWeekStateMap(visibleMonthStartWeek, visibleMonthEndWeek, context, recommended);
+  }, [isStudentCalendar, studentEnrollment, studentWeeksWithSession, visibleMonthStartWeek, visibleMonthEndWeek]);
+
+  const getTrackMarker = (weekStart: string): TrackMarker => {
+    if (!isStudentCalendar) return null;
+    if (studentWeeksWithSession.has(weekStart)) return "booked";
+    const state = studentWeekStateMap.get(weekStart);
+    if (state === "upcomingAtRisk" || state === "currentWeek") return "bookNow";
+    if (state === "upcomingGapMiss" || state === "pastMissed") return "skipRisk";
+    return null;
+  };
+
   const markedDates: Record<
     string,
-    { selected?: boolean; selectedColor?: string; marked?: boolean; dotColor?: string }
+    {
+      selected?: boolean;
+      selectedColor?: string;
+      marked?: boolean;
+      dotColor?: string;
+      customStyles?: { container?: object; text?: object };
+    }
   > = {};
+  if (isStudentCalendar) {
+    for (
+      let weekStart = visibleMonthStartWeek;
+      weekStart <= visibleMonthEndWeek;
+      weekStart = addDays(weekStart, 7)
+    ) {
+      const marker = getTrackMarker(weekStart);
+      if (!marker) continue;
+      for (let i = 0; i < 7; i += 1) {
+        markedDates[addDays(weekStart, i)] = {
+          customStyles: { container: { backgroundColor: TRACK_MARKER_COLORS[marker] } },
+        };
+      }
+    }
+  }
   datesWithActivity.forEach((dateStr) => {
     markedDates[dateStr] = {
-      ...(dateStr === selectedDate && {
-        selected: true,
-        selectedColor: themes.vegasGold,
-      }),
+      ...markedDates[dateStr],
       marked: true,
       dotColor: themes.vegasGold,
     };
   });
-  if (!markedDates[selectedDate]) {
-    markedDates[selectedDate] = {
-      selected: true,
-      selectedColor: themes.vegasGold,
-    };
-  }
+  markedDates[selectedDate] = {
+    ...markedDates[selectedDate],
+    selected: true,
+    selectedColor: themes.vegasGold,
+    customStyles: {
+      container: { backgroundColor: themes.vegasGold },
+      text: { color: themes.black },
+    },
+  };
 
   const sessionsForSelectedDate = sessions.filter(
     (session) => toLocalDateKey(session.start_time) === selectedDate
@@ -777,7 +935,7 @@ export default function CalendarScreen() {
             styles.actionButton,
             showAvailabilityManagement && styles.actionButtonActive,
           ]}
-          onPress={handleManageAvailability}
+          onPress={handleManageOwnAvailability}
         >
           <Text
             style={[
@@ -793,7 +951,37 @@ export default function CalendarScreen() {
       );
     }
 
-    if (user?.role === UserRole.ADMIN) {
+    if (canManageOwnTimeOff) {
+      buttons.push(
+        <TouchableOpacity
+          key="own-time-off"
+          style={styles.actionButton}
+          onPress={() => {
+            setTimeOffInstructorId(null);
+            setShowTimeOffModal(true);
+          }}
+        >
+          <Text style={styles.actionButtonText}>Block Time Off</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (canManageOtherInstructorAvailability && showAdminAvailabilityManagement && selectedInstructorForAdmin) {
+      buttons.push(
+        <TouchableOpacity
+          key="instructor-time-off"
+          style={styles.actionButton}
+          onPress={() => {
+            setTimeOffInstructorId(selectedInstructorForAdmin);
+            setShowTimeOffModal(true);
+          }}
+        >
+          <Text style={styles.actionButtonText}>Block Instructor Time Off</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (canManageOtherInstructorAvailability) {
       buttons.push(
         <TouchableOpacity
           key="manage-instructor-availability"
@@ -801,7 +989,7 @@ export default function CalendarScreen() {
             styles.actionButton,
             showAdminAvailabilityManagement && styles.actionButtonActive,
           ]}
-          onPress={handleManageAvailability}
+          onPress={handleManageOtherAvailability}
         >
           <Text
             style={[
@@ -821,7 +1009,7 @@ export default function CalendarScreen() {
 
     return (
       <>
-        {user?.role === UserRole.ADMIN && (
+        {canManageOtherInstructorAvailability && (
           <View style={styles.instructorFilterRow}>
             <Text style={styles.instructorFilterLabel}>Instructor</Text>
             <ScrollView
@@ -872,7 +1060,7 @@ export default function CalendarScreen() {
     return (
       <View>
         <Text style={styles.scheduleText}>
-          {user?.role === UserRole.ADMIN
+          {showAdminAvailabilityManagement
             ? "Manage Instructor Availability"
             : "Manage Availability"}
         </Text>
@@ -1042,7 +1230,7 @@ export default function CalendarScreen() {
                 key={visibleMonth}
                 initialDate={visibleMonth}
                 current={selectedDate}
-                markingType={"dot"}
+                markingType={isStudentCalendar ? "custom" : "dot"}
                 markedDates={markedDates}
                 theme={{
                   calendarBackground: "transparent",
@@ -1121,11 +1309,38 @@ export default function CalendarScreen() {
               />
             </View>
 
+            {isStudentCalendar && (
+              <View
+                style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 12 }}
+                accessibilityLabel="Booking track legend"
+              >
+                {(
+                  [
+                    ["booked", "Booked week"],
+                    ["bookNow", "Book this week"],
+                    ["skipRisk", "Skipped/missed"],
+                  ] as const
+                ).map(([marker, label]) => (
+                  <View
+                    key={marker}
+                    style={{
+                      backgroundColor: TRACK_MARKER_COLORS[marker],
+                      borderRadius: 12,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                    }}
+                  >
+                    <Text style={{ color: themes.white, fontSize: 12 }}>{label}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
             {renderActionButtons()}
 
             <View style={styles.scheduleContainer}>
-              {(user?.role === UserRole.INSTRUCTOR && showAvailabilityManagement) ||
-              (user?.role === UserRole.ADMIN && showAdminAvailabilityManagement) ? (
+              {(canManageOwnAvailability && showAvailabilityManagement) ||
+              (canManageOtherInstructorAvailability && showAdminAvailabilityManagement) ? (
                 renderAvailabilityManagement()
               ) : (
                 <>
@@ -1179,11 +1394,11 @@ export default function CalendarScreen() {
                                 </Text>
                               )}
                             </View>
-                            <TouchableOpacity>
+                            <View style={styles.bookingActionWrap}>
                               <Text style={styles.actionButtonText}>
                                 VIEW
                               </Text>
-                            </TouchableOpacity>
+                            </View>
                           </TouchableOpacity>
                         ))}
                       </>
@@ -1267,10 +1482,10 @@ export default function CalendarScreen() {
                           </View>
                         )}
                         <Text style={styles.sectionSubtitle}>
-                          {user?.role === UserRole.INSTRUCTOR
-                            ? "Your Availability"
-                            : user?.role === UserRole.ADMIN
+                          {canManageOtherInstructorAvailability
                             ? "Company Availability"
+                            : user?.role === UserRole.INSTRUCTOR
+                            ? "Your Availability"
                             : "Instructor's Availability"}
                         </Text>
                         {displayAvailabilitiesForSelectedDate.length > 0 ? (
@@ -1292,7 +1507,9 @@ export default function CalendarScreen() {
                                   {formatTimeString(availability.start_time)} -{" "}
                                   {formatTimeString(availability.end_time)}
                                 </Text>
-                                {availability.instructor_name && user?.role === UserRole.STUDENT && (
+                                {availability.instructor_name &&
+                                  (user?.role === UserRole.STUDENT ||
+                                    canManageOtherInstructorAvailability) && (
                                   <Text style={styles.sessionText}>
                                     Instructor: {availability.instructor_name}
                                   </Text>
@@ -1354,8 +1571,29 @@ export default function CalendarScreen() {
           />
         )}
 
-        {((user?.role === UserRole.INSTRUCTOR && canManageOwnAvailability) ||
-          user?.role === UserRole.ADMIN) && (
+        {(canManageOwnTimeOff || canManageOtherInstructorAvailability) && (
+          <TimeOffModal
+            visible={showTimeOffModal}
+            selectedDate={selectedDate}
+            instructorId={timeOffInstructorId}
+            instructorName={(() => {
+              const inst = companyInstructors.find((u) => u.id === timeOffInstructorId);
+              return inst ? `${inst.first_name} ${inst.last_name}` : undefined;
+            })()}
+            onClose={() => setShowTimeOffModal(false)}
+            onSuccess={(cancelledCount) => {
+              reloadAfterTimeOff();
+              Alert.alert(
+                "Time off applied",
+                cancelledCount > 0
+                  ? `${cancelledCount} session(s) cancelled. Students were emailed to reschedule.`
+                  : "Students can no longer book that time."
+              );
+            }}
+          />
+        )}
+
+        {(canManageOwnAvailability || canManageOtherInstructorAvailability) && (
           <InstructorAvailabilityModal
             visible={showAvailabilityModal}
             isSubmitting={isSubmittingAvailability}
@@ -1392,6 +1630,9 @@ export default function CalendarScreen() {
             setSelectedSessionForDetails(null);
           }}
           onCancel={handleSessionCancel}
+          onRequestCancel={
+            user?.role === UserRole.STUDENT ? handleStudentRequestCancel : undefined
+          }
           onReviewMaterials={handleReviewMaterials}
           onBeginSession={
             user?.role === UserRole.INSTRUCTOR ? handleBeginSession : undefined
@@ -1399,6 +1640,24 @@ export default function CalendarScreen() {
           onCheckIn={user?.role === UserRole.STUDENT ? handleCheckIn : undefined}
           isCancelling={isCancellingSession}
         />
+        {studentSessionToCancel && (
+          <StudentCancelSessionModal
+            session={studentSessionToCancel}
+            onClose={() => setStudentSessionToCancel(null)}
+            onCancelled={() => {
+              setStudentSessionToCancel(null);
+              setSelectedSessionForDetails(null);
+              reloadAfterCancel();
+            }}
+            onReschedule={(date) => {
+              setStudentSessionToCancel(null);
+              setSelectedSessionForDetails(null);
+              setSelectedDate(date);
+              setVisibleMonth(`${date.slice(0, 7)}-01`);
+              reloadAfterCancel();
+            }}
+          />
+        )}
         <BottomNavBar />
       </BackgroundGradient>
     </View>

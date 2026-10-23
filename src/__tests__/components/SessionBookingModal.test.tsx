@@ -11,11 +11,12 @@
  *   - On a server error containing "start_time must be in the future", a
  *     specific "no longer available" Alert is shown.
  *   - Other server errors surface the raw message in an Alert.
- *   - The "Course week" picker is hidden if course progress is unknown.
+ *   - The "Your next class" label is hidden if course progress is unknown.
+ *   - Booking-track gates mirror web: bi-weekly window, skipped-week confirm.
  */
 import React from "react";
 import { Alert } from "react-native";
-import { fireEvent, render, screen, act } from "@testing-library/react-native";
+import { fireEvent, render, screen, act, waitFor } from "@testing-library/react-native";
 
 jest.mock("@/src/services/courseService", () => ({
   courseService: {
@@ -26,6 +27,13 @@ jest.mock("@/src/services/courseService", () => ({
 jest.mock("@/src/services/sessionService", () => ({
   sessionService: {
     bookDirectSession: jest.fn(),
+    getMyCalendarSessions: jest.fn(),
+  },
+}));
+
+jest.mock("@/src/services/paymentService", () => ({
+  paymentService: {
+    getSubscriptionStatus: jest.fn().mockResolvedValue({}),
   },
 }));
 
@@ -58,6 +66,33 @@ const mockBookDirectSession =
   sessionService.bookDirectSession as jest.MockedFunction<
     typeof sessionService.bookDirectSession
   >;
+const mockGetMyCalendarSessions =
+  sessionService.getMyCalendarSessions as jest.MockedFunction<
+    typeof sessionService.getMyCalendarSessions
+  >;
+
+/** Alert mock that accepts track confirmations ("Confirm & Book") so booking proceeds. */
+const autoConfirmAlert = () =>
+  jest.spyOn(Alert, "alert").mockImplementation((_title, _message, buttons) => {
+    buttons?.find((b) => b.text === "Confirm & Book")?.onPress?.();
+  });
+
+const flush = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+};
+
+const toLocalDateString = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Sunday of the week containing d, plus `weeks` weeks, at the given weekday (0=Sun). */
+const dateInWeek = (weeks: number, weekday = 3) => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - d.getDay() + weeks * 7 + weekday);
+  return toLocalDateString(d);
+};
 
 const availability = {
   id: 1,
@@ -86,10 +121,7 @@ async function renderModal(overrides: any = {}) {
       onBookingSuccess={onBookingSuccess}
     />
   );
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
+  await flush();
 
   return { onClose, onBookingSuccess, dateString };
 }
@@ -97,6 +129,7 @@ async function renderModal(overrides: any = {}) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockGetMyEnrolledCourse.mockResolvedValue({ success: true, data: null } as any);
+  mockGetMyCalendarSessions.mockResolvedValue({ success: true, data: [] } as any);
 });
 
 describe("SessionBookingModal — time-slot generation", () => {
@@ -166,11 +199,8 @@ describe("SessionBookingModal — booking", () => {
     const { onBookingSuccess, onClose } = await renderModal();
 
     fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
-    await act(async () => {
-      fireEvent.press(screen.getByText("Book Session"));
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    fireEvent.press(screen.getByText("Book Session"));
+    await flush();
 
     expect(mockBookDirectSession).toHaveBeenCalledTimes(1);
     const payload = mockBookDirectSession.mock.calls[0][0];
@@ -194,11 +224,8 @@ describe("SessionBookingModal — booking", () => {
     await renderModal();
 
     fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
-    await act(async () => {
-      fireEvent.press(screen.getByText("Book Session"));
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    fireEvent.press(screen.getByText("Book Session"));
+    await flush();
 
     expect(alertSpy).toHaveBeenCalledWith(
       "Time Not Available",
@@ -216,11 +243,8 @@ describe("SessionBookingModal — booking", () => {
 
     await renderModal();
     fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
-    await act(async () => {
-      fireEvent.press(screen.getByText("Book Session"));
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    fireEvent.press(screen.getByText("Book Session"));
+    await flush();
 
     expect(alertSpy).toHaveBeenCalledWith(
       "Booking Error",
@@ -231,38 +255,37 @@ describe("SessionBookingModal — booking", () => {
 });
 
 describe("SessionBookingModal — week picker visibility", () => {
-  it("does NOT render the week picker when getMyEnrolledCourse returns no current_week", async () => {
+  it("does NOT render the next-class label when getMyEnrolledCourse returns no current_week", async () => {
     mockGetMyEnrolledCourse.mockResolvedValueOnce({
       success: true,
       data: null,
     } as any);
 
     await renderModal();
-    expect(screen.queryByText("Course week:")).toBeNull();
+    expect(screen.queryByText("Your next class:")).toBeNull();
   });
 
-  it("renders the week picker when the student has a current_week", async () => {
+  it("renders the next-class label when the student has a current_week", async () => {
     mockGetMyEnrolledCourse.mockResolvedValueOnce({
       success: true,
-      data: { current_week: 5 } as any,
+      data: { current_week: 5, course: { title: "Pistol 101" } } as any,
     });
 
     await renderModal();
-    expect(screen.getByText("Course week:")).toBeTruthy();
+    expect(screen.getByText("Your next class:")).toBeTruthy();
+    expect(screen.getByText("Pistol 101, Week 5")).toBeTruthy();
   });
 });
 
 describe("SessionBookingModal — week sent with booking", () => {
   async function bookFirstSlot() {
     mockBookDirectSession.mockResolvedValueOnce({ success: true, data: { id: 1 } as any });
-    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    const alertSpy = autoConfirmAlert();
     await renderModal();
     fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
-    await act(async () => {
-      fireEvent.press(screen.getByText("Book Session"));
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    fireEvent.press(screen.getByText("Book Session"));
+    await flush();
+    await waitFor(() => expect(mockBookDirectSession).toHaveBeenCalled());
     alertSpy.mockRestore();
     return mockBookDirectSession.mock.calls[0][0];
   }
@@ -285,5 +308,57 @@ describe("SessionBookingModal — week sent with booking", () => {
 
     const payload = await bookFirstSlot();
     expect(payload.week_number).toBe(4);
+  });
+});
+
+describe("SessionBookingModal — booking track gates", () => {
+  const pressFirstSlotAndBook = async () => {
+    fireEvent.press(screen.getByText(/9:00\s*AM\s*-\s*10:00\s*AM/i));
+    fireEvent.press(screen.getByText("Book Session"));
+    await flush();
+    await flush();
+  };
+
+  it("blocks bi-weekly bookings outside the recommended week", async () => {
+    const anchor = dateInWeek(0, 0);
+    mockGetMyEnrolledCourse.mockResolvedValueOnce({
+      success: true,
+      data: { current_week: 1, next_week_to_book: 2, program_cadence: "BIWEEKLY", cadence_anchor_date: anchor } as any,
+    });
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+
+    // Week 2 of a bi-weekly plan is two weeks after the anchor; booking one week out is not allowed.
+    await renderModal({ selectedDate: dateInWeek(1) });
+    await pressFirstSlotAndBook();
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Bi-weekly booking window",
+      expect.stringMatching(/^Week 2 must be booked between /)
+    );
+    expect(mockBookDirectSession).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it("asks before booking past an unbooked week and does not book when cancelled", async () => {
+    mockGetMyEnrolledCourse.mockResolvedValueOnce({
+      success: true,
+      data: { current_week: 1, next_week_to_book: 1, weeks_missed: 0, cadence_anchor_date: dateInWeek(0, 0) } as any,
+    });
+    const alertSpy = jest.spyOn(Alert, "alert").mockImplementation((_t, _m, buttons) => {
+      buttons?.find((b) => b.text === "Cancel")?.onPress?.();
+    });
+
+    await renderModal({ selectedDate: dateInWeek(2) });
+    expect(screen.getByText("Missed weeks")).toBeTruthy();
+    await pressFirstSlotAndBook();
+
+    expect(alertSpy).toHaveBeenCalledWith(
+      "Skipping a week",
+      expect.stringContaining("2nd miss out of 4 allowable misses"),
+      expect.any(Array),
+      expect.any(Object)
+    );
+    expect(mockBookDirectSession).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 });

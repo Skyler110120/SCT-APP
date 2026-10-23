@@ -2,7 +2,10 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { companyService } from "@/src/services/companyService";
+import { onboardingInviteService } from "@/src/services/onboardingInviteService";
 import { userService } from "@/src/services/userService";
+import { OnboardingInviteListItem } from "@/src/types/onboardingInvite.types";
+import { themes } from "@/src/context/themes";
 import { masterAdminDashboardStyles as styles } from "@/src/styles/DashboardPageStyles/MasterAdminDashboardStyles/masterDashboardScreenStyles";
 import { User } from "@/src/types/auth.types";
 import {
@@ -14,9 +17,11 @@ import { UserRole } from "@/src/types/enums";
 import * as Clipboard from "expo-clipboard";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -48,6 +53,13 @@ export default function MasterAdminDashboard() {
   const [inviteCodeModalVisible, setInviteCodeModalVisible] =
     useState<boolean>(false);
 
+  const [emailInvites, setEmailInvites] = useState<OnboardingInviteListItem[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+  const [isDeletingCompany, setIsDeletingCompany] = useState(false);
+
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -61,11 +73,84 @@ export default function MasterAdminDashboard() {
   }, []);
 
   useEffect(() => {
+    setInviteEmail("");
+    setInviteError(null);
+    setInviteSuccess(null);
     if (selectedCompany) {
       fetchInviteCodes(selectedCompany.id);
       fetchUsers(selectedCompany.id)
+      loadEmailInvites(selectedCompany.id);
+    } else {
+      setEmailInvites([]);
     }
   }, [selectedCompany]);
+
+  const loadEmailInvites = async (companyId: number) => {
+    const response = await onboardingInviteService.listInvites(companyId);
+    setEmailInvites(response.success && response.data ? response.data : []);
+  };
+
+  const handleSendEmailInvite = async () => {
+    const email = inviteEmail.trim();
+    if (!selectedCompany || !email) return;
+    setIsSendingInvite(true);
+    setInviteError(null);
+    setInviteSuccess(null);
+    try {
+      const result = await onboardingInviteService.createInvite(selectedCompany.id, {
+        email,
+        role: UserRole.ADMIN,
+        course_id: null,
+      });
+      if (result.success && result.data) {
+        setInviteSuccess(`Admin invite sent to ${email}`);
+        setInviteEmail("");
+        await loadEmailInvites(selectedCompany.id);
+      } else {
+        setInviteError(result.error || "Failed to send admin invite");
+      }
+    } catch {
+      setInviteError("An error occurred while sending the admin invite");
+    } finally {
+      setIsSendingInvite(false);
+    }
+  };
+
+  const deleteSelectedCompany = async (company: Company) => {
+    setIsDeletingCompany(true);
+    try {
+      const response = await companyService.deleteCompany(company.id);
+      if (!response.success) {
+        Alert.alert("Error", response.error || "Failed to delete company");
+        return;
+      }
+      const remaining = companies.filter((c) => c.id !== company.id);
+      setCompanies(remaining);
+      setSelectedCompany(remaining.length > 0 ? remaining[0] : null);
+      setInviteCodes([]);
+      setEmailInvites([]);
+      setUsers([]);
+      setStats((prev) => ({ ...prev, totalUsers: 0, pendingInvites: 0 }));
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      Alert.alert("Error", "An error occurred while deleting the company");
+    } finally {
+      setIsDeletingCompany(false);
+    }
+  };
+
+  const handleDeleteSelectedCompany = () => {
+    if (!selectedCompany || isDeletingCompany) return;
+    const company = selectedCompany;
+    Alert.alert(
+      "Delete Company",
+      `Delete ${company.name}? This will also remove all users from the app while keeping records in the database.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => deleteSelectedCompany(company) },
+      ]
+    );
+  };
 
   const fetchCompanies = async () => {
     setIsLoading(true);
@@ -108,7 +193,7 @@ export default function MasterAdminDashboard() {
 
         setStats((prev) => ({
           ...prev,
-          totalUsers: users.length,
+          totalUsers: response.data!.length,
         }));
       } else {
         console.error("Failed to fetch users:");
@@ -312,10 +397,94 @@ export default function MasterAdminDashboard() {
                     disabled={!selectedCompany}
                   >
                     <Text style={styles.buttonText}>
-                      Create Invite Code
+                      Manual Invite Code
                     </Text>
                   </TouchableOpacity>
                 </View>
+
+                {selectedCompany && (
+                  <View style={{ marginTop: 16, gap: 8 }}>
+                    <Text style={styles.contextActionsLabel}>Email Invites (Primary)</Text>
+                    <TextInput
+                      value={inviteEmail}
+                      onChangeText={(value) => {
+                        setInviteEmail(value);
+                        setInviteError(null);
+                        setInviteSuccess(null);
+                      }}
+                      placeholder={`Invite admin to ${selectedCompany.name}`}
+                      placeholderTextColor="rgba(255,255,255,0.45)"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: themes.vegasGold,
+                        borderRadius: 8,
+                        color: themes.white,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                      }}
+                    />
+                    <Text style={{ color: themes.white, opacity: 0.7, fontSize: 12 }}>Role: Admin</Text>
+                    {inviteError && <Text style={{ color: "#f87171" }}>{inviteError}</Text>}
+                    {inviteSuccess && <Text style={{ color: "#4ade80" }}>{inviteSuccess}</Text>}
+                    <TouchableOpacity
+                      style={[
+                        styles.actionButton,
+                        (isSendingInvite || !inviteEmail.trim()) && { opacity: 0.5 },
+                      ]}
+                      onPress={handleSendEmailInvite}
+                      disabled={isSendingInvite || !inviteEmail.trim()}
+                    >
+                      {isSendingInvite ? (
+                        <ActivityIndicator color={themes.white} />
+                      ) : (
+                        <Text style={styles.buttonText}>Send Admin Invite</Text>
+                      )}
+                    </TouchableOpacity>
+
+                    {emailInvites.length > 0 && (
+                      <View style={{ marginTop: 8 }}>
+                        <Text style={styles.contextActionsLabel}>Recent Email Invites</Text>
+                        {emailInvites.slice(0, 8).map((inv) => (
+                          <View
+                            key={inv.id}
+                            style={{
+                              paddingVertical: 8,
+                              borderBottomWidth: 1,
+                              borderBottomColor: "rgba(197, 179, 88, 0.2)",
+                            }}
+                          >
+                            <Text style={{ color: themes.white }}>{inv.target_email ?? "—"}</Text>
+                            <Text style={{ color: themes.white, opacity: 0.7, fontSize: 12 }}>
+                              {inv.target_role} · {inv.invite_status}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    <TouchableOpacity
+                      style={{
+                        marginTop: 8,
+                        borderWidth: 1,
+                        borderColor: "#f87171",
+                        borderRadius: 8,
+                        paddingVertical: 10,
+                        alignItems: "center",
+                        opacity: isDeletingCompany ? 0.5 : 1,
+                      }}
+                      onPress={handleDeleteSelectedCompany}
+                      disabled={isDeletingCompany}
+                      accessibilityLabel={`Delete ${selectedCompany.name}`}
+                    >
+                      <Text style={{ color: "#f87171", fontWeight: "600" }}>
+                        {isDeletingCompany ? "Deleting company..." : "Delete Company"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
                 <TouchableOpacity
                   style={styles.createCompanyButton}

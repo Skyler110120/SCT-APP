@@ -1,3 +1,4 @@
+import InstructorTools from "@/src/components/instructor/InstructorTools";
 import BottomNavBar from "@/src/components/NavBar";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
@@ -6,8 +7,6 @@ import { sessionService } from "@/src/services/sessionService";
 import { SessionDetailed } from "@/src/types/sessions.types";
 import { UserRole } from "@/src/types/enums";
 import { formatDateForAPI, formatTimeString } from "@/src/utils/dateTimeUtils";
-import { isTestSessionRequired } from "@/src/utils/sessionRules";
-
 const CHECK_IN_OPENS_MINUTES_BEFORE = 15;
 
 const isSameDay = (date1: Date, date2: Date) =>
@@ -157,17 +156,8 @@ export default function InstructorDashboard() {
       return;
     }
 
-    const weekNumber = session.week_number ?? session.enrollment_current_week;
-    const useTestSession =
-      session.is_test_session_required ??
-      isTestSessionRequired(
-        weekNumber,
-        session.course_total_weeks,
-        session.final_month_initial_test_passed
-      );
-
     router.push({
-      pathname: useTestSession ? "/company/test-session-form" : "/company/session-form",
+      pathname: "/company/session-form",
       params: { sessionId: session.id.toString() },
     });
   };
@@ -289,6 +279,7 @@ export default function InstructorDashboard() {
             </Text>
           )}
         </View>
+        <InstructorTools />
       </ScrollView>
       <BottomNavBar />
     </SafeAreaView>

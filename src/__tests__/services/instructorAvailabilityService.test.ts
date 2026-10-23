@@ -8,9 +8,13 @@ jest.mock("../../services/api", () => ({
   apiFetch: jest.fn(),
   ApiError: class ApiError extends Error {
     status: number;
-    constructor(status: number, message: string) {
+    detail?: string;
+    body?: unknown;
+    constructor(status: number, message: string, detail?: string, body?: unknown) {
       super(message);
       this.status = status;
+      this.detail = detail;
+      this.body = body;
     }
   },
 }));
@@ -317,5 +321,90 @@ describe("instructorAvailabilityService.deleteAvailability", () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyTimeOff
+// ---------------------------------------------------------------------------
+
+describe("instructorAvailabilityService.applyTimeOff", () => {
+  it("posts only the fields that are set", async () => {
+    mockApiFetch.mockResolvedValueOnce({ unavailable_rows_created: 1, cancelled_session_ids: [] });
+
+    const result = await instructorAvailabilityService.applyTimeOff({
+      scope: "whole_day",
+      start_date: "2026-10-20",
+      cancel_affected_sessions: false,
+    });
+
+    expect(result).toEqual({
+      success: true,
+      data: { unavailable_rows_created: 1, cancelled_session_ids: [] },
+    });
+    const [path, init] = mockApiFetch.mock.calls[0];
+    expect(path).toBe("/availability/time-off");
+    expect(JSON.parse((init as RequestInit).body as string)).toEqual({
+      scope: "whole_day",
+      start_date: "2026-10-20",
+      cancel_affected_sessions: false,
+    });
+  });
+
+  it("includes instructor_id and slot times for admin slot requests", async () => {
+    mockApiFetch.mockResolvedValueOnce({ unavailable_rows_created: 1, cancelled_session_ids: [] });
+
+    await instructorAvailabilityService.applyTimeOff({
+      scope: "slot",
+      start_date: "2026-10-20",
+      start_time: "09:00:00",
+      end_time: "10:00:00",
+      instructor_id: 7,
+      cancel_affected_sessions: true,
+    });
+
+    const [, init] = mockApiFetch.mock.calls[0];
+    expect(JSON.parse((init as RequestInit).body as string)).toEqual({
+      scope: "slot",
+      start_date: "2026-10-20",
+      start_time: "09:00:00",
+      end_time: "10:00:00",
+      instructor_id: 7,
+      cancel_affected_sessions: true,
+    });
+  });
+
+  it("returns the structured conflict for 409 scheduled-session errors", async () => {
+    const { ApiError } = jest.requireMock("../../services/api");
+    const detail = {
+      code: "TIME_OFF_HAS_SCHEDULED_SESSIONS",
+      message: "Sessions are booked",
+      sessions: [
+        { id: 3, start_time: "2026-10-20T14:00:00Z", end_time: "2026-10-20T15:00:00Z", title: "Week 2", status: "scheduled" },
+      ],
+    };
+    mockApiFetch.mockRejectedValueOnce(new ApiError(409, detail.message, detail.message, { detail }));
+
+    const result = await instructorAvailabilityService.applyTimeOff({
+      scope: "whole_day",
+      start_date: "2026-10-20",
+      cancel_affected_sessions: false,
+    });
+
+    expect(result).toEqual({ success: false, conflict: detail });
+  });
+
+  it("returns an error message for other failures", async () => {
+    const { ApiError } = jest.requireMock("../../services/api");
+    mockApiFetch.mockRejectedValueOnce(new ApiError(403, "You do not have permission to manage your time off"));
+
+    const result = await instructorAvailabilityService.applyTimeOff({
+      scope: "whole_day",
+      start_date: "2026-10-20",
+      cancel_affected_sessions: false,
+    });
+
+    expect(result.success).toBe(false);
+    expect("error" in result && result.error).toBeTruthy();
   });
 });

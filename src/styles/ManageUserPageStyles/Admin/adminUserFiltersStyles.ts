@@ -3,22 +3,22 @@ import { themes } from "@/src/context/themes";
 
 export const adminUserFiltersStyles = StyleSheet.create({
   filterContainer: {
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 10,
     borderRadius: 12,
     borderWidth: 1,
     backgroundColor: themes.backgroundElevated,
     borderColor: themes.borderStrong,
   },
   filterSectionTitle: {
-    marginBottom: 16,
-    fontSize: 20,
+    marginBottom: 10,
+    fontSize: 18,
     fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   filterRow: {
     flexDirection: "row",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   filterItem: {
     flex: 1,

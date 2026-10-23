@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -131,8 +132,13 @@ export default function MasterAdminUsers() {
   return (
     <View style={styles.container}>
       <BackgroundGradient>
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.content}>
+        <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+          <ScrollView
+            style={styles.pageScroll}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+          >
             <Text style={styles.pageTitle}>Manage Users</Text>
 
             <UserFilters
@@ -164,7 +170,7 @@ export default function MasterAdminUsers() {
                 />
               )}
             </View>
-          </View>
+          </ScrollView>
         </SafeAreaView>
 
         {selectedUser && (

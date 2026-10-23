@@ -358,6 +358,76 @@ export const sessionFormStyles = StyleSheet.create({
     fontFamily: "Chakra-Bold",
   },
 
+  // Drills
+  drillCard: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(197, 179, 88, 0.3)",
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
+  },
+  drillCardComplete: {
+    borderColor: "rgba(76, 175, 80, 0.6)",
+    backgroundColor: "rgba(76, 175, 80, 0.08)",
+  },
+  drillHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  drillCheckbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: themes.vegasGold,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  drillCheckboxChecked: {
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
+  },
+  drillCheckmark: {
+    color: themes.white,
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+  },
+  drillName: {
+    flex: 1,
+    color: themes.white,
+    fontSize: 16,
+    fontFamily: "Chakra-Bold",
+  },
+  drillMeta: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 13,
+    fontFamily: "Chakra-Regular",
+    marginTop: 4,
+  },
+  drillVideoRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8,
+  },
+  drillVideoLink: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.vegasGold,
+    minWidth: 80,
+    alignItems: "center",
+  },
+  drillVideoLinkText: {
+    color: themes.vegasGold,
+    fontSize: 13,
+    fontFamily: "Chakra-Bold",
+  },
+
   // Week info
   weekInfoBar: {
     flexDirection: "row",

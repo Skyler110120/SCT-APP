@@ -83,6 +83,22 @@ export const drillService = {
     }
   },
 
+  async getDrillVideoAccessUrl(
+    drillId: number,
+    videoId: number
+  ): Promise<{ success: boolean; data?: { access_url: string }; error?: string }> {
+    try {
+      const res = await apiFetch<{ success: boolean; access_url: string }>(
+        `/drills/${drillId}/videos/${videoId}/access`,
+        { method: "POST" }
+      );
+      return { success: true, data: { access_url: res.access_url } };
+    } catch (error: any) {
+      console.error("Failed to get drill video access:", error);
+      return { success: false, error: error?.detail || "Failed to get video access" };
+    }
+  },
+
   // ── Course Structure ───────────────────────────────────────────────
 
   async getCourseStructure(courseId: number): Promise<CourseStructureResponse> {

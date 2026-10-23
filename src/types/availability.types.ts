@@ -46,3 +46,41 @@ export interface AvailabilityListResponse {
     data?: Availability[];
     error?: string;
 }
+
+export type TimeOffScope = "whole_day" | "slot" | "date_range";
+
+export interface TimeOffRequest {
+    scope: TimeOffScope;
+    start_date: string;
+    end_date?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    instructor_id?: number | null;
+    cancel_affected_sessions: boolean;
+}
+
+export interface TimeOffResponse {
+    unavailable_rows_created: number;
+    cancelled_session_ids: number[];
+}
+
+export interface TimeOffConflictSession {
+    id: number;
+    start_time: string;
+    end_time: string;
+    title: string;
+    status: string;
+    student_name?: string | null;
+    student_profile_picture?: string | null;
+}
+
+export interface TimeOffConflictDetail {
+    code: string;
+    message: string;
+    sessions: TimeOffConflictSession[];
+}
+
+export type TimeOffResult =
+    | { success: true; data: TimeOffResponse }
+    | { success: false; error: string }
+    | { success: false; conflict: TimeOffConflictDetail };

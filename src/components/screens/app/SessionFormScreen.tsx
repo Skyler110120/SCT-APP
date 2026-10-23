@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -12,21 +13,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
-import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { sessionFormStyles as styles } from "@/src/styles/SessionStyles/sessionFormStyles";
 
-import {
-  sessionFormService,
-  SessionParticipant,
-} from "@/src/services/sessionFormService";
+import { sessionFormService } from "@/src/services/sessionFormService";
 import { sessionService } from "@/src/services/sessionService";
+import { testSessionFormService } from "@/src/services/testSessionFormService";
+import { drillService } from "@/src/services/courseDrillService";
 
 import {
-  SessionForm,
-  CreateSessionFormRequest,
-  UpdateSessionFormRequest,
-  CompleteSessionFormRequest,
+  SessionParticipantDrillProgress,
+  SessionParticipantWorkflow,
 } from "@/src/types/forms.types";
 import {
   SleepQuality,
@@ -35,7 +32,7 @@ import {
 } from "@/src/types/enums";
 import { SessionDetailed } from "@/src/types/sessions.types";
 
-interface FormState {
+interface DraftState {
   sleep_hours: number | null;
   sleep_quality: SleepQuality | null;
   has_eaten: boolean | null;
@@ -47,11 +44,13 @@ interface FormState {
   motivation_after: number | null;
   confidence_level: number | null;
   highlight: string;
-  advance_student: boolean;
   instructor_notes: string;
+  advance_student: boolean;
+  final_passed: boolean | null;
+  pass_override_reason: string;
 }
 
-const DEFAULT_FORM_STATE: FormState = {
+const EMPTY_DRAFT: DraftState = {
   sleep_hours: null,
   sleep_quality: null,
   has_eaten: null,
@@ -63,274 +62,381 @@ const DEFAULT_FORM_STATE: FormState = {
   motivation_after: null,
   confidence_level: null,
   highlight: "",
-  advance_student: false,
   instructor_notes: "",
+  advance_student: false,
+  final_passed: null,
+  pass_override_reason: "",
 };
 
-function formStateFromApi(form: SessionForm): FormState {
+interface DrillMetricDraft {
+  timeSeconds: string;
+  hitCount: string;
+  passOverride: "AUTO" | "PASS" | "FAIL";
+}
+
+function buildDrillMetricDraft(drill: SessionParticipantDrillProgress): DrillMetricDraft {
   return {
-    sleep_hours: form.sleep_hours ?? null,
-    sleep_quality: form.sleep_quality ?? null,
-    has_eaten: form.has_eaten ?? null,
-    has_pain: form.has_pain ?? null,
-    pain_description: form.pain_description ?? "",
-    pre_stress_level: form.pre_stress_level ?? null,
-    motivation_before: form.motivation_before ?? null,
-    post_stress_level: form.post_stress_level ?? null,
-    motivation_after: form.motivation_after ?? null,
-    confidence_level: form.confidence_level ?? null,
-    highlight: form.highlight ?? "",
-    advance_student: form.advance_student ?? false,
-    instructor_notes: form.instructor_notes ?? "",
+    timeSeconds: drill.time_seconds != null ? String(drill.time_seconds) : "",
+    hitCount: drill.hit_count != null ? String(drill.hit_count) : "",
+    passOverride: drill.pass_override_applied
+      ? drill.passed
+        ? "PASS"
+        : "FAIL"
+      : "AUTO",
   };
 }
 
+function drillMetricKey(studentId: number, drillProgressId: number): string {
+  return `${studentId}:${drillProgressId}`;
+}
+
+function toDraft(participant: SessionParticipantWorkflow): DraftState {
+  const form = participant.form;
+  return {
+    sleep_hours: form?.sleep_hours ?? null,
+    sleep_quality: (form?.sleep_quality as SleepQuality | undefined) ?? null,
+    has_eaten: form?.has_eaten ?? null,
+    has_pain: form?.has_pain ?? null,
+    pain_description: form?.pain_description ?? "",
+    pre_stress_level: (form?.pre_stress_level as PreStressLevel | undefined) ?? null,
+    motivation_before: form?.motivation_before ?? null,
+    post_stress_level: (form?.post_stress_level as PostStressLevel | undefined) ?? null,
+    motivation_after: form?.motivation_after ?? null,
+    confidence_level: form?.confidence_level ?? null,
+    highlight: form?.highlight ?? "",
+    instructor_notes: form?.instructor_notes ?? "",
+    final_passed: form?.final_passed ?? form?.auto_passed ?? null,
+    advance_student:
+      form?.advance_student ?? (form?.final_passed ?? form?.auto_passed ?? false),
+    pass_override_reason: form?.pass_override_reason ?? "",
+  };
+}
+
+function phaseLabel(p: SessionParticipantWorkflow): string {
+  if (p.is_session_submitted) return "Completed";
+  if (p.current_phase === "PRE_TRAINING") {
+    return p.pretraining_status === "COMPLETED" ? "Pre-training done" : "Pre-training";
+  }
+  if (p.current_phase === "DRILLS") return "Drills";
+  if (p.current_phase === "POST_TRAINING") return "Post-training";
+  return "Completed";
+}
+
 export default function SessionFormScreen() {
-  const { user } = useAuth();
   const params = useLocalSearchParams<{ sessionId: string }>();
   const sessionId = parseInt(params.sessionId, 10);
 
   const [session, setSession] = useState<SessionDetailed | null>(null);
-  const [participants, setParticipants] = useState<SessionParticipant[]>([]);
-  const [forms, setForms] = useState<Map<number, SessionForm>>(new Map());
-  const [formStates, setFormStates] = useState<Map<number, FormState>>(
+  const [participants, setParticipants] = useState<SessionParticipantWorkflow[]>([]);
+  const [activeStudentId, setActiveStudentId] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState<Map<number, DraftState>>(new Map());
+  const [drillMetricDrafts, setDrillMetricDrafts] = useState<Map<string, DrillMetricDraft>>(
     new Map()
   );
-  const [activeStudentId, setActiveStudentId] = useState<number | null>(null);
-
+  const [showDrillReview, setShowDrillReview] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isCompleting, setIsCompleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [busyDrillId, setBusyDrillId] = useState<number | null>(null);
+  const [loadingVideoId, setLoadingVideoId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const replaceFromWorkflow = useCallback(
+    (workflowParticipants: SessionParticipantWorkflow[]) => {
+      setParticipants(workflowParticipants);
+      setDrafts((prev) => {
+        const next = new Map(prev);
+        for (const p of workflowParticipants) {
+          next.set(p.student_id, toDraft(p));
+        }
+        return next;
+      });
+      setDrillMetricDrafts((prev) => {
+        const next = new Map(prev);
+        for (const p of workflowParticipants) {
+          if (p.session_mode !== "TEST") continue;
+          for (const drill of p.drills) {
+            next.set(drillMetricKey(p.student_id, drill.id), buildDrillMetricDraft(drill));
+          }
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   const loadData = useCallback(async () => {
-    if (!sessionId || isNaN(sessionId)) {
-      setError("Invalid session ID");
+    if (!sessionId || Number.isNaN(sessionId)) {
+      setError("Invalid session");
       setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
     setError(null);
-
+    setIsLoading(true);
     try {
-      const [sessionRes, participantsRes, formsRes] = await Promise.all([
+      const [sessionRes, workflowRes] = await Promise.all([
         sessionService.getSessionById(sessionId),
-        sessionFormService.getSessionParticipants(sessionId),
-        sessionFormService.getFormsBySession(sessionId),
+        sessionFormService.getSessionWorkflow(sessionId),
       ]);
-
       if (!sessionRes.success || !sessionRes.data) {
-        setError("Failed to load session");
+        setError("Could not load session details");
+        return;
+      }
+      if (!workflowRes.success || !workflowRes.data) {
+        setError(workflowRes.error ?? "Could not load session workflow");
         return;
       }
       setSession(sessionRes.data);
-
-      const loadedParticipants = participantsRes.data || [];
-      setParticipants(loadedParticipants);
-
-      const existingForms = formsRes.data || [];
-      const formsMap = new Map<number, SessionForm>();
-      const statesMap = new Map<number, FormState>();
-
-      for (const form of existingForms) {
-        formsMap.set(form.student_id, form);
-        statesMap.set(form.student_id, formStateFromApi(form));
-      }
-
-      // Initialize empty form states for participants without forms yet
-      for (const p of loadedParticipants) {
-        if (!statesMap.has(p.student_id)) {
-          statesMap.set(p.student_id, { ...DEFAULT_FORM_STATE });
-        }
-      }
-
-      setForms(formsMap);
-      setFormStates(statesMap);
-
-      if (loadedParticipants.length > 0 && !activeStudentId) {
-        setActiveStudentId(loadedParticipants[0].student_id);
-      }
-    } catch (err) {
-      setError("Failed to load session data");
-      console.error("SessionFormScreen loadData error:", err);
+      replaceFromWorkflow(workflowRes.data.participants);
+      const first = workflowRes.data.participants[0];
+      setActiveStudentId((current) => current ?? first?.student_id ?? null);
+    } catch {
+      setError("Failed to load session workflow");
     } finally {
       setIsLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, replaceFromWorkflow]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const activeForm = activeStudentId ? forms.get(activeStudentId) : null;
-  const activeFormState = activeStudentId
-    ? formStates.get(activeStudentId) ?? { ...DEFAULT_FORM_STATE }
-    : { ...DEFAULT_FORM_STATE };
+  useEffect(() => {
+    setShowDrillReview(false);
+  }, [activeStudentId]);
 
-  const updateField = <K extends keyof FormState>(
-    field: K,
-    value: FormState[K]
-  ) => {
+  const activeParticipant = useMemo(
+    () => participants.find((p) => p.student_id === activeStudentId) ?? null,
+    [participants, activeStudentId]
+  );
+  const activeDraft = activeStudentId
+    ? drafts.get(activeStudentId) ?? EMPTY_DRAFT
+    : EMPTY_DRAFT;
+
+  const updateField = <K extends keyof DraftState>(field: K, value: DraftState[K]) => {
     if (!activeStudentId) return;
-    setFormStates((prev) => {
+    setDrafts((prev) => {
       const next = new Map(prev);
-      const current = next.get(activeStudentId) ?? { ...DEFAULT_FORM_STATE };
+      const current = next.get(activeStudentId) ?? EMPTY_DRAFT;
       next.set(activeStudentId, { ...current, [field]: value });
       return next;
     });
   };
 
-  const handleCreateOrSave = async () => {
+  const setFinalOutcome = (value: boolean) => {
     if (!activeStudentId) return;
-    setIsSaving(true);
+    setDrafts((prev) => {
+      const next = new Map(prev);
+      const current = next.get(activeStudentId) ?? EMPTY_DRAFT;
+      next.set(activeStudentId, { ...current, final_passed: value, advance_student: value });
+      return next;
+    });
+  };
 
+  const updateDrillMetricField = <K extends keyof DrillMetricDraft>(
+    studentId: number,
+    drillProgressId: number,
+    field: K,
+    value: DrillMetricDraft[K]
+  ) => {
+    const key = drillMetricKey(studentId, drillProgressId);
+    setDrillMetricDrafts((prev) => {
+      const next = new Map(prev);
+      const current =
+        next.get(key) ?? { timeSeconds: "", hitCount: "", passOverride: "AUTO" as const };
+      next.set(key, { ...current, [field]: value });
+      return next;
+    });
+  };
+
+  const submitPretraining = async () => {
+    if (!activeParticipant) return;
+    setIsSubmitting(true);
+    const res = await sessionFormService.submitPretraining(sessionId, {
+      student_id: activeParticipant.student_id,
+      sleep_hours: activeDraft.sleep_hours ?? undefined,
+      sleep_quality: activeDraft.sleep_quality ?? undefined,
+      has_eaten: activeDraft.has_eaten ?? undefined,
+      has_pain: activeDraft.has_pain ?? undefined,
+      pain_description: activeDraft.pain_description || undefined,
+      pre_stress_level: activeDraft.pre_stress_level ?? undefined,
+      motivation_before: activeDraft.motivation_before ?? undefined,
+    });
+    setIsSubmitting(false);
+    if (res.success && res.data) {
+      replaceFromWorkflow(res.data.participants);
+      return;
+    }
+    Alert.alert("Error", res.error ?? "Failed to submit pre-training");
+  };
+
+  const toggleDrill = async (drillProgressId: number, isCompleted: boolean) => {
+    if (!activeParticipant) return;
+    setBusyDrillId(drillProgressId);
+    const res = await sessionFormService.toggleDrill(sessionId, drillProgressId, {
+      student_id: activeParticipant.student_id,
+      is_completed: isCompleted,
+    });
+    setBusyDrillId(null);
+    if (res.success && res.data) {
+      replaceFromWorkflow(res.data.participants);
+      return;
+    }
+    Alert.alert("Error", res.error ?? "Failed to update drill");
+  };
+
+  const saveTestDrillMetrics = async (
+    participant: SessionParticipantWorkflow,
+    drill: SessionParticipantDrillProgress
+  ) => {
+    const formId = participant.form?.id;
+    if (!formId) {
+      Alert.alert("Pre-training required", "Complete pre-training first to start the test form.");
+      return;
+    }
+    const draft = drillMetricDrafts.get(drillMetricKey(participant.student_id, drill.id));
+    if (!draft) return;
+
+    const timeSeconds = draft.timeSeconds.trim() === "" ? undefined : Number(draft.timeSeconds);
+    const hitCount = draft.hitCount.trim() === "" ? undefined : Number(draft.hitCount);
+    if (
+      (timeSeconds != null && Number.isNaN(timeSeconds)) ||
+      (hitCount != null && Number.isNaN(hitCount))
+    ) {
+      Alert.alert("Invalid values", "Enter valid numeric values for time and hits.");
+      return;
+    }
+
+    setBusyDrillId(drill.id);
+    const response = await testSessionFormService.updateTestSessionForm(formId, {
+      drill_updates: [
+        {
+          drill_id: drill.drill_id,
+          time_seconds: timeSeconds,
+          hit_count: hitCount,
+          passed: draft.passOverride === "AUTO" ? undefined : draft.passOverride === "PASS",
+        },
+      ],
+    });
+    if (!response.success) {
+      setBusyDrillId(null);
+      Alert.alert("Error", response.error ?? "Failed to save drill metrics");
+      return;
+    }
+    const workflowRes = await sessionFormService.getSessionWorkflow(sessionId);
+    setBusyDrillId(null);
+    if (workflowRes.success && workflowRes.data) {
+      replaceFromWorkflow(workflowRes.data.participants);
+      return;
+    }
+    Alert.alert("Error", workflowRes.error ?? "Saved metrics, but failed to refresh workflow");
+  };
+
+  const openDrillVideo = async (
+    drill: SessionParticipantDrillProgress,
+    video: SessionParticipantDrillProgress["videos"][number]
+  ) => {
+    setLoadingVideoId(video.id);
+    const res = await drillService.getDrillVideoAccessUrl(drill.drill_id, video.id);
+    setLoadingVideoId(null);
+    if (!res.success || !res.data?.access_url) {
+      Alert.alert("Error", res.error ?? "Failed to load video");
+      return;
+    }
     try {
-      const existingForm = forms.get(activeStudentId);
-      const state = formStates.get(activeStudentId) ?? DEFAULT_FORM_STATE;
-
-      if (existingForm) {
-        const updateData: UpdateSessionFormRequest = {};
-        if (state.sleep_hours !== null) updateData.sleep_hours = state.sleep_hours;
-        if (state.sleep_quality) updateData.sleep_quality = state.sleep_quality;
-        if (state.has_eaten !== null) updateData.has_eaten = state.has_eaten;
-        if (state.has_pain !== null) updateData.has_pain = state.has_pain;
-        if (state.pain_description) updateData.pain_description = state.pain_description;
-        if (state.pre_stress_level) updateData.pre_stress_level = state.pre_stress_level;
-        if (state.motivation_before !== null) updateData.motivation_before = state.motivation_before;
-        if (state.post_stress_level) updateData.post_stress_level = state.post_stress_level;
-        if (state.motivation_after !== null) updateData.motivation_after = state.motivation_after;
-        if (state.confidence_level !== null) updateData.confidence_level = state.confidence_level;
-        if (state.highlight) updateData.highlight = state.highlight;
-        if (state.instructor_notes) updateData.instructor_notes = state.instructor_notes;
-
-        const res = await sessionFormService.updateSessionForm(
-          existingForm.id,
-          updateData
-        );
-        if (res.success && res.data) {
-          setForms((prev) => {
-            const next = new Map(prev);
-            next.set(activeStudentId, res.data!);
-            return next;
-          });
-        } else {
-          Alert.alert("Error", res.error || "Failed to save form");
-        }
-      } else {
-        const createReq: CreateSessionFormRequest = {
-          session_id: sessionId,
-          student_id: activeStudentId,
-        };
-        const res = await sessionFormService.createSessionForm(createReq);
-        if (res.success && res.data) {
-          setForms((prev) => {
-            const next = new Map(prev);
-            next.set(activeStudentId, res.data!);
-            return next;
-          });
-        } else {
-          Alert.alert("Error", res.error || "Failed to create form");
-        }
-      }
-    } catch (err) {
-      Alert.alert("Error", "An unexpected error occurred");
-    } finally {
-      setIsSaving(false);
+      await Linking.openURL(res.data.access_url);
+    } catch {
+      Alert.alert("Cannot Open Video", "Unable to open this video on your device.");
     }
   };
 
-  const handleComplete = async () => {
-    if (!activeStudentId) return;
-    const existingForm = forms.get(activeStudentId);
-    if (!existingForm) {
-      Alert.alert("Save First", "Please save the form before completing.");
-      return;
-    }
-
-    const state = formStates.get(activeStudentId) ?? DEFAULT_FORM_STATE;
-
-    if (state.confidence_level === null) {
-      Alert.alert(
-        "Required Field",
-        "Please set the confidence level before completing."
-      );
-      return;
-    }
-
-    const action = state.advance_student ? "advance to the next week" : "stay on the current week";
+  const endEarly = () => {
+    if (!activeParticipant) return;
     Alert.alert(
-      "Complete Form",
-      `This will complete the form for this student and ${action}. Continue?`,
+      "End drills early?",
+      "Move this student to post-training without completing all drills?",
       [
         { text: "Cancel", style: "cancel" },
         {
-          text: "Complete",
+          text: "End early",
+          style: "destructive",
           onPress: async () => {
-            setIsCompleting(true);
-            try {
-              const completeData: CompleteSessionFormRequest = {
-                sleep_hours: state.sleep_hours ?? undefined,
-                sleep_quality: state.sleep_quality ?? undefined,
-                has_eaten: state.has_eaten ?? undefined,
-                has_pain: state.has_pain ?? undefined,
-                pain_description: state.pain_description || undefined,
-                pre_stress_level: state.pre_stress_level ?? undefined,
-                motivation_before: state.motivation_before ?? undefined,
-                post_stress_level: state.post_stress_level ?? PostStressLevel.SAME,
-                motivation_after: state.motivation_after ?? undefined,
-                confidence_level: state.confidence_level ?? undefined,
-                highlight: state.highlight || undefined,
-                advance_student: state.advance_student,
-                instructor_notes: state.instructor_notes || undefined,
-              };
-
-              const res = await sessionFormService.completeSessionForm(
-                existingForm.id,
-                completeData
-              );
-
-              if (res.success) {
-                Alert.alert(
-                  "Form Completed",
-                  res.student_advanced
-                    ? "Student has been advanced to the next week."
-                    : "Form saved. Student stays on current week."
-                );
-
-                // Refresh forms to get updated state
-                const formsRes = await sessionFormService.getFormsBySession(sessionId);
-                if (formsRes.success && formsRes.data) {
-                  const newFormsMap = new Map<number, SessionForm>();
-                  const newStatesMap = new Map<number, FormState>(formStates);
-                  for (const form of formsRes.data) {
-                    newFormsMap.set(form.student_id, form);
-                    newStatesMap.set(form.student_id, formStateFromApi(form));
-                  }
-                  setForms(newFormsMap);
-                  setFormStates(newStatesMap);
-                }
-
-                // Check if all forms are complete to auto-navigate back
-                if (res.session_completed) {
-                  Alert.alert(
-                    "Session Complete",
-                    "All student forms have been completed. The session is now marked as completed.",
-                    [{ text: "OK", onPress: () => router.back() }]
-                  );
-                }
-              } else {
-                Alert.alert("Error", res.error || "Failed to complete form");
-              }
-            } catch (err) {
-              Alert.alert("Error", "An unexpected error occurred");
-            } finally {
-              setIsCompleting(false);
+            const res = await sessionFormService.endEarly(sessionId, {
+              student_id: activeParticipant.student_id,
+              reason: "Instructor override",
+            });
+            if (res.success && res.data) {
+              replaceFromWorkflow(res.data.participants);
+              return;
             }
+            Alert.alert("Error", res.error ?? "Failed to end early");
           },
         },
       ]
     );
+  };
+
+  const startPosttraining = async () => {
+    if (!activeParticipant) return;
+    if (activeParticipant.current_phase === "POST_TRAINING") {
+      setShowDrillReview(false);
+      return;
+    }
+    setIsSubmitting(true);
+    const res = await sessionFormService.startPosttraining(sessionId, {
+      student_id: activeParticipant.student_id,
+    });
+    setIsSubmitting(false);
+    if (res.success && res.data) {
+      setShowDrillReview(false);
+      replaceFromWorkflow(res.data.participants);
+      return;
+    }
+    Alert.alert("Error", res.error ?? "Failed to start post-training");
+  };
+
+  const submitPosttraining = async () => {
+    if (!activeParticipant) return;
+    const isTest = activeParticipant.session_mode === "TEST";
+    setIsSubmitting(true);
+    const res = await sessionFormService.submitPosttraining(sessionId, {
+      student_id: activeParticipant.student_id,
+      post_stress_level: activeDraft.post_stress_level ?? undefined,
+      motivation_after: activeDraft.motivation_after ?? undefined,
+      confidence_level: activeDraft.confidence_level ?? undefined,
+      highlight: activeDraft.highlight || undefined,
+      instructor_notes: activeDraft.instructor_notes || undefined,
+      advance_student: activeDraft.advance_student,
+      final_passed: isTest ? activeDraft.final_passed ?? undefined : undefined,
+      pass_override_reason: isTest ? activeDraft.pass_override_reason || undefined : undefined,
+    });
+    setIsSubmitting(false);
+    if (res.success && res.data) {
+      replaceFromWorkflow(res.data.participants);
+      return;
+    }
+    Alert.alert("Error", res.error ?? "Failed to submit post-training");
+  };
+
+  const submitParticipant = async () => {
+    if (!activeParticipant) return;
+    setIsSubmitting(true);
+    const res = await sessionFormService.submitParticipantSession(sessionId, {
+      student_id: activeParticipant.student_id,
+    });
+    setIsSubmitting(false);
+    if (res.success && res.data) {
+      replaceFromWorkflow(res.data.participants);
+      const remaining = res.data.participants.filter((p) => !p.is_session_submitted);
+      if (remaining.length === 0) {
+        Alert.alert("Session Complete", "All students submitted. Session complete.", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
+      } else {
+        setActiveStudentId(remaining[0].student_id);
+      }
+      return;
+    }
+    Alert.alert("Error", res.error ?? "Failed to submit student session");
   };
 
   const renderNumberSelector = (
@@ -338,34 +444,21 @@ export default function SessionFormScreen() {
     onChange: (v: number) => void,
     min: number,
     max: number
-  ) => {
-    const range = [];
-    for (let i = min; i <= max; i++) range.push(i);
-
-    return (
-      <View style={styles.sliderTrack}>
-        {range.map((n) => (
-          <TouchableOpacity
-            key={n}
-            style={[
-              styles.sliderSegment,
-              value === n && styles.sliderSegmentActive,
-            ]}
-            onPress={() => onChange(n)}
-          >
-            <Text
-              style={[
-                styles.sliderSegmentText,
-                value === n && styles.sliderSegmentTextActive,
-              ]}
-            >
-              {n}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
+  ) => (
+    <View style={styles.sliderTrack}>
+      {Array.from({ length: max - min + 1 }, (_, i) => min + i).map((n) => (
+        <TouchableOpacity
+          key={n}
+          style={[styles.sliderSegment, value === n && styles.sliderSegmentActive]}
+          onPress={() => onChange(n)}
+        >
+          <Text style={[styles.sliderSegmentText, value === n && styles.sliderSegmentTextActive]}>
+            {n}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
 
   const renderEnumSelector = <T extends string>(
     value: T | null,
@@ -376,10 +469,7 @@ export default function SessionFormScreen() {
       {options.map((opt) => (
         <TouchableOpacity
           key={opt.value}
-          style={[
-            styles.toggleButton,
-            value === opt.value && styles.toggleButtonActive,
-          ]}
+          style={[styles.toggleButton, value === opt.value && styles.toggleButtonActive]}
           onPress={() => onChange(opt.value)}
         >
           <Text
@@ -395,44 +485,36 @@ export default function SessionFormScreen() {
     </View>
   );
 
-  const renderBoolSelector = (
-    value: boolean | null,
-    onChange: (v: boolean) => void
-  ) => (
+  const renderBoolSelector = (value: boolean | null, onChange: (v: boolean) => void) => (
     <View style={styles.boolRow}>
-      <TouchableOpacity
-        style={[styles.boolButton, value === true && styles.boolButtonActive]}
-        onPress={() => onChange(true)}
-      >
-        <Text
-          style={[
-            styles.boolButtonText,
-            value === true && styles.boolButtonTextActive,
-          ]}
+      {[true, false].map((option) => (
+        <TouchableOpacity
+          key={String(option)}
+          style={[styles.boolButton, value === option && styles.boolButtonActive]}
+          onPress={() => onChange(option)}
         >
-          Yes
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[styles.boolButton, value === false && styles.boolButtonActive]}
-        onPress={() => onChange(false)}
-      >
-        <Text
-          style={[
-            styles.boolButtonText,
-            value === false && styles.boolButtonTextActive,
-          ]}
-        >
-          No
-        </Text>
-      </TouchableOpacity>
+          <Text style={[styles.boolButtonText, value === option && styles.boolButtonTextActive]}>
+            {option ? "Yes" : "No"}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 
-  const isFormCompleted = activeForm?.is_completed === true;
-  const formExists = !!activeForm;
+  const renderPrimaryButton = (label: string, onPress: () => void, disabled = false) => (
+    <TouchableOpacity
+      style={[styles.completeButton, disabled && styles.completeButtonDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      {isSubmitting ? (
+        <ActivityIndicator size="small" color={themes.black} />
+      ) : (
+        <Text style={styles.completeButtonText}>{label}</Text>
+      )}
+    </TouchableOpacity>
+  );
 
-  // Render
   if (isLoading) {
     return (
       <View style={styles.container}>
@@ -446,17 +528,25 @@ export default function SessionFormScreen() {
     );
   }
 
-  if (error) {
+  if (error || !activeParticipant) {
     return (
       <View style={styles.container}>
         <BackgroundGradient>
           <SafeAreaView style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorText}>{error ?? "No participants in this session."}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadData}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.retryButton, { marginTop: 12, backgroundColor: "transparent", borderWidth: 1, borderColor: themes.vegasGold }]}
+              style={[
+                styles.retryButton,
+                {
+                  marginTop: 12,
+                  backgroundColor: "transparent",
+                  borderWidth: 1,
+                  borderColor: themes.vegasGold,
+                },
+              ]}
               onPress={() => router.back()}
             >
               <Text style={[styles.retryButtonText, { color: themes.vegasGold }]}>Go Back</Text>
@@ -467,54 +557,70 @@ export default function SessionFormScreen() {
     );
   }
 
+  const isTest = activeParticipant.session_mode === "TEST";
+  const isRetrainFree = activeParticipant.session_mode === "RETRAIN_FREE";
+  const completedDrills = activeParticipant.drills.filter((d) => d.is_completed).length;
+  const totalDrills = activeParticipant.drills.length;
+  const drillsComplete = totalDrills === 0 || completedDrills === totalDrills;
+  const canProceedToPosttraining =
+    drillsComplete || activeParticipant.current_phase === "POST_TRAINING";
+  const showDrillsSection = activeParticipant.current_phase === "DRILLS" || showDrillReview;
+  const showPosttrainingSection =
+    activeParticipant.current_phase === "POST_TRAINING" && !showDrillReview;
+  const canUseBackToDrills =
+    activeParticipant.current_phase === "POST_TRAINING" &&
+    activeParticipant.posttraining_status !== "COMPLETED" &&
+    !showDrillReview &&
+    !activeParticipant.is_session_submitted;
+  const sortedDrills = [...activeParticipant.drills].sort(
+    (a, b) => a.display_order - b.display_order
+  );
+
+  const handleHeaderBack = () => {
+    if (canUseBackToDrills) {
+      setShowDrillReview(true);
+      return;
+    }
+    router.back();
+  };
+
   return (
     <View style={styles.container}>
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
-          {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.backButtonText}>← Back</Text>
+            <TouchableOpacity style={styles.backButton} onPress={handleHeaderBack}>
+              <Text style={styles.backButtonText}>
+                {canUseBackToDrills ? "← Drills" : "← Exit"}
+              </Text>
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle} numberOfLines={1}>
-                {session?.course_title || session?.title || "Session Form"}
+                {session?.course_title || session?.title || "Conduct Session"}
               </Text>
               <Text style={styles.headerSubtitle}>
-                {participants.length} student{participants.length !== 1 ? "s" : ""}
-                {session?.week_number ? ` · Week ${session.week_number}` : ""}
+                {participants.length} student{participants.length !== 1 ? "s" : ""} in session
               </Text>
             </View>
           </View>
 
-          {/* Student Switcher (for group sessions) */}
           {participants.length > 1 && (
             <View style={styles.studentSwitcherContainer}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View style={styles.studentSwitcherScroll}>
                   {participants.map((p) => {
                     const isActive = p.student_id === activeStudentId;
-                    const studentForm = forms.get(p.student_id);
-                    const completed = studentForm?.is_completed === true;
                     return (
                       <TouchableOpacity
                         key={p.student_id}
-                        style={[
-                          styles.studentChip,
-                          isActive && styles.studentChipActive,
-                        ]}
+                        style={[styles.studentChip, isActive && styles.studentChipActive]}
                         onPress={() => setActiveStudentId(p.student_id)}
                       >
                         <Text
-                          style={[
-                            styles.studentChipText,
-                            isActive && styles.studentChipTextActive,
-                          ]}
+                          style={[styles.studentChipText, isActive && styles.studentChipTextActive]}
                         >
                           {p.student_name || `Student ${p.student_id}`}
+                          {p.is_test_session_required ? " (Test)" : ""}
                         </Text>
                         <Text
                           style={[
@@ -522,11 +628,7 @@ export default function SessionFormScreen() {
                             isActive && styles.studentChipStatusActive,
                           ]}
                         >
-                          {completed
-                            ? "✓ Done"
-                            : studentForm
-                            ? "In Progress"
-                            : "Not Started"}
+                          {phaseLabel(p)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -536,255 +638,441 @@ export default function SessionFormScreen() {
             </View>
           )}
 
-          <ScrollView
-            style={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Week info */}
-            {activeStudentId && (
-              <View style={styles.weekInfoBar}>
-                <Text style={styles.weekInfoText}>
-                  Week{" "}
-                  {participants.find((p) => p.student_id === activeStudentId)
-                    ?.current_week ?? "—"}
-                </Text>
-                <Text style={styles.weekInfoSubtext}>
-                  {isFormCompleted ? "Completed" : formExists ? "In Progress" : "Not Started"}
-                </Text>
-              </View>
-            )}
-
-            {isFormCompleted && (
-              <View style={styles.completedBadge}>
-                <Text style={styles.completedBadgeText}>
-                  ✓ Form completed for this student
-                </Text>
-              </View>
-            )}
-
-            {/* PRE-TRAINING SECTION */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Pre-Training</Text>
-
-              {/* Sleep Hours */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Hours of Sleep</Text>
-                {renderNumberSelector(
-                  activeFormState.sleep_hours,
-                  (v) => updateField("sleep_hours", v),
-                  0,
-                  12
-                )}
-              </View>
-
-              {/* Sleep Quality */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Sleep Quality</Text>
-                {renderEnumSelector(
-                  activeFormState.sleep_quality,
-                  [
-                    { value: SleepQuality.POOR, label: "Poor" },
-                    { value: SleepQuality.AVERAGE, label: "Average" },
-                    { value: SleepQuality.GREAT, label: "Great" },
-                  ],
-                  (v) => updateField("sleep_quality", v)
-                )}
-              </View>
-
-              {/* Has Eaten */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Eaten in last 4 hours?</Text>
-                {renderBoolSelector(activeFormState.has_eaten, (v) =>
-                  updateField("has_eaten", v)
-                )}
-              </View>
-
-              {/* Pain */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Currently experiencing pain?</Text>
-                {renderBoolSelector(activeFormState.has_pain, (v) =>
-                  updateField("has_pain", v)
-                )}
-              </View>
-
-              {activeFormState.has_pain && (
-                <View style={styles.fieldContainer}>
-                  <Text style={styles.fieldLabel}>Pain Description</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={activeFormState.pain_description}
-                    onChangeText={(v) => updateField("pain_description", v)}
-                    placeholder="Describe the pain..."
-                    placeholderTextColor="rgba(255,255,255,0.3)"
-                    editable={!isFormCompleted}
-                  />
-                </View>
-              )}
-
-              {/* Pre Stress Level */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Stress Level</Text>
-                {renderEnumSelector(
-                  activeFormState.pre_stress_level,
-                  [
-                    { value: PreStressLevel.LOW, label: "Low" },
-                    { value: PreStressLevel.MODERATE, label: "Moderate" },
-                    { value: PreStressLevel.HIGH, label: "High" },
-                  ],
-                  (v) => updateField("pre_stress_level", v)
-                )}
-              </View>
-
-              {/* Motivation Before */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Motivation (1-10)</Text>
-                {renderNumberSelector(
-                  activeFormState.motivation_before,
-                  (v) => updateField("motivation_before", v),
-                  1,
-                  10
-                )}
-              </View>
+          <ScrollView style={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            <View style={styles.weekInfoBar}>
+              <Text style={styles.weekInfoText}>
+                {participants.length === 1 ? `${activeParticipant.student_name} · ` : ""}
+                Week {activeParticipant.booked_week_number ?? "—"}
+              </Text>
+              <Text style={styles.weekInfoSubtext}>
+                {phaseLabel(activeParticipant)}
+                {activeParticipant.is_test_session_required ? " · Test session" : ""}
+              </Text>
             </View>
 
-            {/* POST-TRAINING SECTION */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Post-Training</Text>
-
-              {/* Post Stress Level */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Post-Session Stress</Text>
-                {renderEnumSelector(
-                  activeFormState.post_stress_level,
-                  [
-                    { value: PostStressLevel.LESS_STRESSED, label: "Less Stressed" },
-                    { value: PostStressLevel.SAME, label: "Same" },
-                    { value: PostStressLevel.MORE_STRESSED, label: "More Stressed" },
-                  ],
-                  (v) => updateField("post_stress_level", v)
-                )}
-              </View>
-
-              {/* Motivation After */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Motivation After (1-10)</Text>
-                {renderNumberSelector(
-                  activeFormState.motivation_after,
-                  (v) => updateField("motivation_after", v),
-                  1,
-                  10
-                )}
-              </View>
-
-              {/* Confidence Level */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>
-                  Confidence Level (1-10) *
-                </Text>
-                {renderNumberSelector(
-                  activeFormState.confidence_level,
-                  (v) => updateField("confidence_level", v),
-                  1,
-                  10
-                )}
-                <Text style={styles.fieldHint}>Required to complete form</Text>
-              </View>
-
-              {/* Highlight */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Session Highlight</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={activeFormState.highlight}
-                  onChangeText={(v) => updateField("highlight", v)}
-                  placeholder="What was the student most proud of?"
-                  placeholderTextColor="rgba(255,255,255,0.3)"
-                  editable={!isFormCompleted}
-                />
-              </View>
-
-              {/* Instructor Notes */}
-              <View style={styles.fieldContainer}>
-                <Text style={styles.fieldLabel}>Instructor Notes</Text>
-                <TextInput
-                  style={[styles.textInput, styles.textInputMultiline]}
-                  value={activeFormState.instructor_notes}
-                  onChangeText={(v) => updateField("instructor_notes", v)}
-                  placeholder="Notes about this student's session..."
-                  placeholderTextColor="rgba(255,255,255,0.3)"
-                  multiline
-                  numberOfLines={4}
-                  editable={!isFormCompleted}
-                />
-              </View>
-            </View>
-
-            {/* PROGRESS + COMPLETE SECTION */}
-            {!isFormCompleted && (
+            {activeParticipant.current_phase === "PRE_TRAINING" && (
               <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Assessment</Text>
-
-                {/* Progress to Next Week Toggle */}
-                <TouchableOpacity
-                  style={[
-                    styles.progressButton,
-                    activeFormState.advance_student && styles.progressButtonActive,
-                  ]}
-                  onPress={() =>
-                    updateField("advance_student", !activeFormState.advance_student)
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.progressButtonText,
-                      activeFormState.advance_student && styles.progressButtonTextActive,
-                    ]}
-                  >
-                    {activeFormState.advance_student
-                      ? "✓ WILL PROGRESS TO NEXT WEEK"
-                      : "PROGRESS TO NEXT WEEK"}
-                  </Text>
-                  <Text style={styles.progressButtonSubtext}>
-                    {activeFormState.advance_student
-                      ? "Tap again to cancel advancement"
-                      : "Tap to advance student to the next week"}
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Save Draft */}
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={handleCreateOrSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <ActivityIndicator size="small" color={themes.vegasGold} />
-                  ) : (
-                    <Text style={styles.saveButtonText}>
-                      {formExists ? "SAVE DRAFT" : "START FORM"}
-                    </Text>
+                <Text style={styles.sectionTitle}>Pre-Training Check-In</Text>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Hours of Sleep</Text>
+                  {renderNumberSelector(
+                    activeDraft.sleep_hours,
+                    (v) => updateField("sleep_hours", v),
+                    0,
+                    12
                   )}
-                </TouchableOpacity>
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Sleep Quality</Text>
+                  {renderEnumSelector(
+                    activeDraft.sleep_quality,
+                    [
+                      { value: SleepQuality.POOR, label: "Poor" },
+                      { value: SleepQuality.AVERAGE, label: "Average" },
+                      { value: SleepQuality.GREAT, label: "Great" },
+                    ],
+                    (v) => updateField("sleep_quality", v)
+                  )}
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Eaten in last 4 hours?</Text>
+                  {renderBoolSelector(activeDraft.has_eaten, (v) => updateField("has_eaten", v))}
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Currently in pain?</Text>
+                  {renderBoolSelector(activeDraft.has_pain, (v) => updateField("has_pain", v))}
+                </View>
+                {activeDraft.has_pain && (
+                  <View style={styles.fieldContainer}>
+                    <Text style={styles.fieldLabel}>Pain Description</Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={activeDraft.pain_description}
+                      onChangeText={(v) => updateField("pain_description", v)}
+                      placeholder="Describe the pain..."
+                      placeholderTextColor="rgba(255,255,255,0.3)"
+                    />
+                  </View>
+                )}
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Stress Level</Text>
+                  {renderEnumSelector(
+                    activeDraft.pre_stress_level,
+                    [
+                      { value: PreStressLevel.LOW, label: "Low" },
+                      { value: PreStressLevel.MODERATE, label: "Moderate" },
+                      { value: PreStressLevel.HIGH, label: "High" },
+                    ],
+                    (v) => updateField("pre_stress_level", v)
+                  )}
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.fieldLabel}>Motivation Before (1-10)</Text>
+                  {renderNumberSelector(
+                    activeDraft.motivation_before,
+                    (v) => updateField("motivation_before", v),
+                    1,
+                    10
+                  )}
+                </View>
+                {renderPrimaryButton("COMPLETE PRE-TRAINING", submitPretraining, isSubmitting)}
+              </View>
+            )}
 
-                {/* Complete Form */}
-                {formExists && (
-                  <TouchableOpacity
-                    style={[
-                      styles.completeButton,
-                      isCompleting && styles.completeButtonDisabled,
-                    ]}
-                    onPress={handleComplete}
-                    disabled={isCompleting}
-                  >
-                    {isCompleting ? (
-                      <ActivityIndicator size="small" color={themes.black} />
-                    ) : (
-                      <Text style={styles.completeButtonText}>
-                        COMPLETE FORM
-                      </Text>
-                    )}
+            {showDrillsSection && (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>
+                  {isRetrainFree ? "Retraining Session" : "Drills"}
+                </Text>
+                <Text style={styles.fieldHint}>
+                  {isRetrainFree
+                    ? "No assigned drills in this retraining session. Use this time to coach targeted fundamentals, then continue to post-training."
+                    : `${completedDrills} / ${totalDrills} complete${
+                        drillsComplete ? " — Ready to end session." : ""
+                      }`}
+                </Text>
+
+                {sortedDrills.map((drill) => {
+                  const metricDraft =
+                    drillMetricDrafts.get(drillMetricKey(activeParticipant.student_id, drill.id)) ??
+                    buildDrillMetricDraft(drill);
+                  const busy = busyDrillId === drill.id;
+                  const target = [
+                    drill.target_spec,
+                    drill.target_count ? `×${drill.target_count}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+                  const rounds = [
+                    drill.rounds_total,
+                    drill.rounds_per_string ? `(${drill.rounds_per_string}/string)` : null,
+                  ]
+                    .filter((v) => v != null && v !== "")
+                    .join(" ");
+                  return (
+                    <View
+                      key={drill.id}
+                      style={[styles.drillCard, drill.is_completed && styles.drillCardComplete]}
+                    >
+                      <TouchableOpacity
+                        style={styles.drillHeader}
+                        onPress={() => toggleDrill(drill.id, !drill.is_completed)}
+                        disabled={busy}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: drill.is_completed }}
+                      >
+                        <View
+                          style={[styles.drillCheckbox, drill.is_completed && styles.drillCheckboxChecked]}
+                        >
+                          {busy ? (
+                            <ActivityIndicator size="small" color={themes.vegasGold} />
+                          ) : drill.is_completed ? (
+                            <Text style={styles.drillCheckmark}>✓</Text>
+                          ) : null}
+                        </View>
+                        <Text style={styles.drillName}>
+                          {drill.display_order}. {drill.name}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {drill.purpose ? <Text style={styles.drillMeta}>{drill.purpose}</Text> : null}
+                      {target ? <Text style={styles.drillMeta}>Target: {target}</Text> : null}
+                      {rounds ? <Text style={styles.drillMeta}>Rounds: {rounds}</Text> : null}
+                      {drill.loadout?.trim() ? (
+                        <Text style={styles.drillMeta}>Loadout/Commands: {drill.loadout}</Text>
+                      ) : null}
+                      {drill.instructor_notes?.trim() ? (
+                        <Text style={[styles.drillMeta, { fontStyle: "italic" }]}>
+                          Notes: {drill.instructor_notes}
+                        </Text>
+                      ) : null}
+
+                      {drill.videos.length > 0 && (
+                        <View style={styles.drillVideoRow}>
+                          {drill.videos.map((video) => (
+                            <TouchableOpacity
+                              key={video.id}
+                              style={styles.drillVideoLink}
+                              onPress={() => openDrillVideo(drill, video)}
+                              disabled={loadingVideoId === video.id}
+                            >
+                              {loadingVideoId === video.id ? (
+                                <ActivityIndicator size="small" color={themes.vegasGold} />
+                              ) : (
+                                <Text style={styles.drillVideoLinkText}>
+                                  ▶ {video.title || video.video_filename || "Video"}
+                                </Text>
+                              )}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+
+                      {isTest && (
+                        <View style={{ marginTop: 12 }}>
+                          <Text style={styles.fieldLabel}>Performance</Text>
+                          <Text style={styles.drillMeta}>
+                            Auto result:{" "}
+                            {drill.auto_passed == null
+                              ? "Pending metrics"
+                              : drill.auto_passed
+                              ? "Pass"
+                              : "Fail"}
+                          </Text>
+                          <View style={[styles.toggleRow, { marginTop: 8 }]}>
+                            <TextInput
+                              style={[styles.textInput, { flex: 1 }]}
+                              value={metricDraft.timeSeconds}
+                              onChangeText={(v) =>
+                                updateDrillMetricField(activeParticipant.student_id, drill.id, "timeSeconds", v)
+                              }
+                              placeholder="Time (sec)"
+                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              keyboardType="decimal-pad"
+                            />
+                            <TextInput
+                              style={[styles.textInput, { flex: 1 }]}
+                              value={metricDraft.hitCount}
+                              onChangeText={(v) =>
+                                updateDrillMetricField(activeParticipant.student_id, drill.id, "hitCount", v)
+                              }
+                              placeholder="Hits"
+                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              keyboardType="number-pad"
+                            />
+                          </View>
+                          <View style={[styles.toggleRow, { marginTop: 8 }]}>
+                            {(
+                              [
+                                { value: "AUTO", label: "Use auto" },
+                                { value: "PASS", label: "Pass" },
+                                { value: "FAIL", label: "Fail" },
+                              ] as const
+                            ).map((opt) => (
+                              <TouchableOpacity
+                                key={opt.value}
+                                style={[
+                                  styles.toggleButton,
+                                  metricDraft.passOverride === opt.value && styles.toggleButtonActive,
+                                ]}
+                                onPress={() =>
+                                  updateDrillMetricField(
+                                    activeParticipant.student_id,
+                                    drill.id,
+                                    "passOverride",
+                                    opt.value
+                                  )
+                                }
+                              >
+                                <Text
+                                  style={[
+                                    styles.toggleButtonText,
+                                    metricDraft.passOverride === opt.value &&
+                                      styles.toggleButtonTextActive,
+                                  ]}
+                                >
+                                  {opt.label}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                          <TouchableOpacity
+                            style={styles.saveButton}
+                            onPress={() => saveTestDrillMetrics(activeParticipant, drill)}
+                            disabled={busy}
+                          >
+                            <Text style={styles.saveButtonText}>SAVE METRICS</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+
+                {!canProceedToPosttraining && !isRetrainFree && (
+                  <TouchableOpacity style={styles.saveButton} onPress={endEarly}>
+                    <Text style={styles.saveButtonText}>END EARLY & MOVE TO POST-TRAINING</Text>
                   </TouchableOpacity>
                 )}
+                {canProceedToPosttraining &&
+                  renderPrimaryButton(
+                    activeParticipant.current_phase === "POST_TRAINING"
+                      ? "BACK TO POST-TRAINING"
+                      : "END SESSION",
+                    startPosttraining,
+                    isSubmitting
+                  )}
+              </View>
+            )}
+
+            {showPosttrainingSection && (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Post-Training</Text>
+                {!activeParticipant.is_session_submitted &&
+                  activeParticipant.posttraining_status !== "COMPLETED" && (
+                    <>
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Post-Session Stress</Text>
+                        {renderEnumSelector(
+                          activeDraft.post_stress_level,
+                          [
+                            { value: PostStressLevel.LESS_STRESSED, label: "Less" },
+                            { value: PostStressLevel.SAME, label: "Same" },
+                            { value: PostStressLevel.MORE_STRESSED, label: "More" },
+                          ],
+                          (v) => updateField("post_stress_level", v)
+                        )}
+                      </View>
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Motivation After (1-10)</Text>
+                        {renderNumberSelector(
+                          activeDraft.motivation_after,
+                          (v) => updateField("motivation_after", v),
+                          1,
+                          10
+                        )}
+                      </View>
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Confidence Level (1-10)</Text>
+                        {renderNumberSelector(
+                          activeDraft.confidence_level,
+                          (v) => updateField("confidence_level", v),
+                          1,
+                          10
+                        )}
+                      </View>
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Highlight</Text>
+                        <TextInput
+                          style={styles.textInput}
+                          value={activeDraft.highlight}
+                          onChangeText={(v) => updateField("highlight", v)}
+                          placeholder="What was the student most proud of?"
+                          placeholderTextColor="rgba(255,255,255,0.3)"
+                        />
+                      </View>
+                      <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldLabel}>Instructor Notes</Text>
+                        <TextInput
+                          style={[styles.textInput, styles.textInputMultiline]}
+                          value={activeDraft.instructor_notes}
+                          onChangeText={(v) => updateField("instructor_notes", v)}
+                          placeholder="Notes about this student's session..."
+                          placeholderTextColor="rgba(255,255,255,0.3)"
+                          multiline
+                          numberOfLines={4}
+                        />
+                      </View>
+
+                      {isTest && (
+                        <>
+                          <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldLabel}>Recommended Outcome</Text>
+                            <Text style={styles.fieldHint}>
+                              {activeParticipant.form?.auto_passed == null
+                                ? "Enter drill metrics to compute pass/fail."
+                                : activeParticipant.form.auto_passed
+                                ? "Auto result: Pass"
+                                : "Auto result: Fail"}
+                            </Text>
+                          </View>
+                          <View style={[styles.toggleRow, styles.fieldContainer]}>
+                            <TouchableOpacity
+                              style={[
+                                styles.toggleButton,
+                                activeDraft.final_passed === true && styles.toggleButtonActive,
+                              ]}
+                              onPress={() => setFinalOutcome(true)}
+                            >
+                              <Text
+                                style={[
+                                  styles.toggleButtonText,
+                                  activeDraft.final_passed === true && styles.toggleButtonTextActive,
+                                ]}
+                              >
+                                Confirm Pass
+                              </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={[
+                                styles.toggleButton,
+                                activeDraft.final_passed === false && styles.toggleButtonActive,
+                              ]}
+                              onPress={() => setFinalOutcome(false)}
+                            >
+                              <Text
+                                style={[
+                                  styles.toggleButtonText,
+                                  activeDraft.final_passed === false &&
+                                    styles.toggleButtonTextActive,
+                                ]}
+                              >
+                                Confirm Fail
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                          <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldLabel}>Override Note (optional)</Text>
+                            <TextInput
+                              style={styles.textInput}
+                              value={activeDraft.pass_override_reason}
+                              onChangeText={(v) => updateField("pass_override_reason", v)}
+                              placeholder="Why outcome differs from auto result"
+                              placeholderTextColor="rgba(255,255,255,0.3)"
+                            />
+                          </View>
+                        </>
+                      )}
+
+                      <TouchableOpacity
+                        style={[
+                          styles.progressButton,
+                          activeDraft.advance_student && styles.progressButtonActive,
+                        ]}
+                        onPress={() => updateField("advance_student", !activeDraft.advance_student)}
+                      >
+                        <Text
+                          style={[
+                            styles.progressButtonText,
+                            activeDraft.advance_student && styles.progressButtonTextActive,
+                          ]}
+                        >
+                          {activeDraft.advance_student
+                            ? "✓ WILL PROGRESS TO NEXT WEEK"
+                            : "PROGRESS TO NEXT WEEK"}
+                        </Text>
+                        <Text style={styles.progressButtonSubtext}>
+                          {activeDraft.advance_student
+                            ? "Tap again to cancel advancement"
+                            : "Tap to advance student to the next week"}
+                        </Text>
+                      </TouchableOpacity>
+
+                      {renderPrimaryButton(
+                        "COMPLETE POST-TRAINING",
+                        submitPosttraining,
+                        isSubmitting
+                      )}
+                    </>
+                  )}
+
+                {activeParticipant.posttraining_status === "COMPLETED" &&
+                  !activeParticipant.is_session_submitted &&
+                  renderPrimaryButton("SUBMIT STUDENT SESSION", submitParticipant, isSubmitting)}
+
+                {activeParticipant.is_session_submitted && (
+                  <View style={styles.completedBadge}>
+                    <Text style={styles.completedBadgeText}>✓ Student session submitted</Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {activeParticipant.current_phase === "COMPLETED" && (
+              <View style={styles.completedBadge}>
+                <Text style={styles.completedBadgeText}>
+                  ✓ Student complete for this session
+                </Text>
               </View>
             )}
           </ScrollView>

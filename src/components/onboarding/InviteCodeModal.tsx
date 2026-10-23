@@ -20,13 +20,18 @@ interface InviteCodeModalProps {
   isVisible: boolean;
   onValidateSuccess: (companyInfo: CompanyInfo) => void;
   onCancel: () => void;
+  /** Company resolved from an SMS/onboarding join link; codes for other companies are rejected. */
+  linkedCompany?: { id: number; name: string } | null;
+  initialCode?: string;
 }
 export function InviteCodeModal({
   isVisible,
   onValidateSuccess,
   onCancel,
+  linkedCompany,
+  initialCode = "",
 }: InviteCodeModalProps) {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +51,13 @@ export function InviteCodeModal({
 
       if (result.success && result.data) {
         console.log("Invite code valid for company:", result.data.company_name);
+
+        if (linkedCompany && result.data.company_id !== linkedCompany.id) {
+          setError(
+            "This invite code does not match the company from your onboarding link. Please use a matching code."
+          );
+          return;
+        }
 
         onValidateSuccess(result.data);
 
@@ -112,6 +124,11 @@ export function InviteCodeModal({
               Enter the invite code provided by your organization to begin
               registration
             </Text>
+            {linkedCompany && (
+              <Text style={styles.labelText}>
+                Link detected for {linkedCompany.name}. Use a matching invite code to continue.
+              </Text>
+            )}
 
             <TextInput
               style={[styles.textInput, error && styles.errorText]}

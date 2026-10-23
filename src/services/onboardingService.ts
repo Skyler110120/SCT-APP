@@ -31,7 +31,35 @@ const ONBOARDING_STORAGE_KEYS = {
   CURRENT_STEP: "onboarding_current_step",
 };
 
+export interface JoinTokenValidation {
+  valid: boolean;
+  company_id: number;
+  company_name: string;
+  course_id?: number | null;
+}
+
 export const onboardingService = {
+  /**
+   * Validates an SMS/company onboarding join token (JWT with type=onboarding).
+   */
+  async validateJoinToken(
+    companyId: number,
+    token: string
+  ): Promise<{ success: boolean; data?: JoinTokenValidation; error?: string }> {
+    try {
+      const data = await apiFetch<JoinTokenValidation>(
+        `/companies/${companyId}/validate-join-token?token=${encodeURIComponent(token)}`
+      );
+      return { success: true, data };
+    } catch (error) {
+      logger.error("Join token validation error:", error);
+      return {
+        success: false,
+        error: getApiErrorMessage(error, "This onboarding link is invalid or expired."),
+      };
+    }
+  },
+
   /**
    * Validates a company invite code and returns company information
    * @param code - company invite code entered by the user

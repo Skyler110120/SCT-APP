@@ -112,6 +112,22 @@ export const companyService = {
   },
 
   /**
+   * Delete a company (master admin). Users are removed from the app; DB records are kept.
+   */
+  async deleteCompany(companyID: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await apiFetch(`/companies/${companyID}`, { method: "DELETE" });
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      return {
+        success: false,
+        error: getApiErrorMessage(error, "Failed to delete company"),
+      };
+    }
+  },
+
+  /**
    * Get all invite codes for a company
    * @param companyID - ID of the company
    * @returns list of invite codes or error message

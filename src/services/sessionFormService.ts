@@ -207,4 +207,116 @@ export const sessionFormService = {
       };
     }
   },
+
+  async toggleDrill(
+    sessionId: number,
+    drillProgressId: number,
+    payload: { student_id: number; is_completed: boolean }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(
+        `/session-forms/session/${sessionId}/drills/${drillProgressId}/toggle`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        }
+      );
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error toggling drill:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to update drill progress",
+      };
+    }
+  },
+
+  async endEarly(
+    sessionId: number,
+    payload: { student_id: number; reason?: string }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(`/session-forms/session/${sessionId}/end-early`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error ending session early:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to end early",
+      };
+    }
+  },
+
+  async startPosttraining(
+    sessionId: number,
+    payload: { student_id: number }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(
+        `/session-forms/session/${sessionId}/start-posttraining`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        }
+      );
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error starting posttraining:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to start post-training",
+      };
+    }
+  },
+
+  async submitPosttraining(
+    sessionId: number,
+    payload: {
+      student_id: number;
+      post_stress_level?: string;
+      motivation_after?: number;
+      confidence_level?: number;
+      highlight?: string;
+      instructor_notes?: string;
+      advance_student?: boolean;
+      final_passed?: boolean;
+      pass_override_reason?: string;
+    }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(`/session-forms/session/${sessionId}/posttraining`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error submitting posttraining:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to submit posttraining",
+      };
+    }
+  },
+
+  async submitParticipantSession(
+    sessionId: number,
+    payload: { student_id: number }
+  ): Promise<SessionWorkflowResponse> {
+    try {
+      const data = await apiFetch(`/session-forms/session/${sessionId}/submit`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error submitting participant session:", error);
+      return {
+        success: false,
+        error: error?.detail || "Failed to submit participant session",
+      };
+    }
+  },
 };

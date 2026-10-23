@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiFetch } from "./api";
+import { ApiError, apiFetch } from "./api";
 import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import {
   AdminCreateAvailabilityRequest,
@@ -8,7 +8,11 @@ import {
   AvailabilityUpdate,
   AvailabilityResponse,
   AvailabilityListResponse,
-  CreateAvailabilityRequest
+  CreateAvailabilityRequest,
+  TimeOffConflictDetail,
+  TimeOffRequest,
+  TimeOffResponse,
+  TimeOffResult,
 } from "../types/availability.types";
 
 export const instructorAvailabilityService = {
@@ -220,6 +224,45 @@ export const instructorAvailabilityService = {
       return {
         success: false,
         error: getApiErrorMessage(error, "Failed to delete availability"),
+      };
+    }
+  },
+
+  /**
+   * Block availability (PTO / sick day). Instructors block their own time; admins and
+   * delegated instructors pass instructor_id.
+   */
+  async applyTimeOff(body: TimeOffRequest): Promise<TimeOffResult> {
+    const payload: Record<string, unknown> = {
+      scope: body.scope,
+      start_date: body.start_date,
+      cancel_affected_sessions: body.cancel_affected_sessions,
+    };
+    if (body.end_date) payload.end_date = body.end_date;
+    if (body.start_time) payload.start_time = body.start_time;
+    if (body.end_time) payload.end_time = body.end_time;
+    if (body.instructor_id != null && body.instructor_id > 0) {
+      payload.instructor_id = body.instructor_id;
+    }
+
+    try {
+      const data = await apiFetch<TimeOffResponse>(`/availability/time-off`, {
+        method: "POST",
+        suppressGlobalError: true,
+        body: JSON.stringify(payload),
+      });
+      return { success: true, data };
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        const detail = (error.body as { detail?: unknown } | undefined)?.detail;
+        if (detail && typeof detail === "object" && "code" in detail) {
+          return { success: false, conflict: detail as TimeOffConflictDetail };
+        }
+      }
+      console.error("Failed to apply time off:", error);
+      return {
+        success: false,
+        error: getApiErrorMessage(error, "Could not apply time off"),
       };
     }
   },

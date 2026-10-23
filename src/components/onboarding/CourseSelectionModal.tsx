@@ -25,6 +25,8 @@ interface CourseSelectionModalProps {
   onError: (error: string) => void;
   onRetry: () => void;
   onBack: () => void;
+  /** Highlighted on open, e.g. the course from an onboarding join link. */
+  preferredCourseId?: number | null;
 }
 
 export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
@@ -36,8 +38,9 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
   onError,
   onRetry,
   onBack,
+  preferredCourseId = null,
 }) => {
-  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(preferredCourseId);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const handleCourseSelection = async (course: CourseSummary) => {

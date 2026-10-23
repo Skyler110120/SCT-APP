@@ -13,13 +13,16 @@ import { SubscriptionStatusData } from "@/src/types/payment.types";
 import { UserRole } from "@/src/types/enums";
 import { formatDateString } from "@/src/utils/dateTimeUtils";
 import { openStripeHostedUrl } from "@/src/utils/safeExternalUrl";
+import { apiErrorMessage, getBillingActions } from "@/src/utils/billingActions";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
+import { useFocusEffect } from "expo-router";
 import { PRIVACY_POLICY_URL } from "@/src/config";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -77,10 +80,16 @@ export default function InstructorProfile() {
     loadProfile();
   }, []);
 
-  useEffect(() => {
-    if (user?.role !== UserRole.STUDENT) return;
-    loadBillingData();
-  }, [user?.role]);
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.role !== UserRole.STUDENT) return;
+      loadBillingData();
+      const subscription = AppState.addEventListener("change", (state) => {
+        if (state === "active") loadBillingData();
+      });
+      return () => subscription.remove();
+    }, [user?.role])
+  );
 
   const loadProfile = async () => {
     try {
@@ -130,6 +139,17 @@ export default function InstructorProfile() {
     }
   };
 
+  // The in-app browser promise resolves when Stripe is closed (or the app deep-links back),
+  // so reload billing then — webhooks may have already updated the subscription.
+  const openStripeAndRefresh = async (url: string | undefined, failMessage: string) => {
+    const opened = url ? await openStripeHostedUrl(url) : false;
+    if (!opened) {
+      setBillingMessage(failMessage);
+      return;
+    }
+    await loadBillingData();
+  };
+
   const handleStartSubscriptionCheckout = async () => {
     if (enrolledCourseId == null) return;
     setIsCheckoutLoading(true);
@@ -139,14 +159,9 @@ export default function InstructorProfile() {
         enrolledCourseId,
         buildBillingRedirectUrls().subscription
       );
-      const opened = response.checkout_url
-        ? await openStripeHostedUrl(response.checkout_url)
-        : false;
-      if (!opened) {
-        setBillingMessage("Could not open Stripe checkout URL.");
-      }
-    } catch {
-      setBillingMessage("Failed to start subscription checkout.");
+      await openStripeAndRefresh(response.checkout_url, "Could not open Stripe checkout.");
+    } catch (error) {
+      setBillingMessage(apiErrorMessage(error, "Failed to start subscription checkout."));
     } finally {
       setIsCheckoutLoading(false);
     }
@@ -158,14 +173,9 @@ export default function InstructorProfile() {
     try {
       const { portalReturnUrl } = buildBillingRedirectUrls();
       const response = await paymentService.getPortalUrl(portalReturnUrl);
-      const opened = response.portal_url
-        ? await openStripeHostedUrl(response.portal_url)
-        : false;
-      if (!opened) {
-        setBillingMessage("Could not open Stripe billing portal.");
-      }
-    } catch {
-      setBillingMessage("Failed to open billing portal.");
+      await openStripeAndRefresh(response.portal_url, "Could not open Stripe billing portal.");
+    } catch (error) {
+      setBillingMessage(apiErrorMessage(error, "Failed to open billing portal."));
     } finally {
       setIsPortalLoading(false);
     }
@@ -180,20 +190,15 @@ export default function InstructorProfile() {
         enrollmentId,
         buildBillingRedirectUrls().makeup
       );
-      const opened = response.checkout_url
-        ? await openStripeHostedUrl(response.checkout_url)
-        : false;
-      if (!opened) {
-        setBillingMessage("Could not open make-up checkout URL.");
-      }
-    } catch {
-      setBillingMessage("Failed to start make-up checkout.");
+      await openStripeAndRefresh(response.checkout_url, "Could not open class checkout.");
+    } catch (error) {
+      setBillingMessage(apiErrorMessage(error, "Failed to start class checkout."));
     } finally {
       setIsCheckoutLoading(false);
     }
   };
 
-  const handleCancelSubscription = async () => {
+  const cancelSubscription = async () => {
     setIsUpdatingSubscription(true);
     setBillingMessage(null);
     try {
@@ -201,11 +206,22 @@ export default function InstructorProfile() {
       setBillingMessage(response.message || "Subscription will cancel at period end.");
       const refreshedStatus = await paymentService.getSubscriptionStatus();
       setSubscriptionStatus(refreshedStatus);
-    } catch {
-      setBillingMessage("Failed to cancel subscription.");
+    } catch (error) {
+      setBillingMessage(apiErrorMessage(error, "Failed to cancel subscription."));
     } finally {
       setIsUpdatingSubscription(false);
     }
+  };
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      "Cancel Subscription",
+      "Your subscription will end at the end of the current billing period. Payments are non-refundable.",
+      [
+        { text: "Keep Subscription", style: "cancel" },
+        { text: "Cancel Subscription", style: "destructive", onPress: cancelSubscription },
+      ]
+    );
   };
 
   const handleReactivateSubscription = async () => {
@@ -216,12 +232,14 @@ export default function InstructorProfile() {
       setBillingMessage(response.message || "Subscription reactivated.");
       const refreshedStatus = await paymentService.getSubscriptionStatus();
       setSubscriptionStatus(refreshedStatus);
-    } catch {
-      setBillingMessage("Failed to reactivate subscription.");
+    } catch (error) {
+      setBillingMessage(apiErrorMessage(error, "Failed to reactivate subscription."));
     } finally {
       setIsUpdatingSubscription(false);
     }
   };
+
+  const billingActions = getBillingActions(subscriptionStatus);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -623,28 +641,52 @@ export default function InstructorProfile() {
                   <ActivityIndicator size="small" color={themes.vegasGold} />
                 ) : (
                   <>
-                    <Text
-                      style={[
-                        styles.profileBioText,
-                        { textAlign: "center", marginTop: 8 },
-                      ]}
-                    >
-                      {subscriptionStatus?.can_book_sessions
-                        ? "Subscription is active."
-                        : "No active subscription found."}
-                    </Text>
-                    {subscriptionStatus?.status && (
+                    {billingActions.statusLabel ? (
+                      <>
+                        <Text
+                          style={[
+                            styles.profileBioText,
+                            { textAlign: "center", marginTop: 8 },
+                          ]}
+                        >
+                          Subscription: {billingActions.statusLabel}
+                        </Text>
+                        {subscriptionStatus?.amount_cents ? (
+                          <Text
+                            style={[
+                              styles.profileBioText,
+                              { textAlign: "center", opacity: 0.8, fontSize: 14 },
+                            ]}
+                          >
+                            ${(subscriptionStatus.amount_cents / 100).toFixed(2)} / month
+                            {subscriptionStatus.current_period_end
+                              ? ` · period ends ${formatDateString(subscriptionStatus.current_period_end)}`
+                              : ""}
+                          </Text>
+                        ) : null}
+                      </>
+                    ) : (
                       <Text
                         style={[
                           styles.profileBioText,
-                          {
-                            textAlign: "center",
-                            opacity: 0.8,
-                            fontSize: 14,
-                          },
+                          { textAlign: "center", marginTop: 8, fontSize: 14, opacity: 0.85 },
                         ]}
                       >
-                        Status: {subscriptionStatus.status}
+                        {billingActions.canBuyClass
+                          ? "Your program subscription has ended. Purchase a class session to book each remaining class."
+                          : "Your range uses a monthly subscription for training. Subscribe to book live sessions."}
+                      </Text>
+                    )}
+                    {billingActions.showPastDueWarning && (
+                      <Text
+                        style={{
+                          color: "#f87171",
+                          textAlign: "center",
+                          fontFamily: "Chakra-Regular",
+                          marginTop: 8,
+                        }}
+                      >
+                        Your payment failed. Update your payment method in Manage Billing to keep booking sessions.
                       </Text>
                     )}
                     <View
@@ -654,66 +696,66 @@ export default function InstructorProfile() {
                         gap: 8,
                       }}
                     >
-                      {!subscriptionStatus?.can_book_sessions && (
-                        <TouchableOpacity
-                          style={[
-                            styles.button,
-                            (isCheckoutLoading || enrolledCourseId == null) && { opacity: 0.7 },
-                          ]}
-                          onPress={handleStartSubscriptionCheckout}
-                          disabled={isCheckoutLoading || enrolledCourseId == null}
-                        >
-                          <Text style={styles.buttonText}>
-                            {isCheckoutLoading
-                              ? "Opening Checkout..."
-                              : "Start Subscription Checkout"}
+                      {billingActions.canSubscribe &&
+                        (enrolledCourseId == null ? (
+                          <Text
+                            style={[
+                              styles.profileBioText,
+                              { textAlign: "center", fontSize: 14, opacity: 0.7 },
+                            ]}
+                          >
+                            Enroll in a course on the Courses page first, then return here to subscribe.
                           </Text>
-                        </TouchableOpacity>
-                      )}
-                      {subscriptionStatus?.enrollment_phase === "POST_SUBSCRIPTION" && (
+                        ) : (
+                          <TouchableOpacity
+                            style={[styles.button, isCheckoutLoading && { opacity: 0.7 }]}
+                            onPress={handleStartSubscriptionCheckout}
+                            disabled={isCheckoutLoading}
+                          >
+                            <Text style={styles.buttonText}>
+                              {isCheckoutLoading ? "Opening Checkout..." : billingActions.subscribeLabel}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      {billingActions.canBuyClass && (
                         <TouchableOpacity
                           style={[styles.button, isCheckoutLoading && { opacity: 0.7 }]}
                           onPress={handleBuyMakeupSession}
                           disabled={isCheckoutLoading || enrollmentId == null}
                         >
                           <Text style={styles.buttonText}>
-                            {isCheckoutLoading
-                              ? "Opening Checkout..."
-                              : "Buy Make-Up Session ($50)"}
+                            {isCheckoutLoading ? "Opening Checkout..." : "Buy a Class Session ($50)"}
                           </Text>
                         </TouchableOpacity>
                       )}
-                      {subscriptionStatus?.has_subscription && (
-                        <>
-                          <TouchableOpacity
-                            style={[styles.button, isPortalLoading && { opacity: 0.7 }]}
-                            onPress={handleOpenPortal}
-                            disabled={isPortalLoading}
-                          >
-                            <Text style={styles.buttonText}>
-                              {isPortalLoading
-                                ? "Opening Billing Portal..."
-                                : "Open Billing Portal"}
-                            </Text>
-                          </TouchableOpacity>
-                          {subscriptionStatus.cancel_at_period_end ? (
-                            <TouchableOpacity
-                              style={[styles.button, isUpdatingSubscription && { opacity: 0.7 }]}
-                              onPress={handleReactivateSubscription}
-                              disabled={isUpdatingSubscription}
-                            >
-                              <Text style={styles.buttonText}>Reactivate Subscription</Text>
-                            </TouchableOpacity>
-                          ) : (
-                            <TouchableOpacity
-                              style={[styles.button, isUpdatingSubscription && { opacity: 0.7 }]}
-                              onPress={handleCancelSubscription}
-                              disabled={isUpdatingSubscription}
-                            >
-                              <Text style={styles.buttonText}>Cancel at Period End</Text>
-                            </TouchableOpacity>
-                          )}
-                        </>
+                      {billingActions.canOpenPortal && (
+                        <TouchableOpacity
+                          style={[styles.button, isPortalLoading && { opacity: 0.7 }]}
+                          onPress={handleOpenPortal}
+                          disabled={isPortalLoading}
+                        >
+                          <Text style={styles.buttonText}>
+                            {isPortalLoading ? "Opening Billing..." : "Manage Billing"}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      {billingActions.canReactivate && (
+                        <TouchableOpacity
+                          style={[styles.button, isUpdatingSubscription && { opacity: 0.7 }]}
+                          onPress={handleReactivateSubscription}
+                          disabled={isUpdatingSubscription}
+                        >
+                          <Text style={styles.buttonText}>Reactivate Subscription</Text>
+                        </TouchableOpacity>
+                      )}
+                      {billingActions.canCancel && (
+                        <TouchableOpacity
+                          style={[styles.button, isUpdatingSubscription && { opacity: 0.7 }]}
+                          onPress={handleCancelSubscription}
+                          disabled={isUpdatingSubscription}
+                        >
+                          <Text style={styles.buttonText}>Cancel Subscription</Text>
+                        </TouchableOpacity>
                       )}
                       {billingMessage && (
                         <Text

@@ -57,6 +57,19 @@ export interface Drill {
   display_order: number;
   is_active: boolean;
   fundamentals: TechnicalFundamentalBrief[];
+  videos?: DrillVideo[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DrillVideo {
+  id: number;
+  drill_id: number;
+  title?: string;
+  video_s3_key: string;
+  video_filename?: string;
+  video_content_type?: string;
+  display_order: number;
   created_at: string;
   updated_at: string;
 }

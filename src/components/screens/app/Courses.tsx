@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import CourseSchedule from "@/src/components/course/CourseSchedule";
 import CourseOverviewCard from "@/src/components/CourseOverviewCard";
 import BottomNavBar from "@/src/components/NavBar";
 import StudentProgressModal from "@/src/components/StudentProgressModal";
@@ -62,7 +63,10 @@ export default function Courses() {
   const [myEnrollment, setMyEnrollment] = useState<{
     current_week: number;
     progress_percentage: number;
+    current_month: number;
+    unlocked_program_month?: number;
   } | null>(null);
+  const [scheduleRefreshKey, setScheduleRefreshKey] = useState(0);
   const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true);
   const [isLoadingProgress, setIsLoadingProgress] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -121,6 +125,8 @@ export default function Courses() {
         setMyEnrollment({
           current_week: enrollmentData.current_week,
           progress_percentage: enrollmentData.progress_percentage,
+          current_month: enrollmentData.current_month,
+          unlocked_program_month: enrollmentData.unlocked_program_month,
         });
 
         const studentCourse: CourseView = {
@@ -245,6 +251,7 @@ export default function Courses() {
   const handleRefresh = useCallback(async () => {
     console.log(`Refreshing dashboard for ${user?.role}`);
     setRefreshing(true);
+    setScheduleRefreshKey((k) => k + 1);
     await fetchDashboardData();
     setRefreshing(false);
   }, [user?.role]);
@@ -900,6 +907,20 @@ export default function Courses() {
                 </View>
               )}
               <View style={styles.actionsSection}>{renderActionButtons()}</View>
+              {selectedCourse && (!isStudent || myEnrollment) && (
+                <CourseSchedule
+                  courseId={selectedCourse.id}
+                  isStudent={isStudent}
+                  isStaff={isInstructor || isAdmin}
+                  studentMonthLimit={
+                    isStudent
+                      ? myEnrollment?.unlocked_program_month ?? myEnrollment?.current_month ?? null
+                      : null
+                  }
+                  studentUnlockedProgramMonth={myEnrollment?.unlocked_program_month}
+                  refreshKey={scheduleRefreshKey}
+                />
+              )}
             </View>
           </ScrollView>
         </SafeAreaView>

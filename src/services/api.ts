@@ -25,11 +25,14 @@ export function setUnauthorizedHandler(handler: (() => void) | null): void {
 export class ApiError extends Error {
   status: number;
   detail?: string;
+  /** Parsed response body, for endpoints that return structured error details. */
+  body?: unknown;
 
-  constructor(status: number, message: string, detail?: string) {
+  constructor(status: number, message: string, detail?: string, body?: unknown) {
     super(message);
     this.status = status;
     this.detail = detail;
+    this.body = body;
   }
 }
 
@@ -272,7 +275,10 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
       }
 
       if (response.status === 409) {
-        throw new ApiError(409, serverDetail || "Request Conflict", serverDetail);
+        const conflictMessage =
+          serverDetail ||
+          (typeof data?.detail?.message === "string" ? data.detail.message : undefined);
+        throw new ApiError(409, conflictMessage || "Request Conflict", conflictMessage, data);
       }
 
       if (!response.ok) {
@@ -294,7 +300,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
             })
           );
         }
-        throw new ApiError(response.status, msg, serverDetail);
+        throw new ApiError(response.status, msg, serverDetail, data);
       }
 
       return data;

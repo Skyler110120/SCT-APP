@@ -30,6 +30,7 @@ import { OnboardingInviteListItem } from "@/src/types/onboardingInvite.types";
 import { ConnectStatusResponse } from "@/src/types/payment.types";
 import { UserRole } from "@/src/types/enums";
 import { openStripeHostedUrl } from "@/src/utils/safeExternalUrl";
+import { apiErrorMessage } from "@/src/utils/billingActions";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -219,15 +220,28 @@ export default function AdminDashboard() {
     setIsSettingUpPayments(true);
     setPaymentMessage(null);
     try {
-      const response = await paymentService.createConnectOnboarding(user.company_id);
+      const companyId = Number(user.company_id);
+      const response = await paymentService.createConnectOnboarding(companyId);
       const opened = response?.url
         ? await openStripeHostedUrl(response.url)
         : false;
       if (!opened) {
         setPaymentMessage("Could not open Stripe onboarding URL.");
+        return;
       }
-    } catch {
-      setPaymentMessage("Failed to start payment setup.");
+      setIsLoadingPaymentStatus(true);
+      const status = await paymentService.getConnectStatus(companyId).catch(() => null);
+      setIsLoadingPaymentStatus(false);
+      if (status) {
+        setPaymentStatus(status);
+        setPaymentMessage(
+          status.payment_enabled
+            ? null
+            : "Stripe hasn't finished verifying your account yet. Complete any remaining steps, or check back shortly."
+        );
+      }
+    } catch (error) {
+      setPaymentMessage(apiErrorMessage(error, "Failed to start payment setup."));
     } finally {
       setIsSettingUpPayments(false);
     }

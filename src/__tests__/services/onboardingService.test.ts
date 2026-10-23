@@ -485,3 +485,20 @@ describe("onboardingService.signup", () => {
     expect(result.success).toBe(false);
   });
 });
+
+describe("onboardingService.validateJoinToken", () => {
+  it("calls the company join-token endpoint with an encoded token", async () => {
+    const data = { valid: true, company_id: 3, company_name: "Range", course_id: 9 };
+    mockApiFetch.mockResolvedValueOnce(data);
+    const result = await onboardingService.validateJoinToken(3, "a.b+c");
+    expect(mockApiFetch).toHaveBeenCalledWith("/companies/3/validate-join-token?token=a.b%2Bc");
+    expect(result).toEqual({ success: true, data });
+  });
+
+  it("returns an error for invalid or expired links", async () => {
+    mockApiFetch.mockRejectedValueOnce(new Error("Invalid or expired onboarding token"));
+    const result = await onboardingService.validateJoinToken(3, "bad");
+    expect(result.success).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+});

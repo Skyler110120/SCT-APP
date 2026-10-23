@@ -297,3 +297,64 @@ describe("sessionFormService.submitPretraining", () => {
     });
   });
 });
+
+describe("sessionFormService drill + posttraining workflow", () => {
+  const workflow = { session_id: 10, session_status: "in_progress", participants: [] };
+
+  it.each([
+    [
+      "toggleDrill",
+      () => sessionFormService.toggleDrill(10, 22, { student_id: 20, is_completed: true }),
+      "/session-forms/session/10/drills/22/toggle",
+      { student_id: 20, is_completed: true },
+    ],
+    [
+      "endEarly",
+      () => sessionFormService.endEarly(10, { student_id: 20, reason: "Instructor override" }),
+      "/session-forms/session/10/end-early",
+      { student_id: 20, reason: "Instructor override" },
+    ],
+    [
+      "startPosttraining",
+      () => sessionFormService.startPosttraining(10, { student_id: 20 }),
+      "/session-forms/session/10/start-posttraining",
+      { student_id: 20 },
+    ],
+    [
+      "submitPosttraining",
+      () =>
+        sessionFormService.submitPosttraining(10, {
+          student_id: 20,
+          confidence_level: 8,
+          advance_student: true,
+        }),
+      "/session-forms/session/10/posttraining",
+      { student_id: 20, confidence_level: 8, advance_student: true },
+    ],
+    [
+      "submitParticipantSession",
+      () => sessionFormService.submitParticipantSession(10, { student_id: 20 }),
+      "/session-forms/session/10/submit",
+      { student_id: 20 },
+    ],
+  ])("%s posts to the workflow endpoint", async (_name, call, path, body) => {
+    mockApiFetch.mockResolvedValueOnce(workflow);
+    const result = await call();
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(workflow);
+    expect(mockApiFetch).toHaveBeenCalledWith(path, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  });
+
+  it("surfaces API error detail", async () => {
+    mockApiFetch.mockRejectedValueOnce({ detail: "Complete pre-training first" });
+    const result = await sessionFormService.toggleDrill(10, 22, {
+      student_id: 20,
+      is_completed: true,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Complete pre-training first");
+  });
+});

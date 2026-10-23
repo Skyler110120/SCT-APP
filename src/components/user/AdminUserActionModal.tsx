@@ -9,6 +9,22 @@ const ROLE_OPTIONS: { label: string; value: UserRole }[] = [
   { label: "Admin", value: UserRole.ADMIN },
 ];
 
+type PermissionFlag = Exclude<
+  keyof InstructorPermissionUpdate,
+  "max_students_per_session_self" | "max_students_per_session_others"
+>;
+
+const PERMISSION_OPTIONS: { key: PermissionFlag; label: string }[] = [
+  { key: "can_manage_own_availability", label: "Manage own availability" },
+  { key: "can_manage_own_time_off", label: "Manage own time off" },
+  { key: "can_manage_others_availability", label: "Manage other instructors' availability" },
+  { key: "can_manage_others_permissions", label: "Manage other instructors' permissions" },
+  { key: "can_create_student_invite_codes", label: "Create student invite codes" },
+  { key: "can_create_instructor_invite_codes", label: "Create instructor invite codes" },
+  { key: "can_set_own_session_capacity", label: "Set own session capacity" },
+  { key: "can_set_others_session_capacity", label: "Set other instructors' session capacity" },
+];
+
 interface UserActionModalProps {
   visible: boolean;
   user: User | null;
@@ -114,86 +130,25 @@ const UserActionModal: React.FC<UserActionModalProps> = ({
                 <Text style={styles.confirmationText}>
                   Configure instructor permissions.
                 </Text>
-                <TouchableOpacity
-                  style={styles.permissionToggleRow}
-                  onPress={() =>
-                    setPermissionDraft((prev) => ({
-                      ...prev,
-                      can_manage_own_availability: !Boolean(
-                        prev.can_manage_own_availability
-                      ),
-                    }))
-                  }
-                >
-                  <Text style={styles.permissionLabel}>
-                    Manage own availability
-                  </Text>
-                  <Text style={styles.permissionValue}>
-                    {Boolean(permissionDraft.can_manage_own_availability)
-                      ? "ON"
-                      : "OFF"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.permissionToggleRow}
-                  onPress={() =>
-                    setPermissionDraft((prev) => ({
-                      ...prev,
-                      can_manage_others_availability: !Boolean(
-                        prev.can_manage_others_availability
-                      ),
-                    }))
-                  }
-                >
-                  <Text style={styles.permissionLabel}>
-                    Manage others availability
-                  </Text>
-                  <Text style={styles.permissionValue}>
-                    {Boolean(permissionDraft.can_manage_others_availability)
-                      ? "ON"
-                      : "OFF"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.permissionToggleRow}
-                  onPress={() =>
-                    setPermissionDraft((prev) => ({
-                      ...prev,
-                      can_manage_others_permissions: !Boolean(
-                        prev.can_manage_others_permissions
-                      ),
-                    }))
-                  }
-                >
-                  <Text style={styles.permissionLabel}>
-                    Manage others permissions
-                  </Text>
-                  <Text style={styles.permissionValue}>
-                    {Boolean(permissionDraft.can_manage_others_permissions)
-                      ? "ON"
-                      : "OFF"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.permissionToggleRow}
-                  onPress={() =>
-                    setPermissionDraft((prev) => ({
-                      ...prev,
-                      can_set_others_session_capacity: !Boolean(
-                        prev.can_set_others_session_capacity
-                      ),
-                    }))
-                  }
-                >
-                  <Text style={styles.permissionLabel}>
-                    Set others session capacity
-                  </Text>
-                  <Text style={styles.permissionValue}>
-                    {Boolean(permissionDraft.can_set_others_session_capacity)
-                      ? "ON"
-                      : "OFF"}
-                  </Text>
-                </TouchableOpacity>
+                {PERMISSION_OPTIONS.map(({ key, label }) => (
+                  <TouchableOpacity
+                    key={key}
+                    style={styles.permissionToggleRow}
+                    onPress={() =>
+                      setPermissionDraft((prev) => ({
+                        ...prev,
+                        [key]: !Boolean(prev[key]),
+                      }))
+                    }
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: Boolean(permissionDraft[key]) }}
+                  >
+                    <Text style={styles.permissionLabel}>{label}</Text>
+                    <Text style={styles.permissionValue}>
+                      {Boolean(permissionDraft[key]) ? "ON" : "OFF"}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </>
             ) : isCapacityAction ? (
               <>

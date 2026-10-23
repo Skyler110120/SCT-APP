@@ -6,6 +6,14 @@ export enum ProgressionDecision {
     NEEDS_MORE = 'needs_more'
 }
 
+/** Max allowed missed weeks before grace/makeup rules apply. */
+export const MAX_MISSED_WEEKS_ALLOWED = 4;
+
+/** Live sessions included in the grace month at no charge. */
+export const GRACE_MONTH_MAKEUP_SESSIONS = MAX_MISSED_WEEKS_ALLOWED;
+
+export type ProgramCadence = 'WEEKLY' | 'BIWEEKLY';
+
 export enum EnrollmentPhase {
     NORMAL = 'NORMAL',
     MAKEUP_FREE = 'MAKEUP_FREE',
@@ -33,6 +41,18 @@ export interface StudentEnrollment {
     enrollment_phase: EnrollmentPhase;
     completed_sessions_count: number;
     make_up_sessions_remaining: number;
+
+    // Program policy / progression fields computed by the API
+    weeks_missed?: number;
+    program_cadence?: ProgramCadence;
+    billing_months?: number;
+    monthly_price_cents?: number;
+    grace_months?: number;
+    makeup_limit?: number;
+    overage_price_cents?: number;
+    cadence_anchor_date?: string | null;
+    covered_program_months?: number;
+    unlocked_program_month?: number;
 }
 
 export interface EnrollmentWithCourse extends StudentEnrollment {

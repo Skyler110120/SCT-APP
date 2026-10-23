@@ -25,6 +25,8 @@ interface SessionDetailsModalProps {
   session: SessionDetailed | null;
   onClose: () => void;
   onCancel: (sessionId: number) => void;
+  /** When set, Cancel hands off to the caller's own confirmation flow instead of the default alert. */
+  onRequestCancel?: (session: SessionDetailed) => void;
   onReviewMaterials: () => void;
   onBeginSession?: (sessionId: number) => void;
   onCheckIn?: (sessionId: number) => void;
@@ -36,6 +38,7 @@ export default function SessionDetailsModal({
   session,
   onClose,
   onCancel,
+  onRequestCancel,
   onReviewMaterials,
   onBeginSession,
   onCheckIn,
@@ -134,6 +137,10 @@ export default function SessionDetailsModal({
 
   const handleCancel = () => {
     if (!session) return;
+    if (onRequestCancel) {
+      onRequestCancel(session);
+      return;
+    }
     Alert.alert(
       "Cancel Session",
       "Are you sure you want to cancel this training session? This action cannot be undone.",

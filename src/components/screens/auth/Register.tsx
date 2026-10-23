@@ -12,10 +12,10 @@ import { UserRole } from "@/src/types/enums";
 import { CourseSummary } from "@/src/types/course.types";
 import { CompanyInfo, UserFormData } from "@/src/types/onboarding.types";
 
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { PRIVACY_POLICY_URL } from "@/src/config";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -37,6 +37,23 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const stackNameFields = width < 390;
+  const params = useLocalSearchParams<{
+    company_id?: string;
+    company_name?: string;
+    course_id?: string;
+    invite_code?: string;
+  }>();
+  const joinContext = useMemo(() => {
+    const companyId = Number(params.company_id || "");
+    const companyName = params.company_name || "";
+    const courseId = Number(params.course_id || "");
+    const hasCompany = Number.isFinite(companyId) && companyId > 0 && companyName.length > 0;
+    return {
+      linkedCompany: hasCompany ? { id: companyId, name: companyName } : null,
+      courseId: Number.isFinite(courseId) && courseId > 0 ? courseId : null,
+      inviteCode: (params.invite_code || "").trim(),
+    };
+  }, [params.company_id, params.company_name, params.course_id, params.invite_code]);
 
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("invite-code");
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
@@ -69,7 +86,15 @@ export default function RegisterScreen() {
     try {
       const result = await courseService.getCourseForSelection();
       if (result.success && result.data) {
-        setCourses(Array.isArray(result.data) ? result.data : []);
+        const list = Array.isArray(result.data) ? result.data : [];
+        setCourses(list);
+        const preferred = joinContext.courseId
+          ? list.find((course) => course.id === joinContext.courseId)
+          : undefined;
+        if (preferred) {
+          setSelectedCourse(preferred);
+          await onboardingService.saveSelectedCourse(preferred);
+        }
         if (!result.data.length) {
           Alert.alert(
             "No Courses",
@@ -251,6 +276,8 @@ export default function RegisterScreen() {
           isVisible={true}
           onValidateSuccess={handleInviteCodeSuccess}
           onCancel={handleInviteCodeCancel}
+          linkedCompany={joinContext.linkedCompany}
+          initialCode={joinContext.inviteCode}
         />
       );
     } else if (currentStep === "course-selection") {
@@ -264,6 +291,7 @@ export default function RegisterScreen() {
           onError={handleCourseSelectionError}
           onRetry={handleCourseRetry}
           onBack={handleBack}
+          preferredCourseId={selectedCourse?.id ?? joinContext.courseId}
         />
       );
     } else if (currentStep === "cadence-selection") {

@@ -68,6 +68,7 @@ export interface UserUpdate {
   birthday?: string;
   bio?: string;
   profile_picture?: string;
+  max_students_per_session_self?: number;
 }
 
 export interface UserCreateData {

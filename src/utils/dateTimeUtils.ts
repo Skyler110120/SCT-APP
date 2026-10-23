@@ -190,6 +190,32 @@ export function getWeekBounds(date: Date): { startDate: string; endDate: string 
   };
 }
 
+/** Add N days to a YYYY-MM-DD string; returns YYYY-MM-DD. */
+export function addDays(dateStr: string, days: number): string {
+  const date = createLocalDate(dateStr);
+  date.setDate(date.getDate() + days);
+  return formatDateForAPI(date);
+}
+
+/** Week-start (Sunday) YYYY-MM-DD for an ISO datetime or a date-only YYYY-MM-DD string (read as local). */
+export function getWeekStartFromISODate(isoDate: string): string {
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(isoDate) ? createLocalDate(isoDate) : new Date(isoDate);
+  return getWeekBounds(d).startDate;
+}
+
+/** Ordinal suffix for a number (e.g. 1 → "1st", 2 → "2nd", 11 → "11th"). */
+export function ordinal(n: number): string {
+  if (n <= 0) return String(n);
+  const s = String(n);
+  const last = s.slice(-1);
+  const lastTwo = s.slice(-2);
+  if (lastTwo === "11" || lastTwo === "12" || lastTwo === "13") return `${n}th`;
+  if (last === "1") return `${n}st`;
+  if (last === "2") return `${n}nd`;
+  if (last === "3") return `${n}rd`;
+  return `${n}th`;
+}
+
 /** True if the given date is a Wednesday (day 3). */
 export function isWednesday(date: Date): boolean {
   return date.getDay() === 3;

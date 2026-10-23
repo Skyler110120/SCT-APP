@@ -18,6 +18,8 @@ import BackgroundGradient from "@/src/components/BackgroundGradient";
 import Images from "@/src/assets/images";
 import { themes } from "@/src/context/themes";
 import { onboardingInviteService } from "@/src/services/onboardingInviteService";
+import { onboardingService } from "@/src/services/onboardingService";
+import { extractCompanyIdFromToken } from "@/src/utils/joinToken";
 import { useAuth } from "@/src/context/AuthContext";
 import type { InviteTokenValidation } from "@/src/types/onboardingInvite.types";
 
@@ -57,12 +59,32 @@ export default function JoinInviteScreen() {
         } else {
           setStep("registration");
         }
-      } else {
+        return;
+      }
+
+      // Not an email invite: try the SMS/company onboarding link, which still requires an invite code.
+      const companyId = extractCompanyIdFromToken(token);
+      if (!companyId) {
         setErrorMessage("This invite link is invalid or has expired.");
         setStep("error");
+        return;
       }
+      const joinResult = await onboardingService.validateJoinToken(companyId, token);
+      if (!joinResult.success || !joinResult.data?.valid) {
+        setErrorMessage(joinResult.error || "This onboarding link is invalid or expired.");
+        setStep("error");
+        return;
+      }
+      router.replace({
+        pathname: "/register",
+        params: {
+          company_id: String(joinResult.data.company_id),
+          company_name: joinResult.data.company_name,
+          ...(joinResult.data.course_id ? { course_id: String(joinResult.data.course_id) } : {}),
+        },
+      });
     })();
-  }, [token]);
+  }, [token, router]);
 
   const handleSignup = useCallback(async () => {
     if (!firstName.trim() || !lastName.trim()) {
@@ -145,10 +167,16 @@ export default function JoinInviteScreen() {
       <BackgroundGradient>
         <SafeAreaView style={s.centered}>
           <Image source={Images.logo.sctLogo} style={s.logo} />
-          <Text style={s.errorTitle}>Invite Link Error</Text>
+          <Text style={s.errorTitle}>Unable to Continue</Text>
           <Text style={s.errorBody}>{errorMessage}</Text>
-          <TouchableOpacity style={s.primaryButton} onPress={() => router.replace("/login")}>
-            <Text style={s.primaryButtonText}>Go to Login</Text>
+          <TouchableOpacity style={s.primaryButton} onPress={() => router.replace("/register")}>
+            <Text style={s.primaryButtonText}>Continue with Invite Code</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.primaryButton, { backgroundColor: "transparent", borderWidth: 1, borderColor: themes.vegasGold }]}
+            onPress={() => router.replace("/login")}
+          >
+            <Text style={[s.primaryButtonText, { color: themes.vegasGold }]}>Go to Login</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </BackgroundGradient>

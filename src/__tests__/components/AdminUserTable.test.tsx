@@ -49,4 +49,24 @@ describe("AdminUserTable", () => {
     expect(screen.queryByText("Pending Approval")).toBeNull();
     expect(screen.queryByText("Approve Access")).toBeNull();
   });
+
+  it("hides admin-only actions for a delegated instructor but keeps permissions", () => {
+    render(
+      <UserTable
+        users={[baseUser]}
+        onRemoveAction={jest.fn()}
+        onRoleAction={jest.fn()}
+        onApproveAction={jest.fn()}
+        onPermissionsAction={jest.fn()}
+        canManageInstructorPermissions
+        isAdmin={false}
+        currentUserId={99}
+      />
+    );
+
+    expect(screen.queryByText("Approve Access")).toBeNull();
+    expect(screen.queryByText("Change Role")).toBeNull();
+    expect(screen.queryByText("Remove from Company")).toBeNull();
+    expect(screen.getByText("Permissions")).toBeTruthy();
+  });
 });

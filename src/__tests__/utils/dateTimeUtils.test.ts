@@ -13,6 +13,9 @@ import {
   toLocalISOString,
   getWeekBounds,
   isWednesday,
+  addDays,
+  getWeekStartFromISODate,
+  ordinal,
 } from "../../utils/dateTimeUtils";
 
 // ---------------------------------------------------------------------------
@@ -264,5 +267,24 @@ describe("isWednesday", () => {
     expect(isWednesday(new Date(2026, 5, 16))).toBe(false); // Tue
     expect(isWednesday(new Date(2026, 5, 18))).toBe(false); // Thu
     expect(isWednesday(new Date(2026, 5, 14))).toBe(false); // Sun
+  });
+});
+
+describe("addDays / getWeekStartFromISODate / ordinal", () => {
+  it("adds days across month boundaries using local dates", () => {
+    expect(addDays("2026-01-29", 7)).toBe("2026-02-05");
+    expect(addDays("2026-03-01", -1)).toBe("2026-02-28");
+  });
+
+  it("reads date-only strings as local dates when finding the week start", () => {
+    expect(getWeekStartFromISODate("2026-01-04")).toBe("2026-01-04");
+    expect(getWeekStartFromISODate("2026-01-10")).toBe("2026-01-04");
+    expect(getWeekStartFromISODate("2026-01-07T10:00:00")).toBe("2026-01-04");
+  });
+
+  it("formats ordinals", () => {
+    expect([1, 2, 3, 4, 11, 12, 13, 21, 22].map(ordinal)).toEqual([
+      "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd",
+    ]);
   });
 });

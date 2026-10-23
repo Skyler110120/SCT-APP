@@ -14,6 +14,8 @@ interface UserTableProps {
   onCapacityAction?: (user: User) => void;
   canManageInstructorPermissions?: boolean;
   canManageInstructorCapacity?: boolean;
+  /** Approve / Change Role / Remove are company-admin only on the backend. */
+  isAdmin?: boolean;
   currentUserId?: number;
 }
 
@@ -26,6 +28,7 @@ const UserTable: React.FC<UserTableProps> = ({
   onCapacityAction,
   canManageInstructorPermissions,
   canManageInstructorCapacity,
+  isAdmin = true,
   currentUserId,
 }) => {
   const formatName = (user: User) => {
@@ -37,7 +40,7 @@ const UserTable: React.FC<UserTableProps> = ({
     // API enum is MASTERADMIN (UserRole.MASTER_ADMIN), not MASTER_ADMIN.
     const roleKey = String(item.role).toUpperCase().replace(/_/g, "");
     const isMasterAdmin = roleKey === "MASTERADMIN" || item.role === UserRole.MASTER_ADMIN;
-    const canModify = !isSelf && !isMasterAdmin;
+    const canModify = isAdmin && !isSelf && !isMasterAdmin;
 
     return (
     <View style={styles.userRow}>
@@ -63,7 +66,7 @@ const UserTable: React.FC<UserTableProps> = ({
       </View>
 
       <View style={styles.userActions}>
-        {onApproveAction && (item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
+        {isAdmin && onApproveAction && (item.role === "ADMIN" || item.role === "INSTRUCTOR") && !item.is_approved && (
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => onApproveAction(item)}
@@ -143,6 +146,7 @@ const UserTable: React.FC<UserTableProps> = ({
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           contentContainerStyle={styles.listContent}
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
         />
       )}
     </View>
