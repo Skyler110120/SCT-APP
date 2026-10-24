@@ -104,20 +104,21 @@ export default function BottomNavBar({}: BottomNavBarProps) {
       {navItems.map((item) => {
         const isActive = pathname === item.route;
         return (
-          <View
+          <TouchableOpacity
             key={item.name}
-            style={isActive ? styles.selectedIconBackground : undefined}
+            style={styles.navItem}
+            onPress={() => router.push(item.route as AppRouterType)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
           >
-            <TouchableOpacity
-              style={isActive ? styles.navItemActive : styles.navItem}
-              onPress={() => router.push(item.route as AppRouterType)}
+            {renderNavIcon(item.name, isActive, item.icon, item.activeIcon)}
+            <AppText
+              style={isActive ? styles.navTextActive : styles.navText}
+              numberOfLines={1}
             >
-              {renderNavIcon(item.name, isActive, item.icon, item.activeIcon)}
-            </TouchableOpacity>
-            {isActive && (
-              <AppText style={styles.navText}>{formatLabel(item.name)}</AppText>
-            )}
-          </View>
+              {formatLabel(item.name)}
+            </AppText>
+          </TouchableOpacity>
         );
       })}
     </View>

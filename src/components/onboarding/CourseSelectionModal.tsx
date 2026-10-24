@@ -226,7 +226,7 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
             <View style={[styles.modalContent, styles.courseSelectionModal]}>
                 <View style={styles.modalHeader}>
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-                        <FontAwesome name="arrow-left" size={20} color={themes.black} />
+                        <FontAwesome name="arrow-left" size={18} color={themes.textPrimary} />
                     </TouchableOpacity>
                     <Text style={styles.modalTitle}>Select Your Course</Text>
                     <View style={styles.backButton} />

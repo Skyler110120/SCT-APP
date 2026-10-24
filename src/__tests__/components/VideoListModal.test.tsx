@@ -3,10 +3,22 @@
  */
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react-native";
-import { Alert, Linking } from "react-native";
+import { Alert } from "react-native";
 import VideoListModal from "@/src/components/VideoListModal";
 import { materialService } from "@/src/services/materialService";
 import { CourseView, CourseVideo } from "@/src/types/course.types";
+
+jest.mock("expo-video", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return {
+    useVideoPlayer: () => ({
+      play: jest.fn(),
+      pause: jest.fn(),
+    }),
+    VideoView: () => React.createElement(View, { testID: "video-view" }),
+  };
+});
 
 jest.mock("@/src/services/materialService", () => ({
   materialService: {
@@ -58,20 +70,14 @@ const baseCourse: CourseView = {
 describe("VideoListModal", () => {
   const mockOnClose = jest.fn();
   let alertSpy: jest.SpyInstance;
-  let linkingCanOpen: jest.SpyInstance;
-  let linkingOpen: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
     alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
-    linkingCanOpen = jest.spyOn(Linking, "canOpenURL").mockResolvedValue(true);
-    linkingOpen = jest.spyOn(Linking, "openURL").mockResolvedValue(undefined);
   });
 
   afterEach(() => {
     alertSpy.mockRestore();
-    linkingCanOpen.mockRestore();
-    linkingOpen.mockRestore();
   });
 
   it("renders course title and empty state when no videos", () => {
@@ -109,7 +115,7 @@ describe("VideoListModal", () => {
     expect(screen.getByText("Video #2")).toBeTruthy();
   });
 
-  it("opens external URL when video has only video_url (no getVideoAccess call)", async () => {
+  it("plays an external URL in the app without leaving it", async () => {
     const videos: CourseVideo[] = [
       {
         id: 10,
@@ -129,11 +135,10 @@ describe("VideoListModal", () => {
       await Promise.resolve();
     });
     expect(mockGetVideoAccess).not.toHaveBeenCalled();
-    expect(linkingCanOpen).toHaveBeenCalledWith("https://youtube.com/watch?v=abc");
-    expect(linkingOpen).toHaveBeenCalledWith("https://youtube.com/watch?v=abc");
+    expect(screen.getByTestId("in-app-video-player")).toBeTruthy();
   });
 
-  it("calls getVideoAccess and opens returned URL when video has video_s3_key", async () => {
+  it("calls getVideoAccess and plays the returned URL in the app", async () => {
     mockGetVideoAccess.mockResolvedValue({
       success: true,
       data: {
@@ -165,8 +170,7 @@ describe("VideoListModal", () => {
       await Promise.resolve();
     });
     expect(mockGetVideoAccess).toHaveBeenCalledWith(1, 20);
-    expect(linkingCanOpen).toHaveBeenCalledWith("https://s3.presigned.example/video.mp4");
-    expect(linkingOpen).toHaveBeenCalledWith("https://s3.presigned.example/video.mp4");
+    expect(screen.getByTestId("in-app-video-player")).toBeTruthy();
   });
 
   it("shows Alert when video has neither video_url nor video_s3_key", async () => {
@@ -185,7 +189,7 @@ describe("VideoListModal", () => {
     fireEvent.press(videoItem);
     await Promise.resolve();
     expect(alertSpy).toHaveBeenCalledWith("Error", "This video has no URL or file.");
-    expect(linkingOpen).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("in-app-video-player")).toBeNull();
   });
 
   it("shows Alert when getVideoAccess fails for S3 video", async () => {
@@ -211,6 +215,6 @@ describe("VideoListModal", () => {
       await Promise.resolve();
     });
     expect(alertSpy).toHaveBeenCalledWith("Error", "Forbidden");
-    expect(linkingOpen).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("in-app-video-player")).toBeNull();
   });
 });

@@ -27,10 +27,10 @@ export const adminManageUsersStyles = StyleSheet.create({
   },
   pageTitle: {
     marginBottom: 12,
-    textAlign: "center",
-    fontSize: 30,
-    fontFamily: "Oswald_600SemiBold",
-    color: themes.vegasGold,
+    fontSize: 24,
+    lineHeight: 30,
+    fontFamily: "Oswald_500Medium",
+    color: themes.textPrimary,
   },
   tableSection: {
     height: USERS_LIST_BOX_HEIGHT,

@@ -236,7 +236,7 @@ export default function InstructorTools() {
               onPress={handleSendEmailInvite}
               disabled={isSendingInvite || !inviteEmail.trim()}
             >
-              <Text style={styles.primaryButtonText}>
+              <Text style={styles.primaryButtonText} numberOfLines={1}>
                 {isSendingInvite ? "Sending..." : "Send Email Invite"}
               </Text>
             </TouchableOpacity>
@@ -245,7 +245,7 @@ export default function InstructorTools() {
               onPress={handleCreateBackupCode}
               disabled={isCreatingCode}
             >
-              <Text style={styles.outlineButtonText}>
+              <Text style={styles.outlineButtonText} numberOfLines={1}>
                 {isCreatingCode ? "Creating..." : "Create Backup Code"}
               </Text>
             </TouchableOpacity>
@@ -253,12 +253,23 @@ export default function InstructorTools() {
 
           {backupCodes.filter((c) => c.is_active).slice(0, 5).map((code) => (
             <View key={code.code} style={styles.listRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.listPrimary}>{code.code}</Text>
-                <Text style={styles.listSecondary}>{code.role}</Text>
+              <View style={styles.listCopy}>
+                <Text style={styles.listPrimary} numberOfLines={1} ellipsizeMode="middle">
+                  {code.code}
+                </Text>
+                <Text style={styles.listSecondary} numberOfLines={1}>
+                  {code.role}
+                </Text>
               </View>
-              <TouchableOpacity onPress={() => void copyCode(code.code)}>
-                <Text style={styles.copyText}>Copy</Text>
+              <TouchableOpacity
+                style={styles.copyButton}
+                onPress={() => void copyCode(code.code)}
+                accessibilityRole="button"
+                accessibilityLabel={`Copy invite code ${code.code}`}
+              >
+                <Text style={styles.copyText} numberOfLines={1}>
+                  Copy
+                </Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -289,7 +300,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -297,29 +308,39 @@ const styles = StyleSheet.create({
   stepperValue: { color: themes.white, fontSize: 20, fontWeight: "700", minWidth: 32, textAlign: "center" },
   primaryButton: {
     backgroundColor: themes.vegasGold,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
     marginTop: 6,
   },
-  primaryButtonText: { color: themes.black, fontWeight: "700" },
+  primaryButtonText: {
+    color: themes.black,
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 15,
+    lineHeight: 20,
+  },
   outlineButton: {
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
     marginTop: 6,
   },
-  outlineButtonText: { color: themes.vegasGold, fontWeight: "700" },
-  buttonRow: { flexDirection: "row", gap: 10, marginBottom: 8 },
-  flexButton: { flex: 1 },
+  outlineButtonText: {
+    color: themes.textPrimary,
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  buttonRow: { gap: 8, marginBottom: 8 },
+  flexButton: { width: "100%" },
   input: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
-    borderRadius: 8,
+    borderColor: themes.borderStrong,
+    borderRadius: 12,
     color: themes.white,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -328,13 +349,13 @@ const styles = StyleSheet.create({
   chipRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
   chip: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 6,
   },
   chipSelected: { backgroundColor: themes.vegasGold },
-  chipText: { color: themes.vegasGold, fontWeight: "600" },
+  chipText: { color: themes.textPrimary, fontFamily: "Inter_600SemiBold", fontSize: 13 },
   chipTextSelected: { color: themes.black },
   listRow: {
     flexDirection: "row",
@@ -343,7 +364,22 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(197,179,88,0.4)",
   },
-  listPrimary: { color: themes.white, fontWeight: "600" },
-  listSecondary: { color: "#AAA", fontSize: 12 },
-  copyText: { color: themes.vegasGold, fontWeight: "700", paddingHorizontal: 8 },
+  listCopy: { flex: 1, minWidth: 0, marginRight: 10 },
+  listPrimary: { color: themes.white, fontFamily: "Inter_600SemiBold", fontSize: 15 },
+  listSecondary: { color: themes.textMuted, fontSize: 12, marginTop: 2 },
+  copyButton: {
+    flexShrink: 0,
+    minHeight: 32,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: themes.vegasGold,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  copyText: {
+    color: themes.black,
+    fontFamily: "Inter_600SemiBold",
+    fontSize: 13,
+    lineHeight: 16,
+  },
 });

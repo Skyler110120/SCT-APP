@@ -15,11 +15,11 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     padding: 16,
   },
   pageTitle: {
-    marginBottom: 24,
-    textAlign: "center",
-    fontSize: 34,
-    fontFamily: "Chakra-BoldItalic",
-    color: themes.vegasGold,
+    marginBottom: 16,
+    fontSize: 24,
+    lineHeight: 30,
+    fontFamily: "Oswald_500Medium",
+    color: themes.textPrimary,
   },
   searchContainer: {
     flexDirection: "row",
@@ -85,9 +85,10 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   filterSectionTitle: {
-    marginBottom: 16,
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    marginBottom: 12,
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   filterRow: {
@@ -136,9 +137,10 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   tableSectionTitle: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: themes.vegasGold,
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    borderBottomColor: themes.border,
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   listContent: {
@@ -154,16 +156,17 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   userName: {
     marginBottom: 4,
-    fontSize: 24,
-    fontFamily: "Chakra-Bold",
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: "Inter_600SemiBold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
-    fontSize: 18,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
-    opacity: 0.8,
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Inter_400Regular",
+    color: themes.textSecondary,
   },
   userMeta: {
     flexDirection: "row",
@@ -239,8 +242,9 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   modalTitle: {
     marginBottom: 16,
     textAlign: "center",
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    fontSize: 20,
+    lineHeight: 26,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   modalUserInfo: {
@@ -248,16 +252,17 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   modalUserName: {
     marginBottom: 4,
-    fontSize: 24,
-    fontFamily: "Chakra-Regular",
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: "Inter_600SemiBold",
     color: themes.white,
   },
   modalUserEmail: {
     marginBottom: 16,
-    fontSize: 20,
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
-    opacity: 0.8,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Inter_400Regular",
+    color: themes.textSecondary,
   },
   confirmationText: {
     marginBottom: 8,
@@ -323,9 +328,10 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: 24,
-    fontFamily: "Chakra-BoldItalic",
-    color: themes.white,
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.black,
   },
 
   // Instructor Selection Modal Styles

@@ -535,24 +535,18 @@ export default function InstructorProfile() {
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
           >
-            <Text style={styles.profileName}>{getDisplayName()}</Text>
+            <Text
+              style={styles.profileName}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.75}
+            >
+              {getDisplayName()}
+            </Text>
 
             <View style={styles.profileContentContainer}>
               <View style={styles.profilePictureContainer}>
-                <Text
-                  style={[
-                    styles.profileBioTextBottom,
-                    {
-                      textAlign: "center",
-                      paddingRight: 20,
-                      fontSize: 48,
-                      fontFamily: "Chakra-BoldItalic",
-                      color: themes.vegasGold,
-                    },
-                  ]}
-                >
-                  {getUserIntials()}
-                </Text>
+                <Text style={styles.avatarInitial}>{getUserIntials()}</Text>
               </View>
 
               <View style={styles.profileBioContainer}>
@@ -570,11 +564,11 @@ export default function InstructorProfile() {
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button, styles.secondaryButton]}
                   onPress={handleOpenPasswordModal}
                   disabled={isSubmittingProfile || isLoggingOut}
                 >
-                  <Text style={styles.buttonText}>Reset Password</Text>
+                  <Text style={[styles.buttonText, styles.secondaryButtonText]}>Reset Password</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -593,21 +587,21 @@ export default function InstructorProfile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.button, isLoggingOut && { opacity: 0.7 }]}
+                  style={[styles.button, styles.secondaryButton, isLoggingOut && { opacity: 0.7 }]}
                   onPress={handleLogout}
                   disabled={isLoggingOut || isSubmittingProfile}
                 >
                   {isLoggingOut ? (
                     <ActivityIndicator size="small" color={themes.white} />
                   ) : (
-                    <Text style={styles.buttonText}>Log Out</Text>
+                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Log Out</Text>
                   )}
                 </TouchableOpacity>
 
                 {user?.role !== UserRole.MASTER_ADMIN && (
                   <TouchableOpacity
                     testID="delete-account-button"
-                    style={[styles.button, { borderColor: themes.danger }]}
+                    style={[styles.button, styles.secondaryButton, { borderColor: themes.danger }]}
                     onPress={() => setShowDeleteModal(true)}
                     disabled={isLoggingOut || isSubmittingProfile}
                   >

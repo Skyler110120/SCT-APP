@@ -40,8 +40,13 @@ async function getAndMigrateLegacyKey(key: StorageKey): Promise<string | null> {
   const legacyValue = await AsyncStorage.getItem(key);
   if (legacyValue === null) return null;
 
-  await safeSecureSetItem(key, legacyValue);
-  await AsyncStorage.removeItem(key);
+  try {
+    await SecureStore.setItemAsync(key, legacyValue);
+    await AsyncStorage.removeItem(key);
+  } catch {
+    // Web has no Keychain. Keep the AsyncStorage copy so the next read
+    // still finds the session. Removing it here logged the user straight back out.
+  }
   return legacyValue;
 }
 

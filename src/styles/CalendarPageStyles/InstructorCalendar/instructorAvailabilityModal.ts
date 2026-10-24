@@ -10,11 +10,31 @@ export const instructorAvailablityModal = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
+    maxHeight: "88%",
     padding: 20,
     borderWidth: 2,
     borderRadius: 20,
     backgroundColor: themes.black,
     borderColor: themes.vegasGold,
+  },
+  modalScroll: {
+    flexShrink: 1,
+  },
+  modalScrollContent: {
+    paddingBottom: 8,
+  },
+  modalFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(197, 179, 88, 0.35)",
+  },
+  fullWidthButton: {
+    flex: 0,
+    marginHorizontal: 0,
+    marginBottom: 10,
   },
   modalTitle: {
     marginBottom: 20,

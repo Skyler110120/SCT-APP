@@ -36,7 +36,7 @@ const InviteCodeForm = ({
     >
       <View style={styles.modalOverlay}>
         <AppCard style={styles.modalContent} variant="elevated">
-          <AppText variant="title" style={inviteCodeForm.modalTitle}>
+          <AppText variant="title" style={inviteCodeForm.modalTitle} numberOfLines={2}>
             Create Invite Code for {company.name}
           </AppText>
           <AppText style={inviteCodeForm.inputLabel}>
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
   },
   roleOptionsRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: theme.space.sm,
   },
   roleButton: {
-    flexGrow: 1,
-    minWidth: 132,
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 8,
   },
 });

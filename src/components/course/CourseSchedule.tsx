@@ -1,8 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Linking, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 
 import DrillDetailModal from "@/src/components/course/DrillDetailModal";
+import { InAppVideoPlayer } from "@/src/components/InAppVideoPlayer";
 import { themes } from "@/src/context/themes";
 import { drillService } from "@/src/services/courseDrillService";
 import {
@@ -45,6 +46,8 @@ export default function CourseSchedule({
   const [expandedMonths, setExpandedMonths] = useState<Set<number>>(new Set());
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set());
   const [drillDetail, setDrillDetail] = useState<{ classDrill: ClassDrill; weekContextLine: string } | null>(null);
+  const [playback, setPlayback] = useState<{ url: string; title: string } | null>(null);
+  const [openingVideoId, setOpeningVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,11 +74,20 @@ export default function CourseSchedule({
     });
 
   const openDrillVideo = async (drillId: number, video: DrillVideo) => {
-    const res = await drillService.getDrillVideoAccessUrl(drillId, video.id);
-    if (res.success && res.data?.access_url) {
-      await Linking.openURL(res.data.access_url);
-    } else {
-      Alert.alert("Video unavailable", res.error || "Unable to open this video right now.");
+    if (openingVideoId != null) return;
+    setOpeningVideoId(video.id);
+    try {
+      const res = await drillService.getDrillVideoAccessUrl(drillId, video.id);
+      if (res.success && res.data?.access_url) {
+        setPlayback({
+          url: res.data.access_url,
+          title: video.title || video.video_filename || "Video",
+        });
+      } else {
+        Alert.alert("Video unavailable", res.error || "Unable to open this video right now.");
+      }
+    } finally {
+      setOpeningVideoId(null);
     }
   };
 
@@ -121,7 +133,9 @@ export default function CourseSchedule({
                     }}
                   >
                     <FontAwesome name="play" size={10} color={themes.vegasGold} />
-                    <Text style={{ color: themes.vegasGold, fontSize: 12 }}>Watch Video</Text>
+                    <Text style={{ color: themes.vegasGold, fontSize: 12 }}>
+                      {openingVideoId === firstVideo.id ? "Opening..." : "Watch Video"}
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -269,6 +283,12 @@ export default function CourseSchedule({
         hideInstructorNotes={isStudent}
         onClose={() => setDrillDetail(null)}
         onWatchVideo={openDrillVideo}
+      />
+      <InAppVideoPlayer
+        visible={playback != null}
+        url={playback?.url ?? null}
+        title={playback?.title}
+        onClose={() => setPlayback(null)}
       />
     </View>
   );

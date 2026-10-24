@@ -1,41 +1,48 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
-import { Dimensions } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 export const adminStatsStyles = StyleSheet.create({
   statsContainer: {
-    padding: 16,
-    marginTop: 16,
-    borderRadius: 100,
-    backgroundColor: "transparent",
+    marginTop: 4,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: themes.border,
+    backgroundColor: themes.backgroundElevated,
   },
-  statsTitle:  {
-    marginBottom: '1%',
-    paddingTop: "20%",
-    fontSize: width * 0.08,
-    fontFamily: "Chakra-Italic",
-    textAlign: 'center',
-    color: themes.vegasGold,
+  statsTitle: {
+    marginBottom: 10,
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+    color: themes.textMuted,
   },
   statRow: {
     flexDirection: "row",
-    justifyContent:  "space-around",
-    marginBottom: 16,
+    gap: 8,
   },
   statCard: {
-    alignItems: "center",
-    padding: 8,
+    flex: 1,
+    minWidth: 0,
+    alignItems: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: themes.backgroundSoft,
   },
   statValue: {
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Oswald_500Medium",
     color: themes.vegasGold,
   },
   statLabel: {
-    fontSize: 20,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    marginTop: 2,
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: "Inter_500Medium",
+    color: themes.textSecondary,
   },
 });

@@ -296,8 +296,8 @@ export default function RegisterScreen() {
       );
     } else if (currentStep === "cadence-selection") {
       return (
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.82)", justifyContent: "center", padding: 20 }}>
-          <View style={{ backgroundColor: themes.backgroundElevated, borderRadius: 16, padding: 16 }}>
+        <View style={{ flex: 1, backgroundColor: themes.background, justifyContent: "center", padding: 20 }}>
+          <View style={{ backgroundColor: themes.backgroundElevated, borderRadius: 16, borderWidth: 1, borderColor: themes.border, padding: 16 }}>
             <TouchableOpacity onPress={handleBack} style={{ marginBottom: 12 }}>
               <AppText color={themes.vegasGold}>Back</AppText>
             </TouchableOpacity>
@@ -308,11 +308,12 @@ export default function RegisterScreen() {
             <TouchableOpacity
               onPress={() => handleCadenceSelection("WEEKLY")}
               style={{
-                borderColor: selectedCadence === "WEEKLY" ? themes.vegasGold : "#444",
+                borderColor: selectedCadence === "WEEKLY" ? themes.vegasGold : themes.border,
                 borderWidth: 1,
                 borderRadius: 12,
-                padding: 12,
+                padding: 14,
                 marginBottom: 10,
+                backgroundColor: selectedCadence === "WEEKLY" ? "rgba(197,179,88,0.12)" : themes.backgroundSoft,
               }}
             >
               <AppText variant="bodyStrong">Weekly Plan</AppText>
@@ -322,10 +323,11 @@ export default function RegisterScreen() {
             <TouchableOpacity
               onPress={() => handleCadenceSelection("BIWEEKLY")}
               style={{
-                borderColor: selectedCadence === "BIWEEKLY" ? themes.vegasGold : "#444",
+                borderColor: selectedCadence === "BIWEEKLY" ? themes.vegasGold : themes.border,
                 borderWidth: 1,
                 borderRadius: 12,
-                padding: 12,
+                padding: 14,
+                backgroundColor: selectedCadence === "BIWEEKLY" ? "rgba(197,179,88,0.12)" : themes.backgroundSoft,
               }}
             >
               <AppText variant="bodyStrong">Bi-Weekly Plan</AppText>
@@ -373,11 +375,6 @@ export default function RegisterScreen() {
               <AppText variant="body" style={styles.subtitle}>
                 Join your organization and start tracking progress with a modern training workflow.
               </AppText>
-              <View style={styles.flowBadge}>
-                <AppText variant="caption" style={styles.flowBadgeText}>
-                  Structured enrollment flow
-                </AppText>
-              </View>
 
               {companyInfo && (
                 <View style={styles.welcomeContainer}>

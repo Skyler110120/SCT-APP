@@ -32,11 +32,12 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     flex: width < 900 ? 1 : 2,
   },
   pageTitle: {
-    paddingVertical: 8,
-    marginTop: 8,
-    fontSize: width < 900 ? 32 : width * 0.06,
+    paddingVertical: 4,
+    marginTop: 4,
+    marginBottom: 8,
+    fontSize: width < 900 ? 24 : 32,
+    lineHeight: width < 900 ? 30 : 40,
     fontFamily: "Oswald_500Medium",
-    textAlign: "center",
     color: themes.textPrimary,
   },
   selectedBanner: {
@@ -94,11 +95,10 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: width < 900 ? 16 : width * 0.022,
-    fontFamily: "Oswald_500Medium",
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
     color: themes.black,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
   },
   createCompanyButton: {
     alignItems: "center",
@@ -112,11 +112,10 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     backgroundColor: themes.backgroundElevated,
   },
   createCompanyButtonText: {
-    fontSize: width < 900 ? 16 : width * 0.022,
-    fontFamily: "Oswald_500Medium",
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
     color: themes.vegasGold,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
   },
   logoutButton: {
     alignItems: "center",
@@ -126,7 +125,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.borderStrong,
     backgroundColor: "transparent",
   },
   logoutButtonText: {

@@ -293,9 +293,9 @@ export const sessionFormStyles = StyleSheet.create({
   },
   completeButtonText: {
     color: themes.black,
-    fontSize: 18,
-    fontFamily: "Oswald_500Medium",
-    letterSpacing: 1,
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
   },
 
   // Save draft
@@ -309,8 +309,9 @@ export const sessionFormStyles = StyleSheet.create({
   },
   saveButtonText: {
     color: themes.vegasGold,
-    fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
   },
 
   // Completed badge

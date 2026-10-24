@@ -85,9 +85,11 @@ export function AppButton({
         />
       ) : (
         <AppText
-          variant="subtitle"
+          variant="bodyStrong"
           style={[styles.text, { color: buttonTextColor(variant) }]}
           numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.85}
         >
           {label}
         </AppText>
@@ -105,8 +107,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    fontSize: 15,
+    lineHeight: 20,
   },
   pressed: {
     opacity: 0.9,

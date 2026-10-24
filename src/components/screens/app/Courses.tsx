@@ -464,24 +464,24 @@ export default function Courses() {
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               Week {stats.currentWeek}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              Current Progress
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Progress
             </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               {stats.progressPercentage}%
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              Course Complete
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Complete
             </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               {stats.videosAvailable}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              Videos Available
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Videos
             </Text>
           </View>
         </View>
@@ -497,24 +497,24 @@ export default function Courses() {
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               {stats.totalCourses}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              Active Courses
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Courses
             </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               {stats.totalStudents}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              {isAdmin ? "All Students" : "Students"}
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Students
             </Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
               {stats.studentsInProgress}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={2}>
-              In Progress
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+              Active
             </Text>
           </View>
         </View>
@@ -590,7 +590,7 @@ export default function Courses() {
       <View style={styles.selectedCourseSection}>
         <View style={styles.selectedCourseHeader}>
           <View style={styles.selectedCourseInfo}>
-            <Text style={styles.selectedCourseTitle}>
+            <Text style={styles.selectedCourseTitle} numberOfLines={2}>
               {selectedCourse.title}
             </Text>
             <Text style={styles.selectedCourseDescription}>
@@ -697,33 +697,37 @@ export default function Courses() {
             >
               <FontAwesome
                 name={accessingMaterial.type === 'pdf' ? "spinner" : "file-pdf-o"}
-                size={24}
+                size={18}
                 color={
                   hasPdfMaterial && !accessingMaterial.loading
                     ? themes.vegasGold
                     : themes.white 
                 }
               />
-              <Text
-                style={[
-                  styles.actionButtonTitle,
-                  !hasPdfMaterial && styles.actionButtonTitleDisabled,
-                ]}
-              >
-                {isStudent ? "Course Materials" : "Teaching Materials"}
-              </Text>
-              <Text
-                style={[
-                  styles.actionButtonSubtitle,
-                  !hasPdfMaterial && styles.actionButtonSubtitleDisabled,
-                ]}
-              >
-                {accessingMaterial.type === 'pdf' 
-                  ? "Loading..." 
-                  : hasPdfMaterial 
-                    ? "View PDF"
-                    : "Not available"}
-              </Text>
+              <View style={styles.actionButtonCopy}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionButtonTitle,
+                    !hasPdfMaterial && styles.actionButtonTitleDisabled,
+                  ]}
+                >
+                  {isStudent ? "Course Materials" : "Teaching Materials"}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionButtonSubtitle,
+                    !hasPdfMaterial && styles.actionButtonSubtitleDisabled,
+                  ]}
+                >
+                  {accessingMaterial.type === 'pdf' 
+                    ? "Loading..." 
+                    : hasPdfMaterial 
+                      ? "View PDF"
+                      : "Not available"}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {canViewInstructorScript && isInstructorCourse(selectedCourse) && (
@@ -739,33 +743,37 @@ export default function Courses() {
               >
                 <FontAwesome
                   name={accessingMaterial.type === 'script' ? "spinner" : "file-text-o"}
-                  size={24}
+                  size={18}
                   color={
                     hasScriptMaterial && !accessingMaterial.loading
                       ? themes.vegasGold
                       : themes.white + "60"
                   }
                 />
-                <Text
-                  style={[
-                    styles.actionButtonTitle,
-                    !hasScriptMaterial && styles.actionButtonTitleDisabled,
-                  ]}
-                >
-                  Teaching Script
-                </Text>
-                <Text
-                  style={[
-                    styles.actionButtonSubtitle,
-                    !hasScriptMaterial && styles.actionButtonSubtitleDisabled,
-                  ]}
-                >
-                  {accessingMaterial.type === 'script'
-                    ? "Loading..."
-                    : hasScriptMaterial
-                      ? "View Script"
-                      : "Not available"}
-                </Text>
+                <View style={styles.actionButtonCopy}>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.actionButtonTitle,
+                      !hasScriptMaterial && styles.actionButtonTitleDisabled,
+                    ]}
+                  >
+                    Teaching Script
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.actionButtonSubtitle,
+                      !hasScriptMaterial && styles.actionButtonSubtitleDisabled,
+                    ]}
+                  >
+                    {accessingMaterial.type === 'script'
+                      ? "Loading..."
+                      : hasScriptMaterial
+                        ? "View Script"
+                        : "Not available"}
+                  </Text>
+                </View>
               </TouchableOpacity>
             )}
           </View>
@@ -785,35 +793,39 @@ export default function Courses() {
             >
               <FontAwesome
                 name="video-camera"
-                size={24}
+                size={18}
                 color={
                   selectedCourse.videos && selectedCourse.videos.length > 0
                     ? themes.vegasGold
                     : themes.white + "60"
                 }
               />
-              <Text
-                style={[
-                  styles.actionButtonTitle,
-                  (!selectedCourse.videos ||
-                    selectedCourse.videos.length === 0) &&
-                    styles.actionButtonTitleDisabled,
-                ]}
-              >
-                Course Videos
-              </Text>
-              <Text
-                style={[
-                  styles.actionButtonSubtitle,
-                  (!selectedCourse.videos ||
-                    selectedCourse.videos.length === 0) &&
-                    styles.actionButtonSubtitleDisabled,
-                ]}
-              >
-                {selectedCourse.videos && selectedCourse.videos.length > 0
-                  ? `${selectedCourse.videos.length} videos`
-                  : "No videos added"}
-              </Text>
+              <View style={styles.actionButtonCopy}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionButtonTitle,
+                    (!selectedCourse.videos ||
+                      selectedCourse.videos.length === 0) &&
+                      styles.actionButtonTitleDisabled,
+                  ]}
+                >
+                  Course Videos
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.actionButtonSubtitle,
+                    (!selectedCourse.videos ||
+                      selectedCourse.videos.length === 0) &&
+                      styles.actionButtonSubtitleDisabled,
+                  ]}
+                >
+                  {selectedCourse.videos && selectedCourse.videos.length > 0
+                    ? `${selectedCourse.videos.length} videos`
+                    : "No videos added"}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {canViewStudentProgress && (
@@ -822,13 +834,15 @@ export default function Courses() {
                 onPress={handleViewStudentProgress}
                 activeOpacity={0.7}
               >
-                <FontAwesome name="users" size={24} color={themes.vegasGold} />
-                <Text style={styles.actionButtonTitle}>
-                  {isAdmin ? "All Students" : "Student Progress"}
-                </Text>
-                <Text style={styles.actionButtonSubtitle}>
-                  Track learning progress
-                </Text>
+                <FontAwesome name="users" size={18} color={themes.vegasGold} />
+                <View style={styles.actionButtonCopy}>
+                  <Text style={styles.actionButtonTitle} numberOfLines={1}>
+                    {isAdmin ? "All Students" : "Student Progress"}
+                  </Text>
+                  <Text style={styles.actionButtonSubtitle} numberOfLines={1}>
+                    Track learning progress
+                  </Text>
+                </View>
               </TouchableOpacity>
             )}
           </View>

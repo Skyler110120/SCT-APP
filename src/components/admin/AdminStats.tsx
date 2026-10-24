@@ -22,12 +22,16 @@ const AdminStats = ({ stats, selectedCompany }: StatsProps) => {
       <View style={styles.statRow}>
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{stats.totalUsers}</Text>
-          <Text style={styles.statLabel}>Total Users</Text>
+          <Text style={styles.statLabel} numberOfLines={1}>
+            Total users
+          </Text>
         </View>
 
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{stats.pendingInvites}</Text>
-          <Text style={styles.statLabel}>Pending Invites</Text>
+          <Text style={styles.statLabel} numberOfLines={1}>
+            Pending invites
+          </Text>
         </View>
       </View>
     </View>

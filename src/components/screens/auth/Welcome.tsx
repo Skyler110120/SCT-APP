@@ -22,18 +22,6 @@ export default function WelcomeScreen() {
               Access your schedule, progress, and training standards from one secure mobile hub.
             </AppText>
 
-            <View style={styles.valueProps}>
-              <View style={styles.valuePropRow}>
-                <AppText variant="caption" style={styles.valuePropText}>Trusted Coaching</AppText>
-              </View>
-              <View style={styles.valuePropRow}>
-                <AppText variant="caption" style={styles.valuePropText}>Structured Progress</AppText>
-              </View>
-              <View style={styles.valuePropRow}>
-                <AppText variant="caption" style={styles.valuePropText}>Results-Driven Training</AppText>
-              </View>
-            </View>
-
             <View style={styles.actionColumn}>
               <AppButton
                 label="Sign in"

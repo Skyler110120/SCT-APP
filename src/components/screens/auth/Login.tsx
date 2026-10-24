@@ -94,11 +94,6 @@ export default function LoginScreen() {
                 <AppText variant="body" style={styles.subtitle}>
                   Access your schedule, progress, and program updates in one secure place.
                 </AppText>
-                <View style={styles.securityBadge}>
-                  <AppText variant="caption" style={styles.securityText}>
-                    Secure encrypted login
-                  </AppText>
-                </View>
                 <View style={styles.form}>
                   <AppInput
                     label="Email"

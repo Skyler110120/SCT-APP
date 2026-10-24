@@ -15,10 +15,10 @@ export const welcomeScreenStyles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 540,
-    borderRadius: theme.radius.xl,
+    borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    backgroundColor: "rgba(8,8,8,0.76)",
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.backgroundElevated,
     paddingVertical: theme.space["2xl"],
     paddingHorizontal: theme.space.xl,
     gap: theme.space.lg,
@@ -31,23 +31,6 @@ export const welcomeScreenStyles = StyleSheet.create({
     textAlign: "center",
     color: theme.colors.textSecondary,
     marginTop: -4,
-  },
-  valueProps: {
-    gap: theme.space.sm,
-  },
-  valuePropRow: {
-    borderWidth: 1,
-    borderColor: "rgba(197,179,88,0.3)",
-    backgroundColor: "rgba(197,179,88,0.08)",
-    borderRadius: theme.radius.md,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  valuePropText: {
-    letterSpacing: 0.9,
-    textTransform: "uppercase",
-    color: theme.colors.textPrimary,
-    textAlign: "center",
   },
   actionColumn: {
     gap: theme.space.md,

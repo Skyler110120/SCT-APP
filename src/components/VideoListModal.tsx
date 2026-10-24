@@ -6,7 +6,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   Modal,
   ScrollView,
   Text,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { materialService } from "@/src/services/materialService";
+import { InAppVideoPlayer } from "@/src/components/InAppVideoPlayer";
 
 interface VideoListModalProps {
   visible: boolean;
@@ -28,11 +28,10 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
   onClose,
 }) => {
   const [loadingVideoId, setLoadingVideoId] = useState<number | null>(null);
+  const [playback, setPlayback] = useState<{ url: string; title: string } | null>(null);
 
   const handleOpenVideo = async (video: CourseVideo) => {
     try {
-      console.log(`🎥 Opening video: ${video.title}`);
-
       let urlToOpen: string;
       if (video.video_s3_key?.trim()) {
         setLoadingVideoId(video.id);
@@ -50,15 +49,7 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
         return;
       }
 
-      const supported = await Linking.canOpenURL(urlToOpen);
-      if (supported) {
-        await Linking.openURL(urlToOpen);
-      } else {
-        Alert.alert(
-          "Cannot Open Video",
-          "Unable to open video. Please check the video URL or your internet connection."
-        );
-      }
+      setPlayback({ url: urlToOpen, title: video.title || "Video" });
     } catch (error) {
       setLoadingVideoId(null);
       console.error("Error opening video:", error);
@@ -147,7 +138,7 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
           </View>
 
           <FontAwesome
-            name="external-link"
+            name="play-circle"
             size={16}
             color={themes.white + "80"}
           />
@@ -157,6 +148,7 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
   );
 
   return (
+    <>
     <Modal
       visible={visible}
       animationType="slide"
@@ -213,6 +205,13 @@ const VideoListModal: React.FC<VideoListModalProps> = ({
         </ScrollView>
       </SafeAreaView>
     </Modal>
+    <InAppVideoPlayer
+      visible={playback != null}
+      url={playback?.url ?? null}
+      title={playback?.title}
+      onClose={() => setPlayback(null)}
+    />
+    </>
   );
 };
 

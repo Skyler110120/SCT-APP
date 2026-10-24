@@ -92,6 +92,15 @@ describe("authStorage.getAuthToken", () => {
     expect(mockAsyncRemove).toHaveBeenCalledWith("auth_token");
   });
 
+  it("keeps the AsyncStorage copy when SecureStore cannot store the migrated token", async () => {
+    mockSecureGet.mockRejectedValueOnce(new Error("Keychain unavailable"));
+    mockAsyncGet.mockResolvedValueOnce("web-jwt");
+    mockSecureSet.mockRejectedValueOnce(new Error("Keychain unavailable"));
+
+    await expect(authStorage.getAuthToken()).resolves.toBe("web-jwt");
+    expect(mockAsyncRemove).not.toHaveBeenCalled();
+  });
+
   it("returns null when no token in either secure or legacy storage", async () => {
     mockSecureGet.mockResolvedValueOnce(null);
     mockAsyncGet.mockResolvedValueOnce(null);

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -13,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import { InAppVideoPlayer } from "@/src/components/InAppVideoPlayer";
 import { themes } from "@/src/context/themes";
 import { sessionFormStyles as styles } from "@/src/styles/SessionStyles/sessionFormStyles";
 
@@ -31,6 +31,12 @@ import {
   PostStressLevel,
 } from "@/src/types/enums";
 import { SessionDetailed } from "@/src/types/sessions.types";
+import {
+  buildDrillMetricDraft,
+  drillMetricKey,
+  mergeDrillMetricDrafts,
+  type DrillMetricDraft,
+} from "@/src/utils/drillMetricDraft";
 
 interface DraftState {
   sleep_hours: number | null;
@@ -67,28 +73,6 @@ const EMPTY_DRAFT: DraftState = {
   final_passed: null,
   pass_override_reason: "",
 };
-
-interface DrillMetricDraft {
-  timeSeconds: string;
-  hitCount: string;
-  passOverride: "AUTO" | "PASS" | "FAIL";
-}
-
-function buildDrillMetricDraft(drill: SessionParticipantDrillProgress): DrillMetricDraft {
-  return {
-    timeSeconds: drill.time_seconds != null ? String(drill.time_seconds) : "",
-    hitCount: drill.hit_count != null ? String(drill.hit_count) : "",
-    passOverride: drill.pass_override_applied
-      ? drill.passed
-        ? "PASS"
-        : "FAIL"
-      : "AUTO",
-  };
-}
-
-function drillMetricKey(studentId: number, drillProgressId: number): string {
-  return `${studentId}:${drillProgressId}`;
-}
 
 function toDraft(participant: SessionParticipantWorkflow): DraftState {
   const form = participant.form;
@@ -138,6 +122,7 @@ export default function SessionFormScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [busyDrillId, setBusyDrillId] = useState<number | null>(null);
   const [loadingVideoId, setLoadingVideoId] = useState<number | null>(null);
+  const [playback, setPlayback] = useState<{ url: string; title: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const replaceFromWorkflow = useCallback(
@@ -150,16 +135,7 @@ export default function SessionFormScreen() {
         }
         return next;
       });
-      setDrillMetricDrafts((prev) => {
-        const next = new Map(prev);
-        for (const p of workflowParticipants) {
-          if (p.session_mode !== "TEST") continue;
-          for (const drill of p.drills) {
-            next.set(drillMetricKey(p.student_id, drill.id), buildDrillMetricDraft(drill));
-          }
-        }
-        return next;
-      });
+      setDrillMetricDrafts((prev) => mergeDrillMetricDrafts(prev, workflowParticipants));
     },
     []
   );
@@ -342,11 +318,10 @@ export default function SessionFormScreen() {
       Alert.alert("Error", res.error ?? "Failed to load video");
       return;
     }
-    try {
-      await Linking.openURL(res.data.access_url);
-    } catch {
-      Alert.alert("Cannot Open Video", "Unable to open this video on your device.");
-    }
+    setPlayback({
+      url: res.data.access_url,
+      title: video.title || video.video_filename || "Video",
+    });
   };
 
   const endEarly = () => {
@@ -510,7 +485,9 @@ export default function SessionFormScreen() {
       {isSubmitting ? (
         <ActivityIndicator size="small" color={themes.black} />
       ) : (
-        <Text style={styles.completeButtonText}>{label}</Text>
+        <Text style={styles.completeButtonText} numberOfLines={1}>
+          {label}
+        </Text>
       )}
     </TouchableOpacity>
   );
@@ -715,7 +692,7 @@ export default function SessionFormScreen() {
                     10
                   )}
                 </View>
-                {renderPrimaryButton("COMPLETE PRE-TRAINING", submitPretraining, isSubmitting)}
+                {renderPrimaryButton("Complete pre-training", submitPretraining, isSubmitting)}
               </View>
             )}
 
@@ -891,14 +868,16 @@ export default function SessionFormScreen() {
 
                 {!canProceedToPosttraining && !isRetrainFree && (
                   <TouchableOpacity style={styles.saveButton} onPress={endEarly}>
-                    <Text style={styles.saveButtonText}>END EARLY & MOVE TO POST-TRAINING</Text>
+                    <Text style={styles.saveButtonText} numberOfLines={1}>
+                      Move to post-training
+                    </Text>
                   </TouchableOpacity>
                 )}
                 {canProceedToPosttraining &&
                   renderPrimaryButton(
                     activeParticipant.current_phase === "POST_TRAINING"
-                      ? "BACK TO POST-TRAINING"
-                      : "END SESSION",
+                      ? "Back to post-training"
+                      : "End session",
                     startPosttraining,
                     isSubmitting
                   )}
@@ -1049,7 +1028,7 @@ export default function SessionFormScreen() {
                       </TouchableOpacity>
 
                       {renderPrimaryButton(
-                        "COMPLETE POST-TRAINING",
+                        "Complete post-training",
                         submitPosttraining,
                         isSubmitting
                       )}
@@ -1058,7 +1037,7 @@ export default function SessionFormScreen() {
 
                 {activeParticipant.posttraining_status === "COMPLETED" &&
                   !activeParticipant.is_session_submitted &&
-                  renderPrimaryButton("SUBMIT STUDENT SESSION", submitParticipant, isSubmitting)}
+                  renderPrimaryButton("Submit student session", submitParticipant, isSubmitting)}
 
                 {activeParticipant.is_session_submitted && (
                   <View style={styles.completedBadge}>
@@ -1078,6 +1057,12 @@ export default function SessionFormScreen() {
           </ScrollView>
         </SafeAreaView>
       </BackgroundGradient>
+      <InAppVideoPlayer
+        visible={playback != null}
+        url={playback?.url ?? null}
+        title={playback?.title}
+        onClose={() => setPlayback(null)}
+      />
     </View>
   );
 }

@@ -44,24 +44,24 @@ const radius = {
 } as const;
 
 const colors = {
-  black: "#040507",
+  black: "#090A0C",
   white: "#FFFFFF",
   vegasGold: "#C5B358",
   vegasGoldHover: "#D4C467",
-  background: "#090A0C",
-  backgroundElevated: "#111317",
-  backgroundSoft: "#171A1F",
-  border: "rgba(197,179,88,0.32)",
-  borderStrong: "rgba(197,179,88,0.56)",
-  textPrimary: "#FFFFFF",
-  textSecondary: "rgba(255,255,255,0.78)",
-  textMuted: "rgba(255,255,255,0.58)",
+  background: "#0C0D10",
+  backgroundElevated: "#16181C",
+  backgroundSoft: "#1E2126",
+  border: "rgba(255,255,255,0.08)",
+  borderStrong: "rgba(255,255,255,0.16)",
+  textPrimary: "#F5F6F7",
+  textSecondary: "rgba(245,246,247,0.72)",
+  textMuted: "rgba(245,246,247,0.48)",
   success: "#4ADE80",
   warning: "#FBBF24",
   danger: "#F87171",
-  overlay: "rgba(2,3,5,0.78)",
-  gradientTop: "#050608",
-  gradientBottom: "#1A1F2A",
+  overlay: "rgba(6,7,9,0.82)",
+  gradientTop: "#0C0D10",
+  gradientBottom: "#12141A",
 } as const;
 
 const elevation = {

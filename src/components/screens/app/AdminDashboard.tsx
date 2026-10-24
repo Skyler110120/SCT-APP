@@ -292,87 +292,80 @@ export default function AdminDashboard() {
           >
             <View style={styles.content}>
             {company && (
-              <Text style={styles.pageTitle}>
-                {company.name} Dashboard
-              </Text>
+              <>
+                <Text
+                  style={styles.pageTitle}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {company.name}
+                </Text>
+                <Text style={styles.pageSubtitle}>Dashboard</Text>
+              </>
             )}
             {isLoading && (
-              <Text style={{ color: "white", textAlign: "center" }}>
-                Loading company data...
-              </Text>
+              <Text style={styles.pageSubtitle}>Loading company data...</Text>
             )}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Payment Setup</Text>
               {isLoadingPaymentStatus ? (
-                <Text style={{ color: themes.white, textAlign: "center" }}>
-                  Checking payment status...
-                </Text>
+                <Text style={styles.sectionDescription}>Checking payment status...</Text>
               ) : paymentStatus?.payment_enabled ? (
                 <>
-                  <Text
-                    style={{
-                      color: "#4ade80",
-                      textAlign: "center",
-                      fontFamily: "Chakra-Regular",
-                    }}
-                  >
+                  <Text style={[styles.sectionDescription, { color: themes.success }]}>
                     Payments are active for your company.
                   </Text>
                   <TouchableOpacity
-                    style={[styles.actionButton, { marginTop: 8 }]}
+                    style={styles.actionButton}
                     onPress={() => router.push("/company/management/payments")}
                   >
-                    <Text style={styles.buttonText}>Open Payments Page</Text>
+                    <Text style={styles.buttonText} numberOfLines={1}>
+                      Open Payments
+                    </Text>
                   </TouchableOpacity>
                 </>
               ) : paymentStatus?.stripe_account_id ? (
                 <>
                   <Text style={styles.sectionDescription}>
-                    Stripe account is connected but setup is incomplete.
+                    Stripe is connected, but setup is still incomplete.
                   </Text>
                   <TouchableOpacity
                     style={[styles.actionButton, isSettingUpPayments && { opacity: 0.7 }]}
                     onPress={handleSetupPayments}
                     disabled={isSettingUpPayments}
                   >
-                    <Text style={styles.buttonText}>
-                      {isSettingUpPayments ? "Opening..." : "Complete Payment Setup"}
+                    <Text style={styles.buttonText} numberOfLines={1}>
+                      {isSettingUpPayments ? "Opening..." : "Finish Setup"}
                     </Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
                   <Text style={styles.sectionDescription}>
-                    Set up Stripe Connect to accept student subscription payments.
+                    Connect Stripe to accept student subscription payments.
                   </Text>
                   <TouchableOpacity
                     style={[styles.actionButton, isSettingUpPayments && { opacity: 0.7 }]}
                     onPress={handleSetupPayments}
                     disabled={isSettingUpPayments}
                   >
-                    <Text style={styles.buttonText}>
+                    <Text style={styles.buttonText} numberOfLines={1}>
                       {isSettingUpPayments ? "Opening..." : "Set Up Payments"}
                     </Text>
                   </TouchableOpacity>
                 </>
               )}
               {paymentMessage && (
-                <Text
-                  style={{
-                    marginTop: 8,
-                    textAlign: "center",
-                    color: "#fbbf24",
-                    fontFamily: "Chakra-Regular",
-                  }}
-                >
+                <Text style={[styles.feedbackText, { color: themes.warning }]}>
                   {paymentMessage}
                 </Text>
               )}
             </View>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Session Booking Lock Window</Text>
+              <Text style={styles.sectionTitle}>Booking lock</Text>
               <Text style={styles.sectionDescription}>
-                Students cannot book sessions within this many hours of the session start time.
+                Students cannot book a session inside this many hours of its start time.
               </Text>
               <TextInput
                 style={styles.textInput}
@@ -390,19 +383,12 @@ export default function AdminDashboard() {
                 onPress={handleSaveBookingLock}
                 disabled={isSavingBookingLock}
               >
-                <Text style={styles.buttonText}>
+                <Text style={styles.buttonText} numberOfLines={1}>
                   {isSavingBookingLock ? "Saving..." : "Save Booking Lock"}
                 </Text>
               </TouchableOpacity>
               {bookingLockMessage && (
-                <Text
-                  style={{
-                    marginTop: 8,
-                    textAlign: "center",
-                    color: "#fbbf24",
-                    fontFamily: "Chakra-Regular",
-                  }}
-                >
+                <Text style={[styles.feedbackText, { color: themes.warning }]}>
                   {bookingLockMessage}
                 </Text>
               )}
@@ -423,7 +409,7 @@ export default function AdminDashboard() {
                 onPress={() => setInviteCodeModalVisible(true)}
                 disabled={!company}
               >
-                <Text style={styles.buttonText}>
+                <Text style={styles.buttonText} numberOfLines={1}>
                   Create Invite Code
                 </Text>
               </TouchableOpacity>
@@ -445,89 +431,79 @@ export default function AdminDashboard() {
                 autoCapitalize="none"
               />
 
-              <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, marginTop: 8 }}>
-                {INVITE_ROLES.map((r) => (
-                  <TouchableOpacity
-                    key={r.value}
-                    onPress={() => setInviteRole(r.value)}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 8,
-                      borderRadius: 20,
-                      borderWidth: 1,
-                      borderColor: themes.vegasGold,
-                      backgroundColor: inviteRole === r.value ? themes.vegasGold : "transparent",
-                    }}
-                  >
-                    <Text style={{
-                      fontFamily: "Chakra-Bold",
-                      fontSize: 14,
-                      color: inviteRole === r.value ? themes.black : themes.vegasGold,
-                    }}>
-                      {r.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              <View style={styles.roleRow}>
+                {INVITE_ROLES.map((r) => {
+                  const selected = inviteRole === r.value;
+                  return (
+                    <TouchableOpacity
+                      key={r.value}
+                      onPress={() => setInviteRole(r.value)}
+                      style={[styles.roleChip, selected && styles.roleChipSelected]}
+                    >
+                      <Text
+                        numberOfLines={1}
+                        style={[styles.roleChipText, selected && styles.roleChipTextSelected]}
+                      >
+                        {r.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               {inviteRole === "STUDENT" && courses.length > 0 && (
-                <View style={{ marginTop: 8 }}>
+                <View style={{ marginTop: 10 }}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
+                    <View style={styles.courseChipRow}>
                       <TouchableOpacity
                         onPress={() => setInviteCourseId(null)}
-                        style={{
-                          paddingHorizontal: 12,
-                          paddingVertical: 6,
-                          borderRadius: 16,
-                          borderWidth: 1,
-                          borderColor: themes.vegasGold,
-                          backgroundColor: inviteCourseId === null ? themes.vegasGold : "transparent",
-                        }}
+                        style={[
+                          styles.courseChip,
+                          inviteCourseId === null && styles.courseChipSelected,
+                        ]}
                       >
-                        <Text style={{
-                          fontFamily: "Chakra-Regular",
-                          fontSize: 13,
-                          color: inviteCourseId === null ? themes.black : themes.white,
-                        }}>
-                          No Course
+                        <Text
+                          numberOfLines={1}
+                          style={[
+                            styles.courseChipText,
+                            inviteCourseId === null && styles.courseChipTextSelected,
+                          ]}
+                        >
+                          No course
                         </Text>
                       </TouchableOpacity>
-                      {courses.map((c) => (
-                        <TouchableOpacity
-                          key={c.id}
-                          onPress={() => setInviteCourseId(c.id)}
-                          style={{
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 16,
-                            borderWidth: 1,
-                            borderColor: themes.vegasGold,
-                            backgroundColor: inviteCourseId === c.id ? themes.vegasGold : "transparent",
-                          }}
-                        >
-                          <Text style={{
-                            fontFamily: "Chakra-Regular",
-                            fontSize: 13,
-                            color: inviteCourseId === c.id ? themes.black : themes.white,
-                          }}>
-                            {c.title}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                      {courses.map((c) => {
+                        const selected = inviteCourseId === c.id;
+                        return (
+                          <TouchableOpacity
+                            key={c.id}
+                            onPress={() => setInviteCourseId(c.id)}
+                            style={[styles.courseChip, selected && styles.courseChipSelected]}
+                          >
+                            <Text
+                              numberOfLines={1}
+                              style={[
+                                styles.courseChipText,
+                                selected && styles.courseChipTextSelected,
+                              ]}
+                            >
+                              {c.title}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
                   </ScrollView>
                 </View>
               )}
 
               {inviteMessage && (
-                <Text style={{
-                  marginTop: 8,
-                  fontFamily: "Chakra-Regular",
-                  fontSize: 14,
-                  textAlign: "center",
-                  color: inviteMessage.type === "success" ? "#4CAF50" : "#FF4444",
-                }}>
+                <Text
+                  style={[
+                    styles.feedbackText,
+                    { color: inviteMessage.type === "success" ? themes.success : themes.danger },
+                  ]}
+                >
                   {inviteMessage.text}
                 </Text>
               )}
@@ -540,33 +516,21 @@ export default function AdminDashboard() {
                 {isSendingInvite ? (
                   <ActivityIndicator size="small" color={themes.black} />
                 ) : (
-                  <Text style={styles.buttonText}>Send Email Invite</Text>
+                  <Text style={styles.buttonText} numberOfLines={1}>
+                    Send Email Invite
+                  </Text>
                 )}
               </TouchableOpacity>
 
               {emailInvites.length > 0 && (
-                <View style={{ marginTop: 12 }}>
-                  <Text style={{
-                    fontFamily: "Chakra-Bold",
-                    fontSize: 16,
-                    color: themes.vegasGold,
-                    marginBottom: 8,
-                  }}>
-                    Recent Invites
-                  </Text>
+                <View>
+                  <Text style={styles.recentTitle}>Recent invites</Text>
                   {emailInvites.slice(0, 10).map((inv) => (
-                    <View key={inv.id} style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      paddingVertical: 8,
-                      borderBottomWidth: 1,
-                      borderBottomColor: "rgba(197,179,88,0.2)",
-                    }}>
-                      <Text style={{ fontFamily: "Chakra-Regular", fontSize: 14, color: themes.white }}>
+                    <View key={inv.id} style={styles.inviteRow}>
+                      <Text style={styles.inviteEmail} numberOfLines={1}>
                         {inv.target_email ?? "—"}
                       </Text>
-                      <Text style={{ fontFamily: "Chakra-Regular", fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                      <Text style={styles.inviteMeta} numberOfLines={1}>
                         {inv.target_role} · {inv.invite_status}
                       </Text>
                     </View>
@@ -580,7 +544,9 @@ export default function AdminDashboard() {
               onPress={handleLogout}
               disabled={isLoggingOut}
             >
-              <Text style={styles.buttonText}>Log Out</Text>
+              <Text style={styles.buttonText} numberOfLines={1}>
+                Log Out
+              </Text>
             </TouchableOpacity>
             </View>
           </ScrollView>

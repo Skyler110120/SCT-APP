@@ -1,19 +1,22 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
+
+const cardWidth = Math.min(300, Dimensions.get("window").width - 64);
 
 export const courseOverviewCardStyles = StyleSheet.create({
   courseCard: {
-    width: 320,
+    width: cardWidth,
     padding: 16,
     marginRight: 16,
     borderRadius: 16,
-    backgroundColor: "transparent",
+    backgroundColor: themes.backgroundElevated,
     borderWidth: 1,
-    borderColor: themes. vegasGold,
+    borderColor: themes.border,
   },
   selectedCourseCard: {
     borderColor: themes.vegasGold,
-    borderWidth: 2,
+    borderWidth: 1,
+    backgroundColor: "rgba(197,179,88,0.1)",
   },
   courseCardContent: {
     flex: 1,
@@ -25,16 +28,16 @@ export const courseOverviewCardStyles = StyleSheet.create({
     marginBottom: 8,
   },
   courseTitle: {
-    fontSize: 24,
-    textAlign: "center",
-    fontFamily: "Chakra-Bold",
+    fontSize: 18,
+    lineHeight: 24,
+    fontFamily: "Oswald_500Medium",
     color: themes.white,
   },
   courseDescription: {
-    fontSize: 20,
-    textAlign: "center",
-    fontFamily: "Chakra-Regular",
-    color: themes.white,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Inter_400Regular",
+    color: themes.textSecondary,
     marginBottom: 12,
   },
   courseInfo: {
@@ -57,8 +60,9 @@ export const courseOverviewCardStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   badgeText: {
-    fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: "Inter_600SemiBold",
     color: themes.vegasGold,
   },
   selectedIndicator: {
@@ -73,8 +77,9 @@ export const courseOverviewCardStyles = StyleSheet.create({
     marginTop: 4,
   },
   selectedText: {
-    fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontSize: 14,
+    lineHeight: 18,
+    fontFamily: "Inter_600SemiBold",
     color: themes.vegasGold,
   },
 });

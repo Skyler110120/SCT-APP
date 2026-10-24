@@ -11,18 +11,17 @@ import {
   formatDateString,
   formatTimeString,
 } from "@/src/utils/dateTimeUtils";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
-  Platform,
   ScrollView,
   Switch,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const SLOT_HOURS = 1;
 
@@ -223,23 +222,6 @@ const TimeOffModal: React.FC<TimeOffModalProps> = ({
               </>
             )}
 
-            {picker && (
-              <DateTimePicker
-                value={pickerValue()}
-                mode={picker === "slot" ? "time" : "date"}
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, date) => {
-                  const target = picker;
-                  setPicker(null);
-                  if (!date) return;
-                  if (target === "slot") setSlotTime(toTimeKey(date));
-                  else if (target === "rangeEnd") setRangeEnd(toDateKey(date));
-                  else setDayDate(toDateKey(date));
-                  setScheduledConflict(null);
-                }}
-              />
-            )}
-
             <View style={{ flexDirection: "row", alignItems: "center", marginVertical: 12 }}>
               <Switch
                 value={cancelBooked}
@@ -300,6 +282,32 @@ const TimeOffModal: React.FC<TimeOffModalProps> = ({
           </ScrollView>
         </View>
       </View>
+
+      <DateTimePickerModal
+        isVisible={picker !== null}
+        mode={picker === "slot" ? "time" : "date"}
+        onConfirm={(date) => {
+          const target = picker;
+          setPicker(null);
+          if (!target) return;
+          if (target === "slot") setSlotTime(toTimeKey(date));
+          else if (target === "rangeEnd") setRangeEnd(toDateKey(date));
+          else setDayDate(toDateKey(date));
+          setScheduledConflict(null);
+        }}
+        onCancel={() => setPicker(null)}
+        date={pickerValue()}
+        title={
+          picker === "slot"
+            ? "Select start time"
+            : picker === "rangeEnd"
+              ? "Select end date"
+              : "Select date"
+        }
+        confirmTextIOS="Confirm"
+        cancelTextIOS="Cancel"
+        isDarkModeEnabled
+      />
     </Modal>
   );
 };

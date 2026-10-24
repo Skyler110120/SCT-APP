@@ -1,52 +1,58 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
-import { Dimensions } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 export const companyListStyles = StyleSheet.create({
   sectionContainer: {
-    marginBottom: 16,
-    borderWidth: 2,
-    borderRadius: 20,
-    borderColor: themes. vegasGold,
-    overflow: "hidden",
+    marginBottom: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 16,
+    borderColor: themes.border,
+    backgroundColor: themes.backgroundElevated,
   },
   sectionTitle: {
-    padding: 8,
-    fontSize: width * 0.05,
-    fontFamily: "Chakra-Italic",
-    textAlign: "center",
-    color: themes.vegasGold,
+    marginBottom: 8,
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
+    color: themes.textMuted,
   },
-  listContainer:  {
-    maxHeight: 400,
-    borderRadius: 20,
+  listContainer: {
+    maxHeight: 320,
   },
   companyCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    marginBottom: 12,
-    marginHorizontal: 8,
-    borderRadius: 15,
+    marginBottom: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: themes.border,
+    backgroundColor: themes.backgroundSoft,
+    gap: 2,
   },
   selectedCompanyCard: {
-    borderWidth: 1,
-    backgroundColor: 'rgba(201, 176, 55, 0.3)',
     borderColor: themes.vegasGold,
+    backgroundColor: "rgba(197, 179, 88, 0.16)",
   },
   companyText: {
-    fontSize:  width * 0.04,
-    fontFamily: "Chakra-Regular",
-    color: themes. white,
+    fontSize: 16,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.white,
+  },
+  companyMeta: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Inter_400Regular",
+    color: themes.textMuted,
   },
   emptyListText: {
-    padding: 20,
-    fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    paddingVertical: 16,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Inter_400Regular",
     textAlign: "center",
-    color: themes.white,
+    color: themes.textSecondary,
   },
 });

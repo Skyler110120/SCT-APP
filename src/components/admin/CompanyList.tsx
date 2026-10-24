@@ -42,17 +42,14 @@ const CompanyList = ({
                 ]}
                 onPress={() => onSelectCompany(company)}
               >
-                <Text style={styles.companyText}>{company.name}</Text>
-                {company.website && (
-                  <Text
-                    style={[
-                      styles.companyText,
-                      { fontSize: 14, opacity: 0.7 },
-                    ]}
-                  >
+                <Text style={styles.companyText} numberOfLines={1}>
+                  {company.name}
+                </Text>
+                {company.website ? (
+                  <Text style={styles.companyMeta} numberOfLines={1}>
                     {company.website}
                   </Text>
-                )}
+                ) : null}
               </TouchableOpacity>
             ))
           ) : (

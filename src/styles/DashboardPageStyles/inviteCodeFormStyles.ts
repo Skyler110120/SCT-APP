@@ -1,54 +1,55 @@
 import { StyleSheet } from "react-native";
 import { themes } from "@/src/context/themes";
-import { Dimensions } from "react-native";
-
-const { width } = Dimensions.get("window");
 
 export const inviteCodeFormStyles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: themes.overlay,
+    paddingHorizontal: 20,
   },
   modalContent: {
-    width: "80%",
+    width: "100%",
+    maxWidth: 420,
     padding: 20,
-    borderWidth: 2,
-    borderRadius: 20,
-    backgroundColor: themes.black,
-    borderColor: themes.vegasGold,
+    borderWidth: 1,
+    borderRadius: 16,
+    backgroundColor: themes.backgroundElevated,
+    borderColor: themes.borderStrong,
   },
   modalTitle: {
-    marginBottom: 20,
-    fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    marginBottom: 16,
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Oswald_500Medium",
     textAlign: "center",
-    color: themes.vegasGold,
+    color: themes.textPrimary,
   },
   inputLabel: {
     marginBottom: 8,
-    fontSize: 18,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "Inter_500Medium",
+    color: themes.textSecondary,
   },
   buttonContainer: {
-    flexDirection: "column",
-    gap: 10,
+    gap: 8,
     marginTop: 8,
-    marginBottom: "1%",
   },
   actionButton: {
-    flex: 1,
+    minHeight: 44,
     alignItems: "center",
-    padding: 12,
-    margin: 8,
-    borderRadius: 15,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
     backgroundColor: themes.vegasGold,
   },
   buttonText: {
-    fontSize: width * 0.03,
-    fontFamily: "Chakra-Bold",
-    color: themes.white,
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: "Inter_600SemiBold",
+    color: themes.black,
   },
 });

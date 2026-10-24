@@ -45,9 +45,7 @@ const styles = StyleSheet.create({
     gap: theme.space.sm,
   },
   label: {
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    color: theme.colors.vegasGold,
+    color: theme.colors.textMuted,
   },
   input: {
     minHeight: 48,

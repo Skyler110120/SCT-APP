@@ -37,17 +37,14 @@ const styles = StyleSheet.create({
   },
   shortName: {
     color: theme.colors.textPrimary,
-    letterSpacing: 2,
-    fontSize: 56,
-    lineHeight: 70,
+    letterSpacing: 1.5,
+    fontSize: 40,
+    lineHeight: 48,
     fontFamily: theme.typography.family.headingSemiBold,
     textAlign: "center",
-    textShadowColor: "rgba(197,179,88,0.24)",
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 14,
   },
   shortNameCompact: {
-    fontSize: 44,
-    lineHeight: 56,
+    fontSize: 32,
+    lineHeight: 38,
   },
 });
