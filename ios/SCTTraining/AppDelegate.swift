@@ -21,13 +21,9 @@ public class AppDelegate: ExpoAppDelegate {
     reactNativeFactory = factory
     bindReactNativeFactory(factory)
 
-#if os(iOS) || os(tvOS)
-    window = UIWindow(frame: UIScreen.main.bounds)
-    factory.startReactNative(
-      withModuleName: "main",
-      in: window,
-      launchOptions: launchOptions)
-#endif
+    // The window and React Native root are created in SceneDelegate (declared in Info.plist's
+    // UIApplicationSceneManifest). iOS 27 refuses to launch apps built with its SDK that still
+    // create their window here without adopting the UIScene lifecycle.
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -66,5 +62,97 @@ class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
 #else
     return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
+  }
+}
+
+/// Hosts the app's single window. Scene callbacks are forwarded to AppDelegate so Expo modules and
+/// RCTLinkingManager keep receiving URLs and lifecycle events the same way they did before scenes.
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+  var window: UIWindow?
+
+  private var appDelegate: AppDelegate? {
+    UIApplication.shared.delegate as? AppDelegate
+  }
+
+  func scene(
+    _ scene: UIScene,
+    willConnectTo session: UISceneSession,
+    options connectionOptions: UIScene.ConnectionOptions
+  ) {
+    guard let windowScene = scene as? UIWindowScene,
+          let appDelegate = appDelegate,
+          let factory = appDelegate.reactNativeFactory else { return }
+
+    let window = UIWindow(windowScene: windowScene)
+    self.window = window
+    appDelegate.window = window
+
+    factory.startReactNative(
+      withModuleName: "main",
+      in: window,
+      launchOptions: Self.launchOptions(from: connectionOptions))
+
+    // Before scenes, iOS followed a link launch with application(_:open:) or application(_:continue:).
+    // expo-linking records the initial URL there, and expo-router picks its first screen from it, so
+    // replay those calls; otherwise a cold start from a Stripe return opens at "/" instead.
+    if !connectionOptions.urlContexts.isEmpty {
+      self.scene(scene, openURLContexts: connectionOptions.urlContexts)
+    }
+    if let activity = connectionOptions.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }) {
+      self.scene(scene, continue: activity)
+    }
+  }
+
+  /// A cold start from a link (e.g. a Stripe return to sctapp://payment-success) arrives in the
+  /// connection options rather than launchOptions; repackage it so Linking.getInitialURL() sees it.
+  private static func launchOptions(from options: UIScene.ConnectionOptions) -> [UIApplication.LaunchOptionsKey: Any] {
+    var launchOptions: [UIApplication.LaunchOptionsKey: Any] = [:]
+    if let context = options.urlContexts.first {
+      launchOptions[.url] = context.url
+      if let sourceApplication = context.options.sourceApplication {
+        launchOptions[.sourceApplication] = sourceApplication
+      }
+    }
+    if let activity = options.userActivities.first(where: { $0.activityType == NSUserActivityTypeBrowsingWeb }) {
+      launchOptions[.userActivityDictionary] = [
+        UIApplication.LaunchOptionsKey.userActivityType.rawValue: activity.activityType,
+        "UIApplicationLaunchOptionsUserActivityKey": activity,
+      ]
+    }
+    return launchOptions
+  }
+
+  // Links opened while the app is running (Stripe checkout and portal returns).
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    guard let appDelegate = appDelegate else { return }
+    for context in URLContexts {
+      var options: [UIApplication.OpenURLOptionsKey: Any] = [.openInPlace: context.options.openInPlace]
+      if let sourceApplication = context.options.sourceApplication {
+        options[.sourceApplication] = sourceApplication
+      }
+      _ = appDelegate.application(UIApplication.shared, open: context.url, options: options)
+    }
+  }
+
+  // Universal links while the app is running.
+  func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    _ = appDelegate?.application(UIApplication.shared, continue: userActivity, restorationHandler: { _ in })
+  }
+
+  // With scenes, UIKit stops calling the app-level lifecycle methods that Expo modules subscribe to.
+  func sceneDidBecomeActive(_ scene: UIScene) {
+    appDelegate?.applicationDidBecomeActive(UIApplication.shared)
+  }
+
+  func sceneWillResignActive(_ scene: UIScene) {
+    appDelegate?.applicationWillResignActive(UIApplication.shared)
+  }
+
+  func sceneWillEnterForeground(_ scene: UIScene) {
+    appDelegate?.applicationWillEnterForeground(UIApplication.shared)
+  }
+
+  func sceneDidEnterBackground(_ scene: UIScene) {
+    appDelegate?.applicationDidEnterBackground(UIApplication.shared)
   }
 }
