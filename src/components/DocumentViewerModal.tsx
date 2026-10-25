@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     marginRight: 8,
   },
   headerActions: {
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   closeText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.vegasGold,
   },
   webview: {

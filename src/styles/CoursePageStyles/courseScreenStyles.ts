@@ -29,14 +29,14 @@ export const courseScreenStyles = StyleSheet.create({
   pageTitle: {
     fontSize: 24,
     lineHeight: 30,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     marginBottom: 12,
   },
@@ -64,14 +64,14 @@ export const courseScreenStyles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     lineHeight: 22,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
     textAlign: "center",
   },
   statLabel:  {
     fontSize: 12,
     lineHeight: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
     textAlign: "center",
     marginTop: 4,
@@ -100,14 +100,14 @@ export const courseScreenStyles = StyleSheet.create({
   selectedCourseTitle: {
     fontSize: 20,
     lineHeight: 26,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
     marginBottom: 6,
   },
   selectedCourseDescription: {
     fontSize: 16,
     textAlign: "center",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     marginBottom: 16,
   },
@@ -130,7 +130,7 @@ export const courseScreenStyles = StyleSheet.create({
   metaBadgeText: {
     fontSize: 13,
     lineHeight: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   actionButtonsGrid: {
@@ -140,7 +140,7 @@ export const courseScreenStyles = StyleSheet.create({
   actionButtonsTitle: {
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     marginBottom: 4,
   },
@@ -171,7 +171,7 @@ export const courseScreenStyles = StyleSheet.create({
   actionButtonTitle: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   actionButtonTitleDisabled: {
@@ -180,7 +180,7 @@ export const courseScreenStyles = StyleSheet.create({
   actionButtonSubtitle: {
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     marginTop: 2,
   },
@@ -198,7 +198,7 @@ export const courseScreenStyles = StyleSheet.create({
   },
   noSelectionText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.7,
     textAlign: "center",
@@ -214,7 +214,7 @@ export const courseScreenStyles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
   },
@@ -226,8 +226,8 @@ export const courseScreenStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
     textAlign: "center",
     marginBottom: 16,
     lineHeight: 22,
@@ -240,7 +240,7 @@ export const courseScreenStyles = StyleSheet.create({
   },
   retryButtonText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
   emptyListContainer: {
@@ -251,7 +251,7 @@ export const courseScreenStyles = StyleSheet.create({
   },
   emptyListText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.white,
     opacity: 0.7,

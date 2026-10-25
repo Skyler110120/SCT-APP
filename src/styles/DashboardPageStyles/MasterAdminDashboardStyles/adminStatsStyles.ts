@@ -14,7 +14,7 @@ export const adminStatsStyles = StyleSheet.create({
   statsTitle: {
     marginBottom: 10,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     letterSpacing: 0.4,
     textTransform: "uppercase",
     color: themes.textMuted,
@@ -35,14 +35,14 @@ export const adminStatsStyles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
   },
   statLabel: {
     marginTop: 2,
     fontSize: 12,
     lineHeight: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
 });

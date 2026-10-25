@@ -31,13 +31,13 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
     textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "70",
     marginTop: 4,
   },
@@ -50,7 +50,7 @@ export const studentProgressModalStyles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize:  16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
   },
@@ -61,14 +61,14 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "70",
     textAlign: "center",
     lineHeight: 22,
@@ -81,7 +81,7 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   filterTitle: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes. vegasGold,
     marginBottom:  8,
   },
@@ -106,12 +106,12 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   filterButtonText: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + '80',
   },
   filterButtonTextActive: {
     color: themes.vegasGold,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   modalContent: {
     flex: 1,
@@ -125,7 +125,7 @@ export const studentProgressModalStyles = StyleSheet.create({
     backgroundColor: themes. black + "60",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: themes.vegasGold + "30",
+    borderColor: themes.border + "30",
   },
   studentInfo: {
     flex: 1,
@@ -137,14 +137,14 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   studentName: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color:  themes.white,
     marginBottom: 4,
   },
   studentCourse: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    fontFamily: "Archivo_400Regular",
+    color: themes.textSecondary,
     marginBottom: 8,
   },
   progressInfo: {
@@ -168,12 +168,12 @@ export const studentProgressModalStyles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "80",
   },
   studentNotes: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "70",
     fontStyle: "italic",
   },

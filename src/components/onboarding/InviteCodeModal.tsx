@@ -161,17 +161,17 @@ export function InviteCodeModal({
               disabled={isValidating}
             >
               {isValidating ? (
-                <ActivityIndicator color={themes.white} size="small" />
+                <ActivityIndicator color={themes.accentForeground} size="small" />
               ) : (
                 <Text style={styles.buttonText}>Continue</Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.submitButton}
+              style={styles.cancelButton}
               onPress={handleCancel}
               disabled={isValidating}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

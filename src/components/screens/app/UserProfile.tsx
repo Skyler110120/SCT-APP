@@ -505,7 +505,7 @@ export default function InstructorProfile() {
                     fontSize: 16,
                     textAlign: "center",
                     marginBottom: 30,
-                    color: "#FF4444",
+                    color: "#E8735F",
                   },
                 ]}
               >
@@ -615,7 +615,7 @@ export default function InstructorProfile() {
                   style={{ alignSelf: "center", paddingVertical: 12, paddingHorizontal: 16 }}
                   onPress={() => WebBrowser.openBrowserAsync(PRIVACY_POLICY_URL)}
                 >
-                  <Text style={{ color: themes.textMuted, fontFamily: "Inter_500Medium", fontSize: 14, textDecorationLine: "underline" }}>
+                  <Text style={{ color: themes.textMuted, fontFamily: "Archivo_500Medium", fontSize: 14, textDecorationLine: "underline" }}>
                     Privacy Policy
                   </Text>
                 </TouchableOpacity>
@@ -674,9 +674,9 @@ export default function InstructorProfile() {
                     {billingActions.showPastDueWarning && (
                       <Text
                         style={{
-                          color: "#f87171",
+                          color: "#E8735F",
                           textAlign: "center",
-                          fontFamily: "Chakra-Regular",
+                          fontFamily: "Archivo_400Regular",
                           marginTop: 8,
                         }}
                       >
@@ -754,9 +754,9 @@ export default function InstructorProfile() {
                       {billingMessage && (
                         <Text
                           style={{
-                            color: "#fbbf24",
+                            color: "#E2A94E",
                             textAlign: "center",
-                            fontFamily: "Chakra-Regular",
+                            fontFamily: "Archivo_400Regular",
                           }}
                         >
                           {billingMessage}
@@ -808,7 +808,7 @@ export default function InstructorProfile() {
               gap: 10,
             }}
           >
-            <Text style={{ color: themes.white, fontFamily: "Chakra-Bold", fontSize: 20 }}>
+            <Text style={{ color: themes.white, fontFamily: "ArchivoNarrow_700Bold", fontSize: 20 }}>
               Reset Password
             </Text>
             <TextInput
@@ -822,7 +822,7 @@ export default function InstructorProfile() {
                 color: themes.white,
                 paddingHorizontal: 10,
                 paddingVertical: 10,
-                fontFamily: "Chakra-Regular",
+                fontFamily: "Archivo_400Regular",
               }}
               value={currentPassword}
               onChangeText={setCurrentPassword}
@@ -838,7 +838,7 @@ export default function InstructorProfile() {
                 color: themes.white,
                 paddingHorizontal: 10,
                 paddingVertical: 10,
-                fontFamily: "Chakra-Regular",
+                fontFamily: "Archivo_400Regular",
               }}
               value={newPassword}
               onChangeText={setNewPassword}
@@ -854,7 +854,7 @@ export default function InstructorProfile() {
                 color: themes.white,
                 paddingHorizontal: 10,
                 paddingVertical: 10,
-                fontFamily: "Chakra-Regular",
+                fontFamily: "Archivo_400Regular",
               }}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
@@ -911,10 +911,10 @@ export default function InstructorProfile() {
               gap: 10,
             }}
           >
-            <Text style={{ color: themes.white, fontFamily: "Chakra-Bold", fontSize: 20 }}>
+            <Text style={{ color: themes.white, fontFamily: "ArchivoNarrow_700Bold", fontSize: 20 }}>
               Delete Account
             </Text>
-            <Text style={{ color: themes.white, fontFamily: "Chakra-Regular", lineHeight: 20 }}>
+            <Text style={{ color: themes.white, fontFamily: "Archivo_400Regular", lineHeight: 20 }}>
               This permanently deletes your account and personal information. Any active
               subscription is cancelled immediately and upcoming sessions are released. This
               cannot be undone.
@@ -931,7 +931,7 @@ export default function InstructorProfile() {
                 color: themes.white,
                 paddingHorizontal: 10,
                 paddingVertical: 10,
-                fontFamily: "Chakra-Regular",
+                fontFamily: "Archivo_400Regular",
               }}
               value={deletePassword}
               onChangeText={setDeletePassword}

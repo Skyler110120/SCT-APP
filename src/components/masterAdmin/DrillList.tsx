@@ -55,8 +55,8 @@ const DrillList: React.FC<DrillListProps> = ({
               <Text style={styles.badgeText}>{formatFireType(item.fire_type)}</Text>
             </View>
             {item.is_cte && (
-              <View style={[styles.badge, { borderColor: "#FFD700" }]}>
-                <Text style={[styles.badgeText, { color: "#FFD700" }]}>CTE</Text>
+              <View style={[styles.badge, { borderColor: "#C5B358" }]}>
+                <Text style={[styles.badgeText, { color: "#C5B358" }]}>CTE</Text>
               </View>
             )}
             {item.passing_standard && (
@@ -75,17 +75,17 @@ const DrillList: React.FC<DrillListProps> = ({
               style={[
                 styles.badge,
                 {
-                  borderColor: item.is_active ? themes.vegasGold : "#FF4444",
+                  borderColor: item.is_active ? themes.vegasGold : "#E8735F",
                   backgroundColor: item.is_active
                     ? themes.black
-                    : "rgba(255, 68, 68, 0.1)",
+                    : "rgba(232,115,95,0.1)",
                 },
               ]}
             >
               <Text
                 style={[
                   styles.badgeText,
-                  { color: item.is_active ? themes.vegasGold : "#FF4444" },
+                  { color: item.is_active ? themes.vegasGold : "#E8735F" },
                 ]}
               >
                 {item.is_active ? "Active" : "Inactive"}
@@ -109,7 +109,7 @@ const DrillList: React.FC<DrillListProps> = ({
             onPress={() => onDeleteDrill(item)}
             activeOpacity={0.7}
           >
-            <FontAwesome name="trash" size={16} color="#FF4444" />
+            <FontAwesome name="trash" size={16} color="#E8735F" />
             <Text style={[styles.actionText, styles.removeText]}>
               Deactivate
             </Text>

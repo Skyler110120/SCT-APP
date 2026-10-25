@@ -1,5 +1,8 @@
 import BottomNavBar from "@/src/components/NavBar";
-import StudentCancelSessionModal from "@/src/components/student/StudentCancelSessionModal";
+import StudentCancelSessionModal, {
+  CANCEL_CUTOFF_NOTE,
+  studentCancelState,
+} from "@/src/components/student/StudentCancelSessionModal";
 import { useAuth } from "@/src/context/AuthContext";
 import { themes } from "@/src/context/themes";
 import { courseService } from "@/src/services/courseService";
@@ -40,6 +43,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { DateBlock, WeekTrack } from "@/src/components/ui";
 
 const CHECK_IN_OPENS_MS = 15 * 60 * 1000;
 
@@ -182,8 +186,15 @@ export default function StudentDashboard() {
         : recommendedState === "upcomingAtRisk"
           ? "At risk: book this week to stay on track."
           : "On track: keep booking in cadence.";
+    const tone: "off" | "risk" | "ok" =
+      recommendedState === "upcomingGapMiss"
+        ? "off"
+        : recommendedState === "upcomingAtRisk"
+          ? "risk"
+          : "ok";
     return {
       statusText,
+      tone,
       recommendedWeekStart,
       recommendedWeekEnd: addDays(recommendedWeekStart, 6),
       missesUsed: context.baselineWeeksMissed + committedGapMisses,
@@ -381,7 +392,9 @@ export default function StudentDashboard() {
           />
         }
       >
-        <Text style={styles.greeting}>Welcome back, {user?.first_name}!</Text>
+        <Text style={styles.greeting} accessibilityRole="header">
+          Welcome back, {user?.first_name}
+        </Text>
         <Text style={styles.date}>{formattedToday}</Text>
 
         {renderBillingCard()}
@@ -400,54 +413,91 @@ export default function StudentDashboard() {
         )}
 
         {course && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Your Course</Text>
-            <Text style={styles.courseName}>{course.title}</Text>
-            {course.videos?.length != null && (
-              <Text style={styles.muted}>{course.videos.length} videos</Text>
-            )}
-            {showProgress && (
-              <View style={{ marginTop: 12 }}>
-                <View style={styles.progressLabels}>
-                  <Text style={styles.body}>
-                    {enrollment?.week_display ?? `Week ${enrollment?.current_week ?? 1}`} of{" "}
-                    {course.total_weeks}
-                  </Text>
-                  {enrollment?.progress_percentage != null && (
-                    <Text style={styles.body}>{enrollment.progress_percentage}% complete</Text>
-                  )}
-                </View>
-                <View style={styles.progressTrack}>
-                  <View
-                    style={[
-                      styles.progressFill,
-                      { width: `${Math.min(100, enrollment?.progress_percentage ?? 0)}%` },
-                    ]}
+          <View style={[styles.card, styles.programCard]}>
+            <View style={styles.programBody}>
+              <Text style={styles.eyebrow}>Your program</Text>
+              <Text style={styles.courseName}>{course.title}</Text>
+              {course.videos?.length != null && (
+                <Text style={styles.muted}>
+                  {course.videos.length} training videos
+                  {course.total_weeks != null ? `, ${course.total_weeks} weeks` : ""}
+                </Text>
+              )}
+              {showProgress && (
+                <View style={styles.progressBlock}>
+                  <View style={styles.progressLabels}>
+                    <Text style={styles.weekLabel}>
+                      Week {enrollment?.current_week ?? 1}
+                      <Text style={styles.weekOf}> of {course.total_weeks}</Text>
+                    </Text>
+                    {enrollment?.progress_percentage != null && (
+                      <Text style={styles.muted}>{enrollment.progress_percentage}% complete</Text>
+                    )}
+                  </View>
+                  <WeekTrack
+                    totalWeeks={course.total_weeks ?? 24}
+                    currentWeek={enrollment?.current_week ?? 1}
                   />
                 </View>
-                <View style={{ marginTop: 10 }}>{renderMakeupLine()}</View>
-              </View>
-            )}
+              )}
+            </View>
+            {showProgress && <View style={styles.programFooter}>{renderMakeupLine()}</View>}
           </View>
         )}
 
         {course && bookingTrackSummary && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Stay on track</Text>
-            <Text style={styles.body}>{bookingTrackSummary.statusText}</Text>
+            <View style={styles.cardHeaderRow}>
+              <Text style={[styles.cardTitle, styles.cardTitleInline]}>Stay on track</Text>
+              {bookingTrackSummary.tone !== "ok" && (
+                <View
+                  style={[
+                    styles.pill,
+                    bookingTrackSummary.tone === "off" ? styles.pillDanger : styles.pillWarning,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.pillText,
+                      { color: bookingTrackSummary.tone === "off" ? themes.danger : themes.warning },
+                    ]}
+                  >
+                    {bookingTrackSummary.tone === "off" ? "Off track" : "At risk"}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.body}>
-              Next recommended booking window for week {bookingTrackSummary.nextWeekToBook}:{" "}
-              <Text style={styles.bold}>{formatDateString(bookingTrackSummary.recommendedWeekStart)}</Text>{" "}
-              to <Text style={styles.bold}>{formatDateString(bookingTrackSummary.recommendedWeekEnd)}</Text>.
+              {bookingTrackSummary.tone === "ok"
+                ? bookingTrackSummary.statusText
+                : bookingTrackSummary.statusText.replace(/^[^:]+:\s*/, "").replace(/^./, (c) => c.toUpperCase())}
             </Text>
-            <Text style={styles.body}>
-              Misses used: <Text style={styles.bold}>{bookingTrackSummary.missesUsed}</Text> / 4.
-            </Text>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Book week {bookingTrackSummary.nextWeekToBook} between</Text>
+              <Text style={styles.statValue}>
+                {formatDateString(bookingTrackSummary.recommendedWeekStart)} and{" "}
+                {formatDateString(bookingTrackSummary.recommendedWeekEnd)}
+              </Text>
+            </View>
+            <View style={styles.statRow}>
+              <Text style={styles.statLabel}>Missed weeks</Text>
+              <View style={styles.missRow}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={[styles.missTick, i < bookingTrackSummary.missesUsed ? styles.missTickUsed : null]}
+                  />
+                ))}
+                <Text style={styles.statValue}>{bookingTrackSummary.missesUsed} of 4 used</Text>
+              </View>
+            </View>
             <TouchableOpacity
-              style={styles.outlineButton}
+              style={styles.primaryButton}
               onPress={() => openCalendarOn(bookingTrackSummary.recommendedWeekStart)}
             >
-              <Text style={styles.outlineButtonText}>Open Calendar on recommended week</Text>
+              <Text style={styles.primaryButtonText}>
+                Book week {bookingTrackSummary.nextWeekToBook}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -489,35 +539,55 @@ export default function StudentDashboard() {
         )}
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Upcoming Sessions</Text>
+          <View style={styles.cardHeaderRow}>
+            <Text style={[styles.cardTitle, styles.cardTitleInline]}>Upcoming sessions</Text>
+            {upcomingSessions.length > 0 && (
+              <Text style={styles.muted}>{upcomingSessions.length} booked</Text>
+            )}
+          </View>
           {upcomingSessions.length === 0 ? (
-            <>
+            <View style={styles.emptyBlock}>
               <Text style={[styles.body, styles.bold, { textAlign: "center" }]}>
                 No sessions scheduled yet
               </Text>
               <Text style={[styles.muted, { textAlign: "center" }]}>
                 Book a live session from Calendar when you&apos;re ready to practice with an instructor.
               </Text>
-            </>
+            </View>
           ) : (
-            upcomingSessions.map((session) => (
-              <View key={session.id} style={styles.sessionRow}>
+            upcomingSessions.map((session, index) => (
+              <View key={session.id} style={[styles.sessionRow, index === 0 ? styles.sessionRowFirst : null]}>
+                <DateBlock date={session.start_time} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.sessionTitle}>{session.title || session.course_title}</Text>
-                  <Text style={styles.muted}>
-                    {formatDateString(session.start_time)} at {formatTimeString(session.start_time)}
-                  </Text>
+                  <Text style={styles.muted}>{formatTimeString(session.start_time)}</Text>
                   {session.instructor_name && (
                     <Text style={styles.muted}>with {session.instructor_name}</Text>
                   )}
                 </View>
-                <TouchableOpacity
-                  style={styles.smallButton}
-                  onPress={() => setSessionToCancel(session)}
-                  accessibilityLabel="Cancel this session"
-                >
-                  <Text style={styles.smallButtonText}>Cancel</Text>
-                </TouchableOpacity>
+                {(() => {
+                  const cancelState = studentCancelState(session);
+                  if (cancelState === null) return null;
+                  return (
+                    <View style={styles.cancelAction}>
+                      <TouchableOpacity
+                        style={[styles.cancelButton, !cancelState && styles.cancelButtonDisabled]}
+                        onPress={() => setSessionToCancel(session)}
+                        disabled={!cancelState}
+                        accessibilityRole="button"
+                        accessibilityLabel="Cancel this session"
+                        accessibilityState={{ disabled: !cancelState }}
+                        accessibilityHint={cancelState ? undefined : CANCEL_CUTOFF_NOTE}
+                        hitSlop={6}
+                      >
+                        <Text style={[styles.cancelButtonText, !cancelState && styles.cancelButtonTextDisabled]}>
+                          Cancel session
+                        </Text>
+                      </TouchableOpacity>
+                      {!cancelState && <Text style={styles.cancelNote}>{CANCEL_CUTOFF_NOTE}</Text>}
+                    </View>
+                  );
+                })()}
               </View>
             ))
           )}
@@ -537,101 +607,176 @@ export default function StudentDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: themes.background },
-  scroll: { flex: 1, paddingHorizontal: 15, paddingTop: 20 },
+  scroll: { flex: 1, paddingHorizontal: 16, paddingTop: 20 },
   centered: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
-  greeting: { fontSize: 24, lineHeight: 30, fontFamily: "Oswald_500Medium", color: themes.textPrimary },
+  greeting: {
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
+  },
   date: {
-    fontSize: 16,
-    fontFamily: "Inter_500Medium",
+    fontSize: 15,
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     marginTop: 4,
-    marginBottom: 18,
+    marginBottom: 20,
   },
   card: {
     borderWidth: 1,
-    borderColor: themes.borderStrong,
+    borderColor: themes.border,
     borderRadius: 12,
     backgroundColor: themes.backgroundElevated,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 14,
+  },
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+    marginBottom: 8,
   },
   cardTitle: {
     color: themes.textPrimary,
-    fontSize: 17,
-    lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 19,
+    lineHeight: 23,
+    fontFamily: "ArchivoNarrow_700Bold",
     marginBottom: 8,
   },
-  courseName: { color: themes.white, fontSize: 17, fontFamily: "Inter_500Medium" },
+  cardTitleInline: { marginBottom: 0, flexShrink: 1 },
+  programCard: { padding: 0, overflow: "hidden" },
+  programBody: { padding: 16 },
+  programFooter: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: themes.surfaceSunken,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: themes.border,
+  },
+  eyebrow: {
+    color: themes.vegasGold,
+    fontSize: 13,
+    fontFamily: "Archivo_500Medium",
+    marginBottom: 4,
+  },
+  courseName: {
+    color: themes.textPrimary,
+    fontSize: 24,
+    lineHeight: 28,
+    fontFamily: "ArchivoNarrow_700Bold",
+    marginBottom: 2,
+  },
+  progressBlock: { marginTop: 16, gap: 10 },
+  weekLabel: {
+    color: themes.textPrimary,
+    fontSize: 28,
+    lineHeight: 32,
+    fontFamily: "ArchivoNarrow_700Bold",
+  },
+  weekOf: {
+    color: themes.textMuted,
+    fontSize: 17,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+  },
   body: {
     color: themes.textSecondary,
     fontSize: 15,
     lineHeight: 21,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     marginBottom: 6,
   },
-  muted: { color: themes.textMuted, fontSize: 14, fontFamily: "Inter_400Regular" },
-  bold: { fontWeight: "700", color: themes.white },
-  link: { color: themes.vegasGold, fontWeight: "700" },
-  warning: { color: "#fbbf24", fontSize: 14, lineHeight: 20, marginVertical: 6 },
-  progressLabels: { flexDirection: "row", justifyContent: "space-between" },
-  progressTrack: {
-    height: 8,
+  muted: { color: themes.textMuted, fontSize: 14, lineHeight: 19, fontFamily: "Archivo_400Regular" },
+  bold: { fontFamily: "Archivo_600SemiBold", color: themes.textPrimary },
+  link: { color: themes.vegasGold, fontFamily: "Archivo_600SemiBold" },
+  warning: { color: themes.warning, fontSize: 14, lineHeight: 20, marginVertical: 6 },
+  progressLabels: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 4,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    overflow: "hidden",
-    marginTop: 4,
+    borderWidth: 1,
   },
-  progressFill: { height: 8, backgroundColor: themes.vegasGold },
+  pillWarning: { backgroundColor: themes.warningBg, borderColor: "rgba(226,169,78,0.3)" },
+  pillDanger: { backgroundColor: themes.dangerBg, borderColor: "rgba(232,115,95,0.3)" },
+  pillText: { fontSize: 12, lineHeight: 15, fontFamily: "Archivo_600SemiBold" },
+  statRow: {
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: themes.border,
+    gap: 4,
+  },
+  statLabel: { color: themes.textMuted, fontSize: 13, fontFamily: "Archivo_400Regular" },
+  statValue: { color: themes.textPrimary, fontSize: 15, fontFamily: "Archivo_600SemiBold" },
+  missRow: { flexDirection: "row", alignItems: "center", gap: 4 },
+  missTick: { width: 18, height: 6, borderRadius: 2, backgroundColor: themes.surface3 },
+  missTickUsed: { backgroundColor: themes.warning },
   primaryButton: {
     backgroundColor: themes.vegasGold,
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 8,
+    minHeight: 46,
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 8,
   },
   primaryButtonText: {
-    color: themes.black,
-    fontFamily: "Inter_600SemiBold",
+    color: themes.accentForeground,
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 15,
     lineHeight: 20,
   },
   outlineButton: {
     borderColor: themes.borderStrong,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderRadius: 8,
+    minHeight: 46,
+    justifyContent: "center",
     alignItems: "center",
     marginTop: 8,
-    backgroundColor: themes.backgroundSoft,
   },
   outlineButtonText: {
     color: themes.textPrimary,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 15,
     lineHeight: 20,
   },
+  emptyBlock: { gap: 4, paddingVertical: 8 },
   sessionRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: themes.borderStrong,
-    gap: 10,
+    borderTopColor: themes.border,
+    gap: 12,
   },
-  sessionTitle: { color: themes.white, fontSize: 16, fontFamily: "Inter_500Medium" },
-  smallButton: {
-    borderColor: themes.borderStrong,
+  sessionRowFirst: { borderTopWidth: 0, paddingTop: 4 },
+  sessionTitle: {
+    color: themes.textPrimary,
+    fontSize: 16,
+    lineHeight: 21,
+    fontFamily: "Archivo_600SemiBold",
+    marginBottom: 2,
+  },
+  cancelAction: { alignItems: "flex-end", maxWidth: 130, gap: 4 },
+  cancelButton: {
+    borderColor: themes.danger,
+    backgroundColor: themes.dangerBg,
     borderWidth: 1,
-    borderRadius: 999,
-    paddingVertical: 6,
+    borderRadius: 8,
+    minHeight: 36,
+    justifyContent: "center",
     paddingHorizontal: 12,
-    backgroundColor: themes.backgroundSoft,
   },
-  smallButtonText: {
-    color: themes.textSecondary,
-    fontFamily: "Inter_600SemiBold",
+  cancelButtonDisabled: { borderColor: themes.borderStrong, backgroundColor: "transparent" },
+  cancelButtonText: {
+    color: themes.danger,
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 13,
     lineHeight: 16,
   },
+  cancelButtonTextDisabled: { color: themes.textSecondary },
+  cancelNote: { color: themes.textSecondary, fontSize: 11, lineHeight: 14, textAlign: "right" },
 });

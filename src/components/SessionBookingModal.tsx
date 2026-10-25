@@ -465,14 +465,14 @@ export default function SessionBookingModal({
               accessibilityRole="alert"
               style={{
                 borderWidth: 1,
-                borderColor: "rgba(248, 113, 113, 0.6)",
-                backgroundColor: "rgba(248, 113, 113, 0.12)",
+                borderColor: "rgba(232,115,95,0.6)",
+                backgroundColor: "rgba(232,115,95,0.12)",
                 borderRadius: 8,
                 padding: 10,
                 marginBottom: 12,
               }}
             >
-              <Text style={[styles.modalText, { fontWeight: "700", marginBottom: 4 }]}>
+              <Text style={[styles.modalText, { fontFamily: "Archivo_700Bold", marginBottom: 4 }]}>
                 {missedWeeksWarning.title}
               </Text>
               <Text style={[styles.modalText, { fontSize: 13 }]}>
@@ -568,7 +568,7 @@ export default function SessionBookingModal({
               disabled={!selectedStartTime || isBooking}
             >
               {isBooking ? (
-                <ActivityIndicator color={themes.white} />
+                <ActivityIndicator color={themes.accentForeground} />
               ) : (
                 <Text style={[styles.modalButtonText, { color: themes.white }]}>
                   Book Session

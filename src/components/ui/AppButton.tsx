@@ -34,14 +34,14 @@ const variantStyles: Record<ButtonVariant, ViewStyle> = {
     borderColor: theme.colors.vegasGold,
   },
   secondary: {
-    backgroundColor: theme.colors.backgroundSoft,
+    backgroundColor: theme.colors.surface3,
     borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
+    borderColor: theme.colors.border,
   },
   outline: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: theme.colors.vegasGold,
+    borderColor: theme.colors.borderStrong,
   },
   ghost: {
     backgroundColor: "transparent",
@@ -49,9 +49,9 @@ const variantStyles: Record<ButtonVariant, ViewStyle> = {
 };
 
 function buttonTextColor(variant: ButtonVariant): string {
-  if (variant === "primary") return theme.colors.black;
-  if (variant === "secondary") return theme.colors.textPrimary;
-  return theme.colors.vegasGold;
+  if (variant === "primary") return theme.colors.accentForeground;
+  if (variant === "ghost") return theme.colors.vegasGold;
+  return theme.colors.textPrimary;
 }
 
 export function AppButton({
@@ -80,7 +80,7 @@ export function AppButton({
     >
       {isLoading ? (
         <ActivityIndicator
-          color={variant === "primary" ? theme.colors.black : theme.colors.vegasGold}
+          color={variant === "primary" ? theme.colors.accentForeground : theme.colors.vegasGold}
           size="small"
         />
       ) : (
@@ -107,15 +107,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
+    fontFamily: theme.typography.family.bodySemiBold,
     fontSize: 15,
     lineHeight: 20,
   },
   pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.99 }],
+    opacity: 0.85,
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   fullWidth: {
     width: "100%",

@@ -5,8 +5,8 @@
  *   - Shows inline error message when login fails (no Alert popup)
  *   - Clears the password input on login failure (defense against shoulder-surf)
  *   - Alerts the user when email or password is empty
- *   - "Forgot Password?" navigates to /forgot-password
- *   - "Create one" link navigates to /register
+ *   - "Forgot password?" navigates to /forgot-password
+ *   - "Sign up" link navigates to /register
  *   - Back arrow navigates to /welcome
  */
 import React from "react";
@@ -42,10 +42,17 @@ jest.mock("@/src/assets/images", () => ({
   __esModule: true,
   default: {
     buttons: { backButton: 1 },
+    logo: { sctMark: 1 },
   },
 }));
 
 import LoginScreen from "@/src/components/screens/auth/Login";
+
+// The heading also reads "Sign in"; the submit button is the last match.
+const pressSignIn = () => {
+  const matches = screen.getAllByText("Sign in");
+  return matches[matches.length - 1];
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -58,7 +65,7 @@ describe("LoginScreen", () => {
     const alertSpy = jest.spyOn(Alert, "alert").mockImplementation(() => {});
     render(<LoginScreen />);
 
-    fireEvent.press(screen.getByText("Sign in"));
+    fireEvent.press(pressSignIn());
 
     expect(alertSpy).toHaveBeenCalledWith(
       "Error",
@@ -74,11 +81,11 @@ describe("LoginScreen", () => {
 
     render(<LoginScreen />);
 
-    fireEvent.changeText(screen.getByPlaceholderText("Email"), "user@example.com");
-    fireEvent.changeText(screen.getByPlaceholderText("Password"), "wrong-pass");
+    fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "user@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Enter your password"), "wrong-pass");
 
     await act(async () => {
-      fireEvent.press(screen.getByText("Sign in"));
+      fireEvent.press(pressSignIn());
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -90,7 +97,7 @@ describe("LoginScreen", () => {
     expect(screen.getByText("Invalid credentials")).toBeTruthy();
 
     // Password input should be cleared (re-entered on next attempt).
-    expect(screen.getByPlaceholderText("Password").props.value).toBe("");
+    expect(screen.getByPlaceholderText("Enter your password").props.value).toBe("");
   });
 
   it("clears the inline error when the user starts typing again", async () => {
@@ -99,16 +106,16 @@ describe("LoginScreen", () => {
 
     render(<LoginScreen />);
 
-    fireEvent.changeText(screen.getByPlaceholderText("Email"), "a@b.com");
-    fireEvent.changeText(screen.getByPlaceholderText("Password"), "x");
+    fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "a@b.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Enter your password"), "x");
     await act(async () => {
-      fireEvent.press(screen.getByText("Sign in"));
+      fireEvent.press(pressSignIn());
       await Promise.resolve();
     });
 
     expect(screen.getByText("Invalid credentials")).toBeTruthy();
 
-    fireEvent.changeText(screen.getByPlaceholderText("Email"), "a@b.co");
+    fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "a@b.co");
     expect(screen.queryByText("Invalid credentials")).toBeNull();
   });
 
@@ -116,11 +123,11 @@ describe("LoginScreen", () => {
     mockLogin.mockResolvedValueOnce(true);
     render(<LoginScreen />);
 
-    fireEvent.changeText(screen.getByPlaceholderText("Email"), "user@example.com");
-    fireEvent.changeText(screen.getByPlaceholderText("Password"), "right-pass");
+    fireEvent.changeText(screen.getByPlaceholderText("you@example.com"), "user@example.com");
+    fireEvent.changeText(screen.getByPlaceholderText("Enter your password"), "right-pass");
 
     await act(async () => {
-      fireEvent.press(screen.getByText("Sign in"));
+      fireEvent.press(pressSignIn());
       await Promise.resolve();
     });
 
@@ -132,15 +139,15 @@ describe("LoginScreen", () => {
   it("navigates to /forgot-password when the link is pressed", () => {
     render(<LoginScreen />);
 
-    fireEvent.press(screen.getByText("Forgot Password?"));
+    fireEvent.press(screen.getByText("Forgot password?"));
 
     expect(mockRouter.push).toHaveBeenCalledWith("/forgot-password");
   });
 
-  it("navigates to /register when 'Create one' is pressed", () => {
+  it("navigates to /register when 'Sign up' is pressed", () => {
     render(<LoginScreen />);
 
-    fireEvent.press(screen.getByText("Create one"));
+    fireEvent.press(screen.getByText("Sign up"));
 
     expect(mockRouter.push).toHaveBeenCalledWith("/register");
   });

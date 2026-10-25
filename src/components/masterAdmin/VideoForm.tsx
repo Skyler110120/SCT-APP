@@ -288,7 +288,7 @@ export default function VideoForm({
               <TextInput
                 style={[
                   styles.searchInput,
-                  errors.title && { borderColor: "#FF4444" },
+                  errors.title && { borderColor: "#E8735F" },
                 ]}
                 value={title}
                 onChangeText={setTitle}
@@ -343,7 +343,7 @@ export default function VideoForm({
                   <TextInput
                     style={[
                       styles.searchInput,
-                      errors.videoUrl && { borderColor: "#FF4444" },
+                      errors.videoUrl && { borderColor: "#E8735F" },
                     ]}
                     value={videoUrl}
                     onChangeText={setVideoUrl}
@@ -409,7 +409,7 @@ export default function VideoForm({
               <TextInput
                 style={[
                   styles.searchInput,
-                  errors.orderIndex && { borderColor: "#FF4444" },
+                  errors.orderIndex && { borderColor: "#E8735F" },
                 ]}
                 value={orderIndex}
                 onChangeText={setOrderIndex}

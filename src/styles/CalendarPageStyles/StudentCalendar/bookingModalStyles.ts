@@ -21,14 +21,14 @@ export const bookingModalStyles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     color: themes.textPrimary,
   },
   modalText: {
     fontSize: 16,
     marginBottom: 8,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.white,
   },
@@ -52,7 +52,7 @@ export const bookingModalStyles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white
   },
   selectionIndicator: {
@@ -64,7 +64,7 @@ export const bookingModalStyles = StyleSheet.create({
   },
   selectionIndicatorText: {
     fontSize: 13,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
   modalButtonContainer: {
@@ -83,7 +83,7 @@ export const bookingModalStyles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
 });

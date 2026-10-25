@@ -45,14 +45,15 @@ const styles = StyleSheet.create({
     gap: theme.space.sm,
   },
   label: {
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
+    fontFamily: theme.typography.family.bodySemiBold,
   },
   input: {
     minHeight: 48,
     borderRadius: theme.radius.md,
     borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.backgroundElevated,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surfaceSunken,
     paddingHorizontal: theme.space.lg,
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodyRegular,

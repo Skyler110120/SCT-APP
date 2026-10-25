@@ -73,14 +73,14 @@ export const registerScreenStyles = StyleSheet.create({
     letterSpacing: 0.5,
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   welcomeSubtext: {
     textAlign: "center",
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   formContainer: {
@@ -111,7 +111,7 @@ export const registerScreenStyles = StyleSheet.create({
     backgroundColor: themes.backgroundElevated,
     color: themes.textPrimary,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
   },
   textInputBox: {
     width: "100%",
@@ -123,7 +123,7 @@ export const registerScreenStyles = StyleSheet.create({
     backgroundColor: themes.backgroundElevated,
     color: themes.textPrimary,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
   },
   signUpButton: {
     width: "100%",
@@ -136,7 +136,7 @@ export const registerScreenStyles = StyleSheet.create({
     justifyContent: "center",
   },
   signUpButtonText: {
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     fontSize: 18,
     color: themes.black,
     textTransform: "uppercase",

@@ -17,7 +17,7 @@ export const drillManagementStyles = StyleSheet.create({
         padding: 20,
         borderRadius: 20,
         borderWidth: 2,
-        borderColor: themes.vegasGold,
+        borderColor: themes.border,
         backgroundColor: themes.black,
     },
     drillModalHeader: {
@@ -29,13 +29,13 @@ export const drillManagementStyles = StyleSheet.create({
         marginBottom: 10,
         textAlign: "center",
         fontSize: width * 0.06,
-        fontFamily: "Chakra-Bold",
-        color: themes.vegasGold,
+        fontFamily: "ArchivoNarrow_700Bold",
+        color: themes.textPrimary,
     },
     drillModalLabel: {
         marginBottom: 8,
         fontSize: width * 0.04,
-        fontFamily: "Chakra-Regular",
+        fontFamily: "Archivo_400Regular",
         color: themes.white,
     },
     drillExitButton: {
@@ -66,7 +66,7 @@ export const drillManagementStyles = StyleSheet.create({
     },
     drillModalButtonText: {
         fontSize: width * 0.04,
-        fontFamily: "Chakra-BoldItalic",
+        fontFamily: "ArchivoNarrow_700Bold",
         color: themes.white,
     },
     drillModalLoadingContainer: {
@@ -77,7 +77,7 @@ export const drillManagementStyles = StyleSheet.create({
     drillModalLoadingText: {
         marginTop: 12,
         fontSize: 16,
-        fontFamily: "Chakra-Regular",
+        fontFamily: "Archivo_400Regular",
         color: themes.white,
     },
 })

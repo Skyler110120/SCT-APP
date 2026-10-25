@@ -44,7 +44,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
     marginBottom: 0,
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     textAlign: "center",
   },
@@ -59,15 +59,15 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     marginTop: 16,
     marginBottom: 8,
-    color: themes.vegasGold,
+    color: themes.textPrimary,
   },
   emptyStateDescription: {
     fontSize: 14,
     textAlign: "center",
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginBottom: 24,
     paddingHorizontal: 20,
     color: themes.white,
@@ -80,7 +80,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
   loadingContainer: {
@@ -92,7 +92,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   courseListContainer: {
@@ -100,14 +100,14 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   courseListTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     textAlign: "center",
     marginBottom: 8,
-    color: themes.vegasGold,
+    color: themes.textPrimary,
   },
   courseListDescription: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 10,
@@ -123,7 +123,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: themes.vegasGold + '40',
+    borderColor: themes.border + '40',
     backgroundColor: themes.black,
   },
   selectedCourseCard: {
@@ -153,7 +153,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   courseTitle: {
     fontSize: 18,
     marginBottom: 6,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white
   },
   selectedCourseTitle:  {
@@ -175,11 +175,11 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   difficultyText: {
     fontSize: 12,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   gunTypeText: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   selectedGunTypeText: {
@@ -187,7 +187,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   courseDescription: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     marginBottom: 12,
   },
@@ -201,7 +201,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   courseOrder: {
     fontSize: 12,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   selectedCourseOrder: {
@@ -214,7 +214,7 @@ export const courseSelectionModalStyles = StyleSheet.create({
   },
   savingText:  {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color:  themes.white,
   },
 });

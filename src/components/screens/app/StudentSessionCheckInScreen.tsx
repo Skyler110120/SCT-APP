@@ -288,7 +288,7 @@ export default function StudentSessionCheckInScreen() {
                         setDraft((p) => ({ ...p, pain_description: value }))
                       }
                       placeholder="Describe the pain..."
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor="rgba(237,235,227,0.3)"
                     />
                   </View>
                 )}

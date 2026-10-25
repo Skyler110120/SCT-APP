@@ -14,15 +14,15 @@ export const instructorSelectionModalStyles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black,
   },
   modalTitle: {
     marginBottom: 16,
     textAlign: "center",
     fontSize: 28,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   contentContainer: {
     minHeight: 200,
@@ -34,14 +34,14 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize:  20,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     textAlign: "center",
     marginBottom: 12,
   },
   emptyStateDescription: {
     fontSize:  16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 24,
@@ -56,7 +56,7 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   },
   retryButtonText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.black,
   },
   loadingContainer: {
@@ -67,7 +67,7 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   pickerSection: {
@@ -76,12 +76,12 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   filterLabel: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   pickerDescription: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 22,
@@ -91,7 +91,7 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   filterPickerContainer: {
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     overflow: "hidden",
   },
@@ -107,7 +107,7 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   },
   savingText: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   footerInfo: {
@@ -117,7 +117,7 @@ export const instructorSelectionModalStyles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 16,

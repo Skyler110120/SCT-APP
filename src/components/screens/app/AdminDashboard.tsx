@@ -370,7 +370,7 @@ export default function AdminDashboard() {
               <TextInput
                 style={styles.textInput}
                 placeholder="Enter hours (0-168)"
-                placeholderTextColor="rgba(255,255,255,0.4)"
+                placeholderTextColor="rgba(237,235,227,0.4)"
                 keyboardType="number-pad"
                 value={bookingLockHoursInput}
                 onChangeText={(value) => {
@@ -421,7 +421,7 @@ export default function AdminDashboard() {
               <TextInput
                 style={styles.textInput}
                 placeholder="Email address"
-                placeholderTextColor="rgba(255,255,255,0.4)"
+                placeholderTextColor="rgba(237,235,227,0.4)"
                 value={inviteEmail}
                 onChangeText={(text) => {
                   setInviteEmail(text);

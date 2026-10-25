@@ -18,7 +18,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 24,
     lineHeight: 30,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   searchContainer: {
@@ -29,7 +29,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black,
   },
   searchIcon: {
@@ -43,7 +43,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   tableSection: {
@@ -58,8 +58,8 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -71,7 +71,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.black,
   },
 
@@ -82,14 +82,14 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     backgroundColor: "transparent",
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   filterSectionTitle: {
     marginBottom: 12,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+    color: themes.textPrimary,
   },
   filterRow: {
     flexDirection: "row",
@@ -102,22 +102,22 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   filterLabel: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   searchInput: {
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     color: themes.white,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   filterPickerContainer: {
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor:"transparent",
     overflow: "hidden",
   },
@@ -129,7 +129,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   tableContainer: {
     flex: 1,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     borderRadius: 8,
     backgroundColor: "transparent",
     overflow: "hidden",
@@ -140,8 +140,8 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     borderBottomColor: themes.border,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+    color: themes.textPrimary,
   },
   listContent: {
     paddingBottom: 16,
@@ -158,14 +158,14 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   userMeta: {
@@ -184,7 +184,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   roleBadgeText: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   userActions: {
@@ -201,15 +201,15 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   actionText: {
     marginLeft: 6,
     fontSize: 16,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   removeText: {
-    color: "#FF4444",
+    color: "#E8735F",
   },
   separator: {
     height: 1,
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.border,
   },
   emptyState: {
     padding: 32,
@@ -218,7 +218,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.5,
   },
@@ -236,7 +236,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black,
   },
   modalTitle: {
@@ -244,8 +244,8 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     lineHeight: 26,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+    color: themes.textPrimary,
   },
   modalUserInfo: {
     marginBottom: 20,
@@ -254,45 +254,45 @@ export const instructorManageStudentsStyles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   modalUserEmail: {
     marginBottom: 16,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   confirmationText: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   warningText: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
   },
   currentRole: {
     marginBottom: 12,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   roleLabel: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   modalPickerContainer: {
     marginBottom: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     overflow: "hidden",
   },
@@ -330,7 +330,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
 
@@ -343,7 +343,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   pickerDescription: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 22,
@@ -359,7 +359,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   savingText: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   footerInfoInstructor: {
@@ -370,7 +370,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   footerTextInstructor: {
     fontSize: 12,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 16,
@@ -387,14 +387,14 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     textAlign: "center",
     marginBottom: 12,
   },
   emptyStateDescription: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 24,
@@ -408,7 +408,7 @@ export const instructorManageStudentsStyles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    fontFamily: "Chakra-Italic",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 16,

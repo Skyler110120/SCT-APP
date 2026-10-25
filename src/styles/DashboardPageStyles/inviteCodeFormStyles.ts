@@ -22,7 +22,7 @@ export const inviteCodeFormStyles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     color: themes.textPrimary,
   },
@@ -30,7 +30,7 @@ export const inviteCodeFormStyles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   buttonContainer: {
@@ -49,7 +49,7 @@ export const inviteCodeFormStyles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
 });

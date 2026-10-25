@@ -15,7 +15,8 @@ import {
 import Images from "@/src/assets/images";
 import { AppButton, AppInput, AppScreen, AppText } from "@/src/components/ui";
 import { AuthGridBackground } from "@/src/components/auth/AuthGridBackground";
-import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
+import { Feather } from "@expo/vector-icons";
+import { themes } from "@/src/context/themes";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -79,25 +80,36 @@ export default function LoginScreen() {
       >
         <AppScreen style={styles.container}>
             <View style={styles.card}>
-              <View style={styles.backButtonContainer}>
-                <TouchableOpacity onPress={() => router.push('/welcome')}>
-                  <Image source={Images.buttons.backButton} />
+              <View style={styles.topRow}>
+                <TouchableOpacity
+                  style={styles.backLink}
+                  onPress={() => router.push('/welcome')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Back"
+                  hitSlop={8}
+                >
+                  <Feather name="arrow-left" size={16} color={themes.textSecondary} />
+                  <AppText style={styles.backLinkText}>Back</AppText>
                 </TouchableOpacity>
+                <Image
+                  source={Images.logo.sctMark}
+                  style={styles.brandMark}
+                  resizeMode="contain"
+                  accessible
+                  accessibilityLabel="SCT logo"
+                />
               </View>
               <View style={styles.loginScreenContentContainer}>
-                <View style={styles.logoWrap}>
-                  <AuthBrandLockup compact />
-                </View>
-                <AppText variant="title" style={styles.heading}>
-                  Sign in to your training hub
+                <AppText style={styles.heading} accessibilityRole="header">
+                  Sign in
                 </AppText>
                 <AppText variant="body" style={styles.subtitle}>
-                  Access your schedule, progress, and program updates in one secure place.
+                  Your schedule, progress and program updates, in one place.
                 </AppText>
                 <View style={styles.form}>
                   <AppInput
                     label="Email"
-                    placeholder="Email"
+                    placeholder="you@example.com"
                     style={styles.textInputBox}
                     value={credentials.email}
                     onChangeText={(text) => handleChange("email", text)}
@@ -109,37 +121,36 @@ export default function LoginScreen() {
                   />
                   <AppInput
                     label="Password"
-                    placeholder="Password"
+                    placeholder="Enter your password"
                     style={styles.textInputBox}
                     secureTextEntry={true}
                     value={credentials.password}
                     onChangeText={(text) => handleChange("password", text)}
                   />
+                  <TouchableOpacity
+                    style={styles.forgotPasswordButton}
+                    onPress={() => router.push('/forgot-password')}
+                    hitSlop={8}
+                  >
+                    <AppText style={styles.forgotPasswordText}>Forgot password?</AppText>
+                  </TouchableOpacity>
                   {loginError ? (
                     <AppText style={styles.loginErrorText}>{loginError}</AppText>
                   ) : null}
                   <AppButton
                     style={styles.logInButton as any}
                     fullWidth
+                    size="lg"
                     label="Sign in"
                     isLoading={isLoading}
                     onPress={handleLogin}
                   />
                 </View>
-                <TouchableOpacity onPress={() => router.push('/forgot-password')}>
-                  <AppText style={styles.forgotPasswordText}>
-                    Forgot Password?
-                  </AppText>
-                </TouchableOpacity>
-                <View style={styles.orContainer}>
-                  <View style={styles.horizontalLine} />
-                  <AppText style={styles.orText}>OR</AppText>
-                  <View style={styles.horizontalLine} />
-                </View>
+                <View style={styles.horizontalLine} />
                 <TouchableOpacity onPress={() => router.push("/register")}>
                   <AppText style={styles.registerPrompt}>
                     Don&apos;t have an account?{" "}
-                    <AppText style={styles.registerLink}>Create one</AppText>
+                    <AppText style={styles.registerLink}>Sign up</AppText>
                   </AppText>
                 </TouchableOpacity>
               </View>

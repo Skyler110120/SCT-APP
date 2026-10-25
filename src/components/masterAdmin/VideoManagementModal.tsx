@@ -51,7 +51,7 @@ export default function VideoManagementModal({
             <View
               style={[
                 styles.badge,
-                { backgroundColor: video.is_public ? "#2a5a2a" : "#5a3a2a" },
+                { backgroundColor: video.is_public ? "rgba(134,188,126,0.18)" : "rgba(226,169,78,0.18)" },
               ]}
             >
               <Text style={styles.badgeText}>
@@ -76,7 +76,7 @@ export default function VideoManagementModal({
             onPress={() => onDeleteVideo(video)}
             activeOpacity={0.7}
           >
-            <FontAwesome name="trash" size={16} color="#FF4444" />
+            <FontAwesome name="trash" size={16} color="#E8735F" />
             <Text style={[styles.actionText, styles.removeText]}>Delete</Text>
           </TouchableOpacity>
         </View>

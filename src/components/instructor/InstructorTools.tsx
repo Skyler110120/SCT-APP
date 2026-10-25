@@ -292,7 +292,7 @@ export default function InstructorTools() {
 
 const styles = StyleSheet.create({
   bodyText: { color: themes.white, marginBottom: 10 },
-  errorText: { color: "#FF6B6B", marginVertical: 6 },
+  errorText: { color: "#E8735F", marginVertical: 6 },
   successText: { color: themes.vegasGold, marginVertical: 6 },
   stepperRow: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 10 },
   stepperButton: {
@@ -304,8 +304,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  stepperText: { color: themes.vegasGold, fontSize: 20, fontWeight: "700" },
-  stepperValue: { color: themes.white, fontSize: 20, fontWeight: "700", minWidth: 32, textAlign: "center" },
+  stepperText: { color: themes.vegasGold, fontSize: 20, fontFamily: "Archivo_700Bold" },
+  stepperValue: { color: themes.white, fontSize: 20, fontFamily: "Archivo_700Bold", minWidth: 32, textAlign: "center" },
   primaryButton: {
     backgroundColor: themes.vegasGold,
     borderRadius: 12,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: themes.black,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 15,
     lineHeight: 20,
   },
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   },
   outlineButtonText: {
     color: themes.textPrimary,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 15,
     lineHeight: 20,
   },
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   chipSelected: { backgroundColor: themes.vegasGold },
-  chipText: { color: themes.textPrimary, fontFamily: "Inter_600SemiBold", fontSize: 13 },
+  chipText: { color: themes.textPrimary, fontFamily: "Archivo_600SemiBold", fontSize: 13 },
   chipTextSelected: { color: themes.black },
   listRow: {
     flexDirection: "row",
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(197,179,88,0.4)",
   },
   listCopy: { flex: 1, minWidth: 0, marginRight: 10 },
-  listPrimary: { color: themes.white, fontFamily: "Inter_600SemiBold", fontSize: 15 },
+  listPrimary: { color: themes.white, fontFamily: "Archivo_600SemiBold", fontSize: 15 },
   listSecondary: { color: themes.textMuted, fontSize: 12, marginTop: 2 },
   copyButton: {
     flexShrink: 0,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   copyText: {
     color: themes.black,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 13,
     lineHeight: 16,
   },

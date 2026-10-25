@@ -113,7 +113,7 @@ const StudentProgressModal: React.FC<StudentProgressModalProps> = ({
     student: StudentWeeklyProgress
   ): ProgressStatus => {
     if (student.current_week >= 24) {
-      return { status: "completed", color: "#4CAF50", icon: "check-circle" };
+      return { status: "completed", color: "#86BC7E", icon: "check-circle" };
     } else if (student.current_week > 0) {
       return {
         status: "in-progress",

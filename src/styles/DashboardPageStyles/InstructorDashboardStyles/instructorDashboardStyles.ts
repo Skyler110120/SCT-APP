@@ -17,12 +17,12 @@ export const instructorDashboardStyles = StyleSheet.create({
   todayText: {
     fontSize: 24,
     lineHeight: 30,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   fullDateText: {
     fontSize: 18,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
     marginTop: 5,
   },
@@ -41,25 +41,26 @@ export const instructorDashboardStyles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: themes.border,
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: themes.backgroundElevated,
   },
   selectedDayButton: {
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.goldLight,
+    borderColor: themes.vegasGold,
   },
   dayName: {
     color: themes.textMuted,
     fontSize: 11,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
   },
   dayNumber: {
     color: themes.textPrimary,
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 20,
+    fontFamily: "ArchivoNarrow_700Bold",
     marginTop: 2,
   },
   selectedDayText: {
-    color: themes.black,
+    color: themes.vegasGold,
   },
   sectionContainer: {
     marginBottom: 25,
@@ -68,7 +69,7 @@ export const instructorDashboardStyles = StyleSheet.create({
     color: themes.white,
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     borderBottomWidth: 1,
     borderColor: themes.border,
     paddingBottom: 8,
@@ -119,7 +120,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   classTimeText: {
     color: themes.white,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
   },
   viewButtonSection: {
     width: 84,
@@ -130,7 +131,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   viewButtonText: {
     color: themes.vegasGold,
     fontSize: 15,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     marginRight: 5,
   },
   arrowIcon: {
@@ -157,7 +158,7 @@ export const instructorDashboardStyles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     textAlign: "center",
   },
@@ -167,7 +168,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   labelText: {
     marginBottom: 12,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   textInput: {
@@ -177,7 +178,7 @@ export const instructorDashboardStyles = StyleSheet.create({
     borderColor: themes.borderStrong,
     borderRadius: 10,
     color: themes.white,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     fontSize: 16
   },
   submitButton: {
@@ -192,7 +193,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.black,
   },
   buttonContainer: {
@@ -201,7 +202,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.danger,
     textAlign: "center",
     marginVertical: 10,
@@ -210,7 +211,7 @@ export const instructorDashboardStyles = StyleSheet.create({
     color: themes.textMuted,
     textAlign: "center",
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     paddingVertical: 24,
   },
   navContainer: {
@@ -225,7 +226,7 @@ export const instructorDashboardStyles = StyleSheet.create({
   },
   navTextActive: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.black,
   },
 });

@@ -13,8 +13,8 @@ export const adminUserFiltersStyles = StyleSheet.create({
   filterSectionTitle: {
     marginBottom: 10,
     fontSize: 18,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+    color: themes.textPrimary,
   },
   filterRow: {
     flexDirection: "row",
@@ -27,7 +27,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
   filterLabel: {
     marginBottom: 8,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   searchRow: {
@@ -42,7 +42,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
     borderColor: themes.borderStrong,
     backgroundColor: themes.backgroundSoft,
     color: themes.white,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
   },
   searchInputFlex: {
     flex: 1,
@@ -55,7 +55,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
   },
   searchButtonText: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   roleChipRow: {
@@ -76,7 +76,7 @@ export const adminUserFiltersStyles = StyleSheet.create({
   },
   roleChipText: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.vegasGold,
   },
   roleChipTextSelected: {

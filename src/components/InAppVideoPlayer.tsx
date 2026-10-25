@@ -105,13 +105,13 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     color: themes.textPrimary,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 16,
     lineHeight: 22,
   },
   close: {
     color: themes.vegasGold,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 15,
     lineHeight: 20,
   },

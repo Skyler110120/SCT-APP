@@ -241,7 +241,7 @@ export default function UserProfilePage() {
                     fontSize: 16,
                     textAlign: "center",
                     marginBottom: 30,
-                    color: "#FF4444",
+                    color: "#E8735F",
                   },
                 ]}
               >
@@ -289,7 +289,7 @@ export default function UserProfilePage() {
                       textAlign: "center",
                       paddingRight: 20,
                       fontSize: 48,
-                      fontFamily: "Chakra-BoldItalic",
+                      fontFamily: "ArchivoNarrow_700Bold",
                       color: themes.vegasGold,
                     },
                   ]}

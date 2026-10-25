@@ -667,7 +667,7 @@ export default function SessionFormScreen() {
                       value={activeDraft.pain_description}
                       onChangeText={(v) => updateField("pain_description", v)}
                       placeholder="Describe the pain..."
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor="rgba(237,235,227,0.3)"
                     />
                   </View>
                 )}
@@ -804,7 +804,7 @@ export default function SessionFormScreen() {
                                 updateDrillMetricField(activeParticipant.student_id, drill.id, "timeSeconds", v)
                               }
                               placeholder="Time (sec)"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor="rgba(237,235,227,0.3)"
                               keyboardType="decimal-pad"
                             />
                             <TextInput
@@ -814,7 +814,7 @@ export default function SessionFormScreen() {
                                 updateDrillMetricField(activeParticipant.student_id, drill.id, "hitCount", v)
                               }
                               placeholder="Hits"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor="rgba(237,235,227,0.3)"
                               keyboardType="number-pad"
                             />
                           </View>
@@ -927,7 +927,7 @@ export default function SessionFormScreen() {
                           value={activeDraft.highlight}
                           onChangeText={(v) => updateField("highlight", v)}
                           placeholder="What was the student most proud of?"
-                          placeholderTextColor="rgba(255,255,255,0.3)"
+                          placeholderTextColor="rgba(237,235,227,0.3)"
                         />
                       </View>
                       <View style={styles.fieldContainer}>
@@ -937,7 +937,7 @@ export default function SessionFormScreen() {
                           value={activeDraft.instructor_notes}
                           onChangeText={(v) => updateField("instructor_notes", v)}
                           placeholder="Notes about this student's session..."
-                          placeholderTextColor="rgba(255,255,255,0.3)"
+                          placeholderTextColor="rgba(237,235,227,0.3)"
                           multiline
                           numberOfLines={4}
                         />
@@ -997,7 +997,7 @@ export default function SessionFormScreen() {
                               value={activeDraft.pass_override_reason}
                               onChangeText={(v) => updateField("pass_override_reason", v)}
                               placeholder="Why outcome differs from auto result"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor="rgba(237,235,227,0.3)"
                             />
                           </View>
                         </>

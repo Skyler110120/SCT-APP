@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
+import { Feather } from "@expo/vector-icons";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CreateEventModal from "@/src/components/admin/CreateEventModal";
@@ -61,10 +62,12 @@ import {
 
 type TrackMarker = "booked" | "bookNow" | "skipRisk" | null;
 
+// Week booking status is carried by a slim underline on each day (like the web's week
+// marker) so the month stays readable instead of turning into solid colored tiles.
 const TRACK_MARKER_COLORS: Record<Exclude<TrackMarker, null>, string> = {
-  booked: "rgba(74, 222, 128, 0.22)",
-  bookNow: "rgba(197, 179, 88, 0.30)",
-  skipRisk: "rgba(248, 113, 113, 0.25)",
+  booked: themes.success,
+  bookNow: themes.vegasGold,
+  skipRisk: themes.danger,
 };
 
 const toLocalDateKey = (isoString: string) => formatDateForAPI(new Date(isoString));
@@ -912,9 +915,10 @@ export default function CalendarScreen() {
           markedDates[addDays(weekStart, i)] = {
             customStyles: {
               container: {
-                backgroundColor: TRACK_MARKER_COLORS[marker],
+                borderBottomWidth: 3,
+                borderBottomColor: TRACK_MARKER_COLORS[marker],
                 // react-native-calendars writes borderRadius onto this object during render.
-                borderRadius: 16,
+                borderRadius: 8,
               },
             },
           };
@@ -933,13 +937,24 @@ export default function CalendarScreen() {
       dotColor: themes.vegasGold,
     };
   });
+  const selectedTrack = markedDates[selectedDate]?.customStyles?.container as
+    | { borderBottomColor?: string }
+    | undefined;
   markedDates[selectedDate] = {
     ...markedDates[selectedDate],
     selected: true,
-    selectedColor: themes.vegasGold,
+    selectedColor: themes.goldMedium,
     customStyles: {
-      container: { backgroundColor: themes.vegasGold, borderRadius: 16 },
-      text: { color: themes.black },
+      container: {
+        backgroundColor: themes.goldLight,
+        borderWidth: 1.5,
+        borderColor: themes.vegasGold,
+        ...(selectedTrack?.borderBottomColor
+          ? { borderBottomWidth: 3, borderBottomColor: selectedTrack.borderBottomColor }
+          : null),
+        borderRadius: 8,
+      },
+      text: { color: themes.vegasGold, fontFamily: "Archivo_700Bold" },
     },
   };
 
@@ -1268,9 +1283,9 @@ export default function CalendarScreen() {
                 markedDates={markedDates}
                 theme={{
                   calendarBackground: "transparent",
-                  textSectionTitleColor: themes.vegasGold,
-                  selectedDayBackgroundColor: themes.vegasGold,
-                  selectedDayTextColor: themes.black,
+                  textSectionTitleColor: themes.textMuted,
+                  selectedDayBackgroundColor: themes.goldMedium,
+                  selectedDayTextColor: themes.vegasGold,
                   todayTextColor: themes.vegasGold,
                   dayTextColor: themes.textPrimary,
                   textDisabledColor: themes.textMuted,
@@ -1279,6 +1294,8 @@ export default function CalendarScreen() {
                   textMonthFontSize: monthTitleFontSize,
                   textDayFontSize: Math.max(13, daySize * 0.2),
                   textDayHeaderFontSize: 12,
+                  textDayFontFamily: "Archivo_600SemiBold",
+                  textDayHeaderFontFamily: "Archivo_500Medium",
                   ...({
                     "stylesheet.day.basic": {
                       base: {
@@ -1286,10 +1303,17 @@ export default function CalendarScreen() {
                         height: daySize,
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: Math.min(14, daySize * 0.25),
+                        borderRadius: 8,
                         borderWidth: 1,
-                        borderColor: themes.border,
+                        borderColor: themes.borderSubtle,
+                        backgroundColor: themes.backgroundSoft,
                       },
+                    },
+                  } as any),
+                  ...({
+                    // Let the custom month header span the full width so the arrows sit at the edges.
+                    "stylesheet.calendar.header": {
+                      headerContainer: { flex: 1, flexDirection: "row" },
                     },
                   } as any),
                   ...({
@@ -1327,16 +1351,20 @@ export default function CalendarScreen() {
                         style={styles.monthNavButton}
                         onPress={goToPrevMonth}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Previous month"
                       >
-                        <Text style={styles.monthNavButtonText}>‹ Prev</Text>
+                        <Feather name="chevron-left" size={18} color={themes.textSecondary} />
                       </TouchableOpacity>
                       <Text style={styles.monthTitle}>{monthYear}</Text>
                       <TouchableOpacity
                         style={styles.monthNavButton}
                         onPress={goToNextMonth}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Next month"
                       >
-                        <Text style={styles.monthNavButtonText}>Next ›</Text>
+                        <Feather name="chevron-right" size={18} color={themes.textSecondary} />
                       </TouchableOpacity>
                     </View>
                   );
@@ -1357,16 +1385,9 @@ export default function CalendarScreen() {
                     ["skipRisk", "Skipped/missed"],
                   ] as const
                 ).map(([marker, label]) => (
-                  <View
-                    key={marker}
-                    style={{
-                      backgroundColor: TRACK_MARKER_COLORS[marker],
-                      borderRadius: 12,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                    }}
-                  >
-                    <Text style={{ color: themes.white, fontSize: 12 }}>{label}</Text>
+                  <View key={marker} style={styles.legendItem}>
+                    <View style={[styles.legendSwatch, { backgroundColor: TRACK_MARKER_COLORS[marker] }]} />
+                    <Text style={styles.legendText}>{label}</Text>
                   </View>
                 ))}
               </View>

@@ -78,7 +78,7 @@ export default function AdminPaymentsScreen() {
             <Text
               style={{
                 fontSize: 26,
-                fontFamily: "Chakra-Bold",
+                fontFamily: "ArchivoNarrow_700Bold",
                 color: themes.vegasGold,
                 marginBottom: 12,
               }}
@@ -99,7 +99,7 @@ export default function AdminPaymentsScreen() {
               onPress={loadLedger}
               disabled={isLoading}
             >
-              <Text style={{ color: themes.vegasGold, fontFamily: "Chakra-Regular" }}>
+              <Text style={{ color: themes.vegasGold, fontFamily: "Archivo_400Regular" }}>
                 Refresh
               </Text>
             </TouchableOpacity>
@@ -111,22 +111,22 @@ export default function AdminPaymentsScreen() {
                   style={{
                     marginTop: 12,
                     color: themes.white,
-                    fontFamily: "Chakra-Regular",
+                    fontFamily: "Archivo_400Regular",
                   }}
                 >
                   Loading payments...
                 </Text>
               </View>
             ) : !companyLedger || companyLedger.payments.length === 0 ? (
-              <Text style={{ color: themes.white, fontFamily: "Chakra-Regular" }}>
+              <Text style={{ color: themes.white, fontFamily: "Archivo_400Regular" }}>
                 No payments yet for this company.
               </Text>
             ) : (
               <>
                 <Text
                   style={{
-                    color: "rgba(255,255,255,0.75)",
-                    fontFamily: "Chakra-Regular",
+                    color: "rgba(237,235,227,0.75)",
+                    fontFamily: "Archivo_400Regular",
                     marginBottom: 12,
                   }}
                 >
@@ -149,7 +149,7 @@ export default function AdminPaymentsScreen() {
                     <Text
                       style={{
                         color: themes.vegasGold,
-                        fontFamily: "Chakra-Bold",
+                        fontFamily: "ArchivoNarrow_700Bold",
                         marginBottom: 4,
                       }}
                     >
@@ -158,7 +158,7 @@ export default function AdminPaymentsScreen() {
                     <Text
                       style={{
                         color: themes.white,
-                        fontFamily: "Chakra-Regular",
+                        fontFamily: "Archivo_400Regular",
                         fontSize: 13,
                         marginBottom: 8,
                       }}
@@ -171,7 +171,7 @@ export default function AdminPaymentsScreen() {
                     <TouchableOpacity
                       style={{
                         borderWidth: 1,
-                        borderColor: payment.refund_eligible ? themes.vegasGold : "rgba(255,255,255,0.3)",
+                        borderColor: payment.refund_eligible ? themes.vegasGold : "rgba(237,235,227,0.3)",
                         borderRadius: 8,
                         paddingVertical: 8,
                         alignItems: "center",
@@ -180,7 +180,7 @@ export default function AdminPaymentsScreen() {
                       onPress={() => handleRefundPayment(payment.id)}
                       disabled={!payment.refund_eligible || refundingPaymentId === payment.id}
                     >
-                      <Text style={{ color: themes.vegasGold, fontFamily: "Chakra-Regular" }}>
+                      <Text style={{ color: themes.vegasGold, fontFamily: "Archivo_400Regular" }}>
                         {refundingPaymentId === payment.id
                           ? "Refunding..."
                           : payment.status === "REFUNDED"
@@ -197,8 +197,8 @@ export default function AdminPaymentsScreen() {
               <Text
                 style={{
                   marginTop: 8,
-                  color: "#fbbf24",
-                  fontFamily: "Chakra-Regular",
+                  color: "#E2A94E",
+                  fontFamily: "Archivo_400Regular",
                 }}
               >
                 {message}

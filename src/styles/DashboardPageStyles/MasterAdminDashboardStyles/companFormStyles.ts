@@ -17,14 +17,14 @@ export const companyFormStyles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 20,
     backgroundColor:  themes.black,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   modalTitle: {
     marginBottom: 20,
     fontSize: 28,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     textAlign: "center",
-    color: themes.vegasGold,
+    color: themes.textPrimary,
   },
   formGroup: {
     marginBottom: 16,
@@ -32,23 +32,23 @@ export const companyFormStyles = StyleSheet.create({
   inputLabel: {
     marginBottom: 8,
     fontSize: 18,
-    fontFamily: "Chakra-Regular",
-    color: themes.vegasGold,
+    fontFamily: "Archivo_400Regular",
+    color: themes.textSecondary,
   },
   textInput: {
     padding: 12,
     borderWidth: 1,
     borderRadius: 10,
     backgroundColor: themes.black,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   errorText: {
     marginTop: 4,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
   },
   buttonContainer: {
     flexDirection:  "row",
@@ -65,7 +65,7 @@ export const companyFormStyles = StyleSheet.create({
   },
   buttonText: {
     fontSize: width * 0.03,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
 });

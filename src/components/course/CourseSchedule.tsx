@@ -54,9 +54,9 @@ export function programMonthIndexForWeek(focusWeek: number): number {
   return Math.floor((focusWeek - 1) / 4) + 1;
 }
 
-const text = { color: themes.white } as const;
-const muted = { color: themes.white, opacity: 0.7, fontSize: 13 } as const;
-const currentWeekLabel = { color: themes.vegasGold, fontSize: 12, fontWeight: "700" as const };
+const text = { color: themes.textPrimary, fontFamily: themes.fonts.bodyRegular } as const;
+const muted = { color: themes.textSecondary, fontFamily: themes.fonts.bodyRegular, fontSize: 13, lineHeight: 19 } as const;
+const currentWeekLabel = { color: themes.vegasGold, fontSize: 12, fontFamily: themes.fonts.bodyBold };
 const currentWeekCard = {
   marginTop: 6,
   padding: 8,
@@ -181,7 +181,7 @@ export default function CourseSchedule({
         .map((cd) => {
           const firstVideo = cd.drill.videos?.[0];
           return (
-            <View key={cd.id} style={{ paddingVertical: 6, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" }}>
+            <View key={cd.id} style={{ paddingVertical: 6, borderTopWidth: 1, borderTopColor: "rgba(237,235,227,0.08)" }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <TouchableOpacity
                   style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
@@ -269,7 +269,7 @@ export default function CourseSchedule({
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
               >
                 <FontAwesome name={weekOpen ? "chevron-down" : "chevron-right"} size={12} color={themes.vegasGold} />
-                <Text style={[text, { fontWeight: "600", flex: 1 }]}>
+                <Text style={[text, { fontFamily: themes.fonts.bodySemiBold, flex: 1 }]}>
                   Week {cls.week_index}: {classTitleOf(cls)}
                 </Text>
                 {isCurrentWeek && <Text style={currentWeekLabel}>This week</Text>}
@@ -279,7 +279,7 @@ export default function CourseSchedule({
               </TouchableOpacity>
             ) : (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={[text, { fontWeight: "600", flex: 1 }]}>
+                <Text style={[text, { fontFamily: themes.fonts.bodySemiBold, flex: 1 }]}>
                   Week {cls.week_index}: {classTitleOf(cls)}
                 </Text>
                 {isCurrentWeek && <Text style={currentWeekLabel}>This week</Text>}
@@ -297,7 +297,7 @@ export default function CourseSchedule({
     <View style={{ marginTop: 20 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <FontAwesome name="calendar" size={18} color={themes.vegasGold} />
-        <Text style={{ color: themes.white, fontSize: 18, fontWeight: "700" }}>Course schedule</Text>
+        <Text style={{ color: themes.textPrimary, fontSize: 20, fontFamily: themes.fonts.headingSemiBold }}>Course schedule</Text>
       </View>
       {isStudent && (
         <Text style={[muted, { marginBottom: 8 }]}>
@@ -346,7 +346,7 @@ export default function CourseSchedule({
                 <>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <FontAwesome name="lock" size={14} color={themes.vegasGold} />
-                    <Text style={[text, { fontWeight: "700", fontSize: 16 }]}>{monthTitleOf(month)}</Text>
+                    <Text style={[text, { fontFamily: themes.fonts.headingSemiBold, fontSize: 17 }]}>{monthTitleOf(month)}</Text>
                   </View>
                   <Text style={[muted, { marginTop: 4 }]}>
                     Weekly class and drill breakdown unlocks when you reach this month in the program.
@@ -360,7 +360,7 @@ export default function CourseSchedule({
                     style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                   >
                     <FontAwesome name={monthOpen ? "chevron-down" : "chevron-right"} size={14} color={themes.vegasGold} />
-                    <Text style={[text, { fontWeight: "700", fontSize: 16, flex: 1 }]}>{monthTitleOf(month)}</Text>
+                    <Text style={[text, { fontFamily: themes.fonts.headingSemiBold, fontSize: 17, flex: 1 }]}>{monthTitleOf(month)}</Text>
                     <Text style={muted}>
                       {classes.length} week{classes.length !== 1 ? "s" : ""} · {drillCount} drill
                       {drillCount !== 1 ? "s" : ""}
@@ -370,7 +370,7 @@ export default function CourseSchedule({
                 </>
               ) : (
                 <>
-                  <Text style={[text, { fontWeight: "700", fontSize: 16 }]}>{monthTitleOf(month)}</Text>
+                  <Text style={[text, { fontFamily: themes.fonts.headingSemiBold, fontSize: 17 }]}>{monthTitleOf(month)}</Text>
                   {renderClasses(month, false)}
                 </>
               )}

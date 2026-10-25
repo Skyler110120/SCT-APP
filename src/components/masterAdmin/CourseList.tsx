@@ -68,7 +68,7 @@ const CourseList: React.FC<CourseListProps> = ({
               style={[
                 styles.badge,
                 {
-                  borderColor: item.is_active ? themes.vegasGold : "#FF4444",
+                  borderColor: item.is_active ? themes.vegasGold : "#E8735F",
                   backgroundColor: item.is_active
                     ? themes.black
                     : "rgba(255, 68 68, 0.1)",
@@ -78,7 +78,7 @@ const CourseList: React.FC<CourseListProps> = ({
               <Text
                 style={[
                   styles.badgeText,
-                  { color: item.is_active ? themes.vegasGold : "#FF4444" },
+                  { color: item.is_active ? themes.vegasGold : "#E8735F" },
                 ]}
               >
                 {formatStatus(item.is_active)}
@@ -102,7 +102,7 @@ const CourseList: React.FC<CourseListProps> = ({
             onPress={() => onDeleteCourse(item)}
             activeOpacity={0.7}
           >
-            <FontAwesome name="trash" size={16} color="#FF4444" />
+            <FontAwesome name="trash" size={16} color="#E8735F" />
             <Text style={[styles.actionText, styles.removeText]}>
               Delete Course
             </Text>

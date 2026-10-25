@@ -37,7 +37,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
     marginBottom: 8,
     fontSize: width < 900 ? 24 : 32,
     lineHeight: width < 900 ? 30 : 40,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   selectedBanner: {
@@ -53,7 +53,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   selectedBannerLabel: {
     fontSize: 12,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
     opacity: 0.9,
     marginBottom: 4,
@@ -62,12 +62,12 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   selectedBannerTitle: {
     fontSize: 18,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   selectedBannerPlaceholder: {
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textMuted,
   },
   buttonContainer: {
@@ -76,7 +76,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   contextActionsLabel: {
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
     opacity: 0.95,
     marginLeft: 16,
@@ -97,7 +97,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   createCompanyButton: {
@@ -114,7 +114,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   createCompanyButtonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.vegasGold,
   },
   logoutButton: {
@@ -130,7 +130,7 @@ export const masterAdminDashboardStyles = StyleSheet.create({
   },
   logoutButtonText: {
     fontSize: width < 900 ? 15 : width * 0.02,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
 });

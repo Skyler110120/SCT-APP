@@ -1,78 +1,26 @@
-import Images from "@/src/assets/images";
 import { useAuth } from "@/src/context/AuthContext";
 import { Link, usePathname, useRouter } from "expo-router";
-import { Image, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { navBarStyles as styles } from "../styles/navBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getNavItemsForRole as getNavConfig } from "../utils/navBarUtils";
 import { AppText } from "./ui";
-import { FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { themes } from "@/src/context/themes";
 
 type AppRouterType = Parameters<typeof Link>[0]["href"];
+type FeatherName = keyof typeof Feather.glyphMap;
 
-const iconMap: Record<string, { icon: number; activeIcon: number }> = {
-  home: {
-    icon: Images.navIcons.home.homeIcon,
-    activeIcon: Images.navIcons.home.homeIconActive,
-  },
-  calendar: {
-    icon: Images.navIcons.calendar.calendarIcon,
-    activeIcon: Images.navIcons.calendar.calendarIconActive,
-  },
-  courses: {
-    icon: Images.navIcons.courses.courseIcon,
-    activeIcon: Images.navIcons.courses.courseIconActive,
-  },
-  profile: {
-    icon: Images.navIcons.profile.profileIcon,
-    activeIcon: Images.navIcons.profile.profileIconActive,
-  },
-  students: {
-    icon: Images.navIcons.students.studentsIcon,
-    activeIcon: Images.navIcons.students.studentsIconActive,
-  },
-  users: {
-    icon: Images.navIcons.profile.profileIcon,
-    activeIcon: Images.navIcons.profile.profileIconActive,
-  },
-  payments: {
-    icon: Images.navIcons.courses.courseIcon,
-    activeIcon: Images.navIcons.courses.courseIconActive,
-  },
+// Feather is the closest match in @expo/vector-icons to the web app's Lucide icons.
+const iconMap: Record<string, FeatherName> = {
+  home: "home",
+  calendar: "calendar",
+  courses: "book-open",
+  profile: "user",
+  students: "users",
+  users: "users",
+  payments: "credit-card",
 };
-
-const fontIconMap: Record<string, { name: keyof typeof FontAwesome.glyphMap }> = {
-  payments: { name: "credit-card" },
-};
-
-function getIconForNavItem(name: string) {
-  const key = name.toLowerCase();
-  return iconMap[key] ?? iconMap.profile;
-}
-
-function renderNavIcon(name: string, isActive: boolean, icon: number, activeIcon: number) {
-  const key = name.toLowerCase();
-  const fontIcon = fontIconMap[key];
-
-  if (fontIcon) {
-    return (
-      <FontAwesome
-        name={fontIcon.name}
-        size={20}
-        color={isActive ? themes.vegasGold : themes.textMuted}
-      />
-    );
-  }
-
-  return (
-    <Image
-      source={isActive ? activeIcon : icon}
-      style={styles.navIcon}
-      resizeMode="contain"
-    />
-  );
-}
 
 function formatLabel(label: string) {
   if (!label) return label;
@@ -87,11 +35,7 @@ export default function BottomNavBar({}: BottomNavBarProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
-  const navConfig = getNavConfig(user?.role, user);
-  const navItems = navConfig.map((item) => ({
-    ...item,
-    ...getIconForNavItem(item.name),
-  }));
+  const navItems = getNavConfig(user?.role, user);
   return (
     <View
       style={[
@@ -114,8 +58,14 @@ export default function BottomNavBar({}: BottomNavBarProps) {
             }}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
+            accessibilityLabel={formatLabel(item.name)}
           >
-            {renderNavIcon(item.name, isActive, item.icon, item.activeIcon)}
+            <View style={[styles.activeMarker, isActive ? styles.activeMarkerOn : null]} />
+            <Feather
+              name={iconMap[item.name.toLowerCase()] ?? "circle"}
+              size={21}
+              color={isActive ? themes.vegasGold : themes.textMuted}
+            />
             <AppText
               style={isActive ? styles.navTextActive : styles.navText}
               numberOfLines={1}

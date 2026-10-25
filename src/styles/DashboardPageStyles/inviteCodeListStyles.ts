@@ -8,7 +8,7 @@ export const inviteCodeListStyles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 8,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     letterSpacing: 0.4,
     textTransform: "uppercase",
     color: themes.textMuted,
@@ -34,7 +34,7 @@ export const inviteCodeListStyles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     letterSpacing: 0.4,
     color: themes.textPrimary,
   },
@@ -51,14 +51,14 @@ export const inviteCodeListStyles = StyleSheet.create({
   copyText: {
     fontSize: 13,
     lineHeight: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   codeDetails: {
     marginTop: 6,
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textMuted,
   },
   emptyListText: {
@@ -66,7 +66,7 @@ export const inviteCodeListStyles = StyleSheet.create({
     paddingHorizontal: 8,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.textSecondary,
   },

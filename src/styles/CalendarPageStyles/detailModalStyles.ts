@@ -22,7 +22,7 @@ export const detailModalStyles = StyleSheet.create({
   sessionModalTitle: {
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     marginBottom: 8,
     color: themes.textPrimary,
@@ -30,7 +30,7 @@ export const detailModalStyles = StyleSheet.create({
   sessionModalSubtitle: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     marginBottom: 16,
     color: themes.white,
@@ -56,7 +56,9 @@ export const detailModalStyles = StyleSheet.create({
     minHeight: 56,
   },
   sessionButtonDestructive: {
-    backgroundColor: "#FF4444",
+    backgroundColor: themes.dangerBg,
+    borderWidth: 1,
+    borderColor: themes.danger,
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -64,6 +66,10 @@ export const detailModalStyles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 48,
     flex: 1,
+  },
+  sessionButtonDisabled: {
+    backgroundColor: "transparent",
+    borderColor: themes.borderStrong,
   },
   sessionButtonClose: {
     backgroundColor: themes.black,
@@ -79,18 +85,21 @@ export const detailModalStyles = StyleSheet.create({
   },
   sessionButtonTextPrimary: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   sessionButtonTextSecondary: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   sessionButtonTextDestructive: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
-    color: themes.white,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.danger,
+  },
+  sessionButtonTextDisabled: {
+    color: themes.textSecondary,
   },
   infoCard: {
     padding: 14,
@@ -98,47 +107,47 @@ export const detailModalStyles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     backgroundColor: themes.black,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   infoCardSecondary: {
     padding: 14,
     backgroundColor: themes.black,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   infoCardTertiary: {
     padding: 14,
     backgroundColor: themes.black,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   infoLabel: {
     marginBottom: 4,
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textSecondary,
   },
   infoValuePrimary: {
     fontSize: 15,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   infoValueSecondary: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   infoValueTertiary: {
     fontSize: 15,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   infoValueSubtle: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   statusBadge: {
@@ -151,7 +160,7 @@ export const detailModalStyles = StyleSheet.create({
   statusBadgeText: {
     textAlign: 'center',
     fontSize: 13,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   columnLayout: {

@@ -16,8 +16,8 @@ export const instructorStudentTableStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themes.vegasGold,
     fontSize: isCompact ? 22 : 28,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   emptyState: {
     padding: 32,
@@ -26,7 +26,7 @@ export const instructorStudentTableStyles = StyleSheet.create({
   },
   emptyStateText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.5,
   },
@@ -44,13 +44,13 @@ export const instructorStudentTableStyles = StyleSheet.create({
   userName: {
     marginBottom: 4,
     fontSize: isCompact ? 20 : 24,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
     fontSize: isCompact ? 15 : 18,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
   },
@@ -70,7 +70,7 @@ export const instructorStudentTableStyles = StyleSheet.create({
   },
   roleBadgeText: {
     fontSize: isCompact ? 14 : 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   userActions: {
@@ -88,7 +88,7 @@ export const instructorStudentTableStyles = StyleSheet.create({
   actionText: {
     marginLeft: 6,
     fontSize: isCompact ? 14 : 16,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   separator: {

@@ -34,7 +34,7 @@ const shouldAppendTargetCount = (targetSpec?: string, targetCount?: number): boo
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <View style={{ marginTop: 14 }}>
-    <Text style={{ color: themes.vegasGold, fontWeight: "700", fontSize: 15, marginBottom: 6 }}>{title}</Text>
+    <Text style={{ color: themes.vegasGold, fontFamily: "ArchivoNarrow_700Bold", fontSize: 16, marginBottom: 6 }}>{title}</Text>
     {children}
   </View>
 );
@@ -48,7 +48,7 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 
 const Badge = ({ label, color }: { label: string; color: string }) => (
   <View style={{ borderWidth: 1, borderColor: color, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 }}>
-    <Text style={{ color, fontSize: 12, fontWeight: "600" }}>{label}</Text>
+    <Text style={{ color, fontSize: 12, fontFamily: "Archivo_600SemiBold" }}>{label}</Text>
   </View>
 );
 
@@ -78,7 +78,7 @@ export default function DrillDetailModal({
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <Text style={{ color: themes.white, fontSize: 20, fontWeight: "700", flex: 1 }}>{d.name}</Text>
+            <Text style={{ color: themes.textPrimary, fontSize: 22, fontFamily: "ArchivoNarrow_700Bold", flex: 1 }}>{d.name}</Text>
             <TouchableOpacity onPress={onClose} accessibilityLabel="Close drill details" hitSlop={10}>
               <FontAwesome name="close" size={22} color={themes.white} />
             </TouchableOpacity>
@@ -88,12 +88,12 @@ export default function DrillDetailModal({
               <Text style={{ color: themes.white, opacity: 0.7, marginBottom: 8 }}>{weekContextLine}</Text>
             )}
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-              <Badge label={isLive ? "Live fire" : "Dry fire"} color={isLive ? "#f87171" : "#60a5fa"} />
+              <Badge label={isLive ? "Live fire" : "Dry fire"} color={isLive ? "#E8735F" : "#86A9CC"} />
               {classDrill.is_homework && <Badge label="Homework" color={themes.vegasGold} />}
               {classDrill.duration_minutes != null && (
                 <Badge label={`${classDrill.duration_minutes} min`} color={themes.white} />
               )}
-              {d.is_cte && <Badge label="CTE" color="#4ade80" />}
+              {d.is_cte && <Badge label="CTE" color="#86BC7E" />}
             </View>
 
             {(d.loadout?.trim() || d.distance_yards != null || d.position_start?.trim() || d.position_end?.trim()) && (

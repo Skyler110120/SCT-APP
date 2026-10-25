@@ -13,7 +13,7 @@ export const companyListStyles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 8,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     letterSpacing: 0.4,
     textTransform: "uppercase",
     color: themes.textMuted,
@@ -38,20 +38,20 @@ export const companyListStyles = StyleSheet.create({
   companyText: {
     fontSize: 16,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   companyMeta: {
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textMuted,
   },
   emptyListText: {
     paddingVertical: 16,
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.textSecondary,
   },

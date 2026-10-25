@@ -361,7 +361,7 @@ export default function CourseStructureBuilderModal({
                       }}
                       disabled={submitting}
                     >
-                      <Text style={[styles.platformDrillsLinkText, { fontSize: 12, color: "#FF6666" }]}>
+                      <Text style={[styles.platformDrillsLinkText, { fontSize: 12, color: "#E8735F" }]}>
                         Delete month
                       </Text>
                     </TouchableOpacity>
@@ -426,7 +426,7 @@ export default function CourseStructureBuilderModal({
                           }}
                           disabled={submitting}
                         >
-                          <FontAwesome name="trash" size={18} color="#FF6666" />
+                          <FontAwesome name="trash" size={18} color="#E8735F" />
                         </TouchableOpacity>
                       </View>
                     </TouchableOpacity>
@@ -481,8 +481,8 @@ export default function CourseStructureBuilderModal({
                         onPress={() => handleRemoveDrillFromClass(cd)}
                         disabled={submitting}
                       >
-                        <FontAwesome name="times" size={14} color="#FF6666" />
-                        <Text style={[styles.platformDrillsLinkText, { marginLeft: 6, fontSize: 12, color: "#FF6666" }]}>
+                        <FontAwesome name="times" size={14} color="#E8735F" />
+                        <Text style={[styles.platformDrillsLinkText, { marginLeft: 6, fontSize: 12, color: "#E8735F" }]}>
                           Remove
                         </Text>
                       </TouchableOpacity>

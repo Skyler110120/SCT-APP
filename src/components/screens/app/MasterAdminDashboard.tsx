@@ -413,7 +413,7 @@ export default function MasterAdminDashboard() {
                         setInviteSuccess(null);
                       }}
                       placeholder={`Invite admin to ${selectedCompany.name}`}
-                      placeholderTextColor="rgba(255,255,255,0.45)"
+                      placeholderTextColor="rgba(237,235,227,0.45)"
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
@@ -427,8 +427,8 @@ export default function MasterAdminDashboard() {
                       }}
                     />
                     <Text style={{ color: themes.white, opacity: 0.7, fontSize: 12 }}>Role: Admin</Text>
-                    {inviteError && <Text style={{ color: "#f87171" }}>{inviteError}</Text>}
-                    {inviteSuccess && <Text style={{ color: "#4ade80" }}>{inviteSuccess}</Text>}
+                    {inviteError && <Text style={{ color: "#E8735F" }}>{inviteError}</Text>}
+                    {inviteSuccess && <Text style={{ color: "#86BC7E" }}>{inviteSuccess}</Text>}
                     <TouchableOpacity
                       style={[
                         styles.actionButton,
@@ -469,7 +469,7 @@ export default function MasterAdminDashboard() {
                       style={{
                         marginTop: 8,
                         borderWidth: 1,
-                        borderColor: "#f87171",
+                        borderColor: "#E8735F",
                         borderRadius: 8,
                         paddingVertical: 10,
                         alignItems: "center",
@@ -479,7 +479,7 @@ export default function MasterAdminDashboard() {
                       disabled={isDeletingCompany}
                       accessibilityLabel={`Delete ${selectedCompany.name}`}
                     >
-                      <Text style={{ color: "#f87171", fontWeight: "600" }}>
+                      <Text style={{ color: "#E8735F", fontFamily: "Archivo_600SemiBold" }}>
                         {isDeletingCompany ? "Deleting company..." : "Delete Company"}
                       </Text>
                     </TouchableOpacity>

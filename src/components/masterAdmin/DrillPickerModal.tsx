@@ -171,7 +171,7 @@ const s = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black,
   },
   header: {
@@ -182,8 +182,8 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   closeBtn: {
     padding: 8,
@@ -195,7 +195,7 @@ const s = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   list: {
@@ -206,7 +206,7 @@ const s = StyleSheet.create({
     marginBottom: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black + "80",
   },
   drillRowSelected: {
@@ -215,19 +215,19 @@ const s = StyleSheet.create({
   },
   drillName: {
     fontSize: 15,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   drillPurpose: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
     marginTop: 4,
   },
   emptyText: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
     textAlign: "center",
@@ -247,17 +247,17 @@ const s = StyleSheet.create({
   },
   optionLabel: {
     fontSize: 14,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.white,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     marginBottom: 12,
   },
@@ -270,7 +270,7 @@ const s = StyleSheet.create({
   },
   confirmBtnText: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
 });

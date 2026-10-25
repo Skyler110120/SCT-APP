@@ -29,7 +29,7 @@ export const adminManageUsersStyles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 24,
     lineHeight: 30,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   tableSection: {
@@ -44,7 +44,7 @@ export const adminManageUsersStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   errorContainer: {
@@ -55,7 +55,7 @@ export const adminManageUsersStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.danger,
     textAlign: "center",
     marginBottom: 20,
@@ -68,7 +68,7 @@ export const adminManageUsersStyles = StyleSheet.create({
   },
   retryButtonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.black,
   },
 });

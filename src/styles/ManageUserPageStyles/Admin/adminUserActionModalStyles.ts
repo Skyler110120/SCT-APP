@@ -22,8 +22,8 @@ export const adminUserActionModalStyles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
     fontSize: 20,
-    fontFamily: "Oswald_600SemiBold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   modalUserInfo: {
     marginBottom: 20,
@@ -31,37 +31,37 @@ export const adminUserActionModalStyles = StyleSheet.create({
   modalUserName: {
     marginBottom: 4,
     fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   modalUserEmail: {
     marginBottom:  16,
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   confirmationText: {
     marginBottom: 8,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.white,
   },
   warningText: {
     marginBottom: 8,
     fontSize: 13,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.danger,
   },
   currentRole: {
     marginBottom:  12,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color:  themes.white,
   },
   roleLabel: {
     marginBottom: 8,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   permissionToggleRow: {
@@ -77,14 +77,14 @@ export const adminUserActionModalStyles = StyleSheet.create({
   },
   permissionLabel: {
     fontSize: 16,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.white,
     flexShrink: 1,
     paddingRight: 8,
   },
   permissionValue: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
   },
   capacityRow: {
@@ -108,14 +108,14 @@ export const adminUserActionModalStyles = StyleSheet.create({
   },
   capacityButtonText: {
     fontSize: 20,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
   },
   capacityValue: {
     minWidth: 30,
     textAlign: "center",
     fontSize: 18,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   roleChipRow: {
@@ -137,7 +137,7 @@ export const adminUserActionModalStyles = StyleSheet.create({
   },
   roleChipText: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.vegasGold,
   },
   roleChipTextSelected: {
@@ -171,11 +171,13 @@ export const adminUserActionModalStyles = StyleSheet.create({
     marginLeft: 8,
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: themes.danger,
+    borderWidth: 1,
+    borderColor: themes.danger,
+    backgroundColor: themes.dangerBg,
   },
   buttonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
 });

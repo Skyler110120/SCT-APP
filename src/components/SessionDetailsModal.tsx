@@ -1,5 +1,6 @@
 import { useAuth } from "@/src/context/AuthContext";
 import { UserRole } from "@/src/types/enums";
+import { CANCEL_CUTOFF_NOTE, studentCancelState } from "@/src/components/student/StudentCancelSessionModal";
 import { themes } from "@/src/context/themes";
 import { detailModalStyles as styles } from "@/src/styles/CalendarPageStyles/detailModalStyles";
 import { SessionDetailed } from "@/src/types/sessions.types";
@@ -158,6 +159,7 @@ export default function SessionDetailsModal({
   if (!session) return null;
 
   const canBeCancelled = session.can_be_cancelled;
+  const studentCancel = studentCancelState(session);
   const canBeStarted = session.can_be_completed && isInstructor;
 
   const startMs = new Date(session.start_time).getTime();
@@ -174,9 +176,9 @@ export default function SessionDetailsModal({
     if (status === "scheduled" || status === "SCHEDULED") {
       return themes.vegasGold;
     } else if (status === "completed" || status === "COMPLETED") {
-      return "#4CAF50"; // Green
+      return "#86BC7E"; // Green
     } else if (status === "cancelled" || status === "CANCELLED") {
-      return "#FF4444"; // Red
+      return "#E8735F"; // Red
     } else {
       return "#666";
     }
@@ -207,21 +209,38 @@ export default function SessionDetailsModal({
         </>
       )}
 
-      <View style={styles.rowLayout}>
-        {canBeCancelled && (
+      {studentCancel !== null && (
+        <View>
           <TouchableOpacity
-            style={styles.sessionButtonDestructive}
+            style={[styles.sessionButtonDestructive, !studentCancel && styles.sessionButtonDisabled]}
             onPress={handleCancel}
-            disabled={isCancelling}
+            disabled={isCancelling || !studentCancel}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isCancelling || !studentCancel }}
+            accessibilityHint={studentCancel ? undefined : CANCEL_CUTOFF_NOTE}
           >
             {isCancelling ? (
-              <ActivityIndicator color={themes.white} size="small" />
+              <ActivityIndicator color={themes.danger} size="small" />
             ) : (
-              <Text style={styles.sessionButtonTextDestructive}>Cancel</Text>
+              <Text
+                style={[
+                  styles.sessionButtonTextDestructive,
+                  !studentCancel && styles.sessionButtonTextDisabled,
+                ]}
+              >
+                Cancel session
+              </Text>
             )}
           </TouchableOpacity>
-        )}
+          {!studentCancel && (
+            <Text style={[styles.infoValueTertiary, { textAlign: "center", marginTop: 6 }]}>
+              {CANCEL_CUTOFF_NOTE}
+            </Text>
+          )}
+        </View>
+      )}
 
+      <View style={styles.rowLayout}>
         <TouchableOpacity
           style={styles.sessionButtonClose}
           onPress={onClose}
@@ -270,7 +289,7 @@ export default function SessionDetailsModal({
             disabled={isCancelling}
           >
             {isCancelling ? (
-              <ActivityIndicator color={themes.white} size="small" />
+              <ActivityIndicator color={themes.danger} size="small" />
             ) : (
               <Text style={styles.sessionButtonTextDestructive}>Cancel</Text>
             )}
@@ -426,7 +445,7 @@ export default function SessionDetailsModal({
                                   backgroundColor: "rgba(0,0,0,0.3)",
                                 }}
                               >
-                                <Text style={{ fontFamily: "Chakra-Bold", fontSize: 14, color: themes.white }}>
+                                <Text style={{ fontFamily: "ArchivoNarrow_700Bold", fontSize: 14, color: themes.white }}>
                                   {cd.drill.name}
                                   {cd.is_homework ? " (Homework)" : ""}
                                   {cd.duration_minutes != null ? ` · ${cd.duration_minutes} min` : ""}

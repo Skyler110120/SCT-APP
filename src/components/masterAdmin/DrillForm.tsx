@@ -148,7 +148,7 @@ export default function DrillForm({
             <View style={styles.createSection}>
               <Text style={styles.modalLabel}>Drill Name *</Text>
               <TextInput
-                style={[styles.searchInput, errors.name && { borderColor: "#FF4444" }]}
+                style={[styles.searchInput, errors.name && { borderColor: "#E8735F" }]}
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g., Bill Drill, Wall Drill"
@@ -176,7 +176,7 @@ export default function DrillForm({
             <View style={styles.createSection}>
               <Text style={styles.modalLabel}>Purpose *</Text>
               <TextInput
-                style={[styles.searchInput, errors.purpose && { borderColor: "#FF4444" }]}
+                style={[styles.searchInput, errors.purpose && { borderColor: "#E8735F" }]}
                 value={purpose}
                 onChangeText={setPurpose}
                 placeholder="What this drill trains"
@@ -190,7 +190,7 @@ export default function DrillForm({
             <View style={styles.createSection}>
               <Text style={styles.modalLabel}>Loadout *</Text>
               <TextInput
-                style={[styles.searchInput, errors.loadout && { borderColor: "#FF4444" }]}
+                style={[styles.searchInput, errors.loadout && { borderColor: "#E8735F" }]}
                 value={loadout}
                 onChangeText={setLoadout}
                 placeholder="e.g. 2×10"
@@ -280,7 +280,7 @@ export default function DrillForm({
             <View style={styles.createSection}>
               <Text style={styles.modalLabel}>Display Order</Text>
               <TextInput
-                style={[styles.searchInput, errors.displayOrder && { borderColor: "#FF4444" }]}
+                style={[styles.searchInput, errors.displayOrder && { borderColor: "#E8735F" }]}
                 value={displayOrder}
                 onChangeText={setDisplayOrder}
                 placeholder="1"

@@ -113,7 +113,7 @@ const UserTable: React.FC<UserTableProps> = ({
           <FontAwesome
             name="user-times"
             size={20}
-            color={item.is_active ? "#FF4444" : themes.vegasGold}
+            color={item.is_active ? "#E8735F" : themes.vegasGold}
           />
           <Text
             style={[

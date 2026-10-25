@@ -20,8 +20,8 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
     marginBottom: 24,
     textAlign: "center",
     fontSize: 34,
-    fontFamily: "Chakra-BoldItalic",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   loadingContainer: {
     flex:  1,
@@ -31,7 +31,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   errorContainer: {
@@ -42,8 +42,8 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -55,7 +55,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   retryButtonText:  {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.black,
   },
   courseSection: {
@@ -76,7 +76,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   selectedBannerLabel: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.vegasGold,
     opacity: 0.9,
     marginBottom: 4,
@@ -85,12 +85,12 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   selectedBannerTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   selectedBannerPlaceholder: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.6,
   },
@@ -111,12 +111,12 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   createCourseButtonText: {
     fontSize: 20,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   contextActionsLabel: {
     fontSize: 13,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
     opacity: 0.95,
     marginLeft: 16,
@@ -136,7 +136,7 @@ export const masterAdminCourseManagementStyles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 20,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
 });

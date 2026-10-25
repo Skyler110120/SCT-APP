@@ -32,7 +32,7 @@ export const profileScreenStyles = StyleSheet.create({
   profileName: {
     fontSize: isNarrow ? 26 : 32,
     lineHeight: isNarrow ? 32 : 38,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
     textAlign: "center",
     maxWidth: "100%",
@@ -51,7 +51,7 @@ export const profileScreenStyles = StyleSheet.create({
   avatarInitial: {
     fontSize: 36,
     lineHeight: 42,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
     textAlign: "center",
   },
@@ -68,7 +68,7 @@ export const profileScreenStyles = StyleSheet.create({
   },
   profileBioText: {
     fontSize: isNarrow ? 15 : 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textPrimary,
     paddingLeft: 20,
     paddingRight: 20,
@@ -80,7 +80,7 @@ export const profileScreenStyles = StyleSheet.create({
   },
   profileBioTextBottom: {
     fontSize: isNarrow ? 15 : 18,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     paddingLeft: 20,
     paddingRight: 20,
@@ -117,7 +117,7 @@ export const profileScreenStyles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
 });

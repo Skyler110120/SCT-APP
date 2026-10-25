@@ -8,13 +8,13 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     backgroundColor: "transparent",
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   filterSectionTitle: {
     marginBottom: 12,
     fontSize: 22,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   filterRow: {
     flexDirection: "row",
@@ -26,7 +26,7 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
   filterLabel: {
     marginBottom: 8,
     fontSize: 15,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   searchRow: {
@@ -38,10 +38,10 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     color: themes.white,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   searchInputFlex: {
     flex: 1,
@@ -54,7 +54,7 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
   },
   searchButtonText: {
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
   statusChipRow: {
@@ -75,7 +75,7 @@ export const instructorStudentFiltersStyles = StyleSheet.create({
   },
   statusChipText: {
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   statusChipTextSelected: {

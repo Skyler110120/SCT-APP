@@ -157,7 +157,7 @@ const s = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black,
   },
   scrollContent: {
@@ -165,24 +165,24 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     marginBottom: 16,
     textAlign: "center",
   },
   label: {
     fontSize: 14,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.white,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     marginBottom: 16,
   },
@@ -205,7 +205,7 @@ const s = StyleSheet.create({
   },
   cancelBtnText: {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   submitBtn: {
@@ -217,7 +217,7 @@ const s = StyleSheet.create({
   },
   submitBtnText: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.black,
   },
 });

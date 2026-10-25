@@ -445,7 +445,7 @@ export default function TestSessionFormScreen() {
                         value={formState.pain_description}
                         onChangeText={(value) => updateField("pain_description", value)}
                         placeholder="Describe the pain..."
-                        placeholderTextColor="rgba(255,255,255,0.3)"
+                        placeholderTextColor="rgba(237,235,227,0.3)"
                       />
                     </View>
                   )}
@@ -497,7 +497,7 @@ export default function TestSessionFormScreen() {
                       value={formState.instructor_notes}
                       onChangeText={(value) => updateField("instructor_notes", value)}
                       placeholder="Notes about this test session..."
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor="rgba(237,235,227,0.3)"
                       multiline
                       numberOfLines={4}
                     />

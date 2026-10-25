@@ -23,14 +23,14 @@ export const adminDashboardStyles = StyleSheet.create({
     paddingTop: 4,
     fontSize: 26,
     lineHeight: 32,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   pageSubtitle: {
     marginBottom: 8,
     paddingHorizontal: 4,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textMuted,
   },
   companyHeader: {
@@ -44,7 +44,7 @@ export const adminDashboardStyles = StyleSheet.create({
   },
   companyName: {
     fontSize: 20,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   section: {
@@ -59,14 +59,14 @@ export const adminDashboardStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
     marginBottom: 6,
   },
   sectionDescription: {
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     marginBottom: 12,
   },
@@ -83,7 +83,7 @@ export const adminDashboardStyles = StyleSheet.create({
   buttonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   roleRow: {
@@ -107,7 +107,7 @@ export const adminDashboardStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   roleChipText: {
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 13,
     lineHeight: 16,
     color: themes.vegasGold,
@@ -132,7 +132,7 @@ export const adminDashboardStyles = StyleSheet.create({
     borderColor: themes.vegasGold,
   },
   courseChipText: {
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     fontSize: 13,
     lineHeight: 16,
     color: themes.white,
@@ -142,7 +142,7 @@ export const adminDashboardStyles = StyleSheet.create({
   },
   feedbackText: {
     marginTop: 8,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     fontSize: 14,
     lineHeight: 20,
     textAlign: "center",
@@ -150,7 +150,7 @@ export const adminDashboardStyles = StyleSheet.create({
   recentTitle: {
     marginTop: 14,
     marginBottom: 4,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     fontSize: 13,
     letterSpacing: 0.3,
     textTransform: "uppercase",
@@ -163,13 +163,13 @@ export const adminDashboardStyles = StyleSheet.create({
     gap: 2,
   },
   inviteEmail: {
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     fontSize: 14,
     lineHeight: 18,
     color: themes.white,
   },
   inviteMeta: {
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     fontSize: 12,
     lineHeight: 16,
     color: themes.textMuted,
@@ -195,12 +195,12 @@ export const adminDashboardStyles = StyleSheet.create({
   codeText: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
   },
   codeDetails: {
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textMuted,
   },
   copyButton: {
@@ -216,13 +216,13 @@ export const adminDashboardStyles = StyleSheet.create({
   copyText: {
     fontSize: 13,
     lineHeight: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   emptyListText: {
     padding: 16,
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.textSecondary,
   },
@@ -252,7 +252,7 @@ export const adminDashboardStyles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     color: themes.textPrimary,
   },
@@ -262,7 +262,7 @@ export const adminDashboardStyles = StyleSheet.create({
   inputLabel: {
     marginBottom: 8,
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   textInput: {
@@ -274,12 +274,12 @@ export const adminDashboardStyles = StyleSheet.create({
     borderColor: themes.borderStrong,
     backgroundColor: themes.backgroundSoft,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   errorText: {
     marginTop: 4,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     fontSize: 13,
     color: themes.danger,
   },

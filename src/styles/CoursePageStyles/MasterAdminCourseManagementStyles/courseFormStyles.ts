@@ -22,8 +22,8 @@ export const courseFormStyles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
     fontSize: 28,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   createSection: {
     padding: 4,
@@ -31,29 +31,29 @@ export const courseFormStyles = StyleSheet.create({
   modalLabel: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   searchInput: {
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     color: themes.white,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   warningText: {
     marginBottom: 8,
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
-    color: "#FF4444",
+    fontFamily: "Archivo_400Regular",
+    color: "#E8735F",
   },
   modalPickerContainer: {
     marginBottom: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     overflow: "hidden",
   },
@@ -62,7 +62,7 @@ export const courseFormStyles = StyleSheet.create({
   },
   inputDescription: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     textAlign: "center",
     lineHeight: 22,
@@ -83,7 +83,7 @@ export const courseFormStyles = StyleSheet.create({
   },
   materialStatusText: {
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   buttonContainer: {
     flexDirection:  "row",
@@ -110,7 +110,7 @@ export const courseFormStyles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 24,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes. white,
   },
   savingContainer: {
@@ -122,7 +122,7 @@ export const courseFormStyles = StyleSheet.create({
   },
   savingText: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
 });

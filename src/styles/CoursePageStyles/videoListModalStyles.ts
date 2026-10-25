@@ -28,13 +28,13 @@ export const videoListModalStyles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
     textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "70",
     marginTop: 4,
   },
@@ -52,14 +52,14 @@ export const videoListModalStyles = StyleSheet.create({
   },
   emptyStateTitle:  {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white + "70",
     textAlign: "center",
     lineHeight: 22,
@@ -82,13 +82,13 @@ export const videoListModalStyles = StyleSheet.create({
   },
   videoTitle: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes. white,
     marginBottom: 4,
   },
   videoDescription: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes. white + "80",
     marginBottom: 8,
     lineHeight: 18,
@@ -99,14 +99,12 @@ export const videoListModalStyles = StyleSheet.create({
   },
   videoOrder: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
     color: themes.vegasGold,
-    fontWeight: "600",
+    fontFamily: "Archivo_600SemiBold",
   },
   videoWeek: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
     color: themes.vegasGold + "80",
-    fontWeight: "600",
+    fontFamily: "Archivo_600SemiBold",
   },
 });

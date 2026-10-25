@@ -19,14 +19,14 @@ const variantStyles: Record<TextVariant, TextStyle> = {
   display: {
     fontFamily: theme.typography.family.headingSemiBold,
     fontSize: theme.typography.size["2xl"],
-    lineHeight: 36,
+    lineHeight: 34,
     color: theme.colors.textPrimary,
-    letterSpacing: 0.3,
+    letterSpacing: -0.3,
   },
   title: {
-    fontFamily: theme.typography.family.headingMedium,
+    fontFamily: theme.typography.family.headingSemiBold,
     fontSize: theme.typography.size.xl,
-    lineHeight: 28,
+    lineHeight: 27,
     color: theme.colors.textPrimary,
   },
   subtitle: {

@@ -19,8 +19,8 @@ export const adminUserTableStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themes.borderStrong,
     fontSize: isCompact ? 18 : 20,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_600SemiBold",
+    color: themes.textPrimary,
   },
   emptyState: {
     padding: 32,
@@ -29,7 +29,7 @@ export const adminUserTableStyles = StyleSheet.create({
   },
   emptyStateText:  {
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textMuted,
   },
   listContent: {
@@ -46,13 +46,13 @@ export const adminUserTableStyles = StyleSheet.create({
   userName:  {
     marginBottom: 4,
     fontSize: isCompact ? 16 : 17,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.white,
   },
   userEmail: {
     marginBottom: 8,
     fontSize: isCompact ? 13 : 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   userMeta:  {
@@ -71,7 +71,7 @@ export const adminUserTableStyles = StyleSheet.create({
   },
   roleBadgeText: {
     fontSize: isCompact ? 12 : 13,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
   },
   pendingBadge: {
@@ -79,13 +79,13 @@ export const adminUserTableStyles = StyleSheet.create({
     paddingHorizontal: 8,
     borderWidth: 1,
     borderRadius: 12,
-    borderColor: "#FFB020",
-    backgroundColor: "rgba(255, 176, 32, 0.12)",
+    borderColor: "#E2A94E",
+    backgroundColor: "rgba(226,169,78,0.12)",
   },
   pendingBadgeText: {
     fontSize: isCompact ? 12 : 13,
-    fontFamily: "Inter_600SemiBold",
-    color: "#FFB020",
+    fontFamily: "Archivo_600SemiBold",
+    color: "#E2A94E",
   },
   userActions:  {
     flex: isCompact ? 0 : 1,
@@ -103,14 +103,14 @@ export const adminUserTableStyles = StyleSheet.create({
   actionText: {
     marginLeft: 6,
     fontSize: isCompact ? 12 : 13,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.vegasGold,
   },
   removeText:  {
-    color: "#FF4444",
+    color: "#E8735F",
   },
   separator: {
     height: 1,
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.border,
   },
 });

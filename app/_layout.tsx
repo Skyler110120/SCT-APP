@@ -11,16 +11,16 @@ import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
 import { themes } from '@/src/context/themes';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+  Archivo_400Regular,
+  Archivo_500Medium,
+  Archivo_600SemiBold,
+  Archivo_700Bold,
+} from "@expo-google-fonts/archivo";
 import {
-  Oswald_400Regular,
-  Oswald_500Medium,
-  Oswald_600SemiBold,
-} from "@expo-google-fonts/oswald";
+  ArchivoNarrow_500Medium,
+  ArchivoNarrow_600SemiBold,
+  ArchivoNarrow_700Bold,
+} from "@expo-google-fonts/archivo-narrow";
 
 if (!__DEV__) {
   console.log = () => {};
@@ -29,21 +29,14 @@ if (!__DEV__) {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Oswald_400Regular,
-    Oswald_500Medium,
-    Oswald_600SemiBold,
-    // Backward compatibility aliases so existing style modules continue working.
-    "Chakra-Regular": Inter_400Regular,
-    "Chakra-Italic": Inter_400Regular,
-    "Chakra-Bold": Oswald_600SemiBold,
-    "Chakra-BoldItalic": Oswald_600SemiBold,
-    "Chakra-semiBoldItalic": Inter_600SemiBold,
-    "Chakra-Medium": Inter_500Medium,
+  const [fontsLoaded, fontError] = useFonts({
+    Archivo_400Regular,
+    Archivo_500Medium,
+    Archivo_600SemiBold,
+    Archivo_700Bold,
+    ArchivoNarrow_500Medium,
+    ArchivoNarrow_600SemiBold,
+    ArchivoNarrow_700Bold,
   });
 
   // Older builds persisted the full signup form, including the plaintext password, under this key.
@@ -60,7 +53,8 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
-  if (!fontsLoaded) {
+  // If a font fails to load, carry on with system fonts rather than spinning forever.
+  if (!fontsLoaded && !fontError) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themes.background }}>
         <StatusBar style="light" />

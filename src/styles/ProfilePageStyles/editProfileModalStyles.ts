@@ -24,7 +24,7 @@ export const editProfileModalStyles = StyleSheet.create({
     marginBottom: 16,
     fontSize: 22,
     lineHeight: 28,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     color: themes.textPrimary,
   },
@@ -35,7 +35,7 @@ export const editProfileModalStyles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 14,
     lineHeight: 18,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.textSecondary,
   },
   input: {
@@ -44,7 +44,7 @@ export const editProfileModalStyles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     borderColor: themes.borderStrong,
     backgroundColor: themes.backgroundSoft,
     color: themes.white,
@@ -55,18 +55,18 @@ export const editProfileModalStyles = StyleSheet.create({
   },
   inputError: {
     borderWidth:  2,
-    borderColor:  "#FF4444",
+    borderColor:  "#E8735F",
   },
   errorText: {
     marginTop: 8,
     textAlign: "left",
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
-    color: "#FF4444",
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: "#E8735F",
   },
   datePickerText: {
     fontSize: 20,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   textArea: {
@@ -97,7 +97,7 @@ export const editProfileModalStyles = StyleSheet.create({
   },
   editModalButtonText: {
     fontSize: 20,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
 });

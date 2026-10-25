@@ -62,11 +62,11 @@ export const CourseSelectionModal: React.FC<CourseSelectionModalProps> = ({
 
   const getDifficultyColor = (level: string) => {
     if (level.toLowerCase() === "beginner") {
-      return "#4CAF50";
+      return "#86BC7E";
     } else if (level.toLowerCase() === "intermediate") {
-      return "#FF9800";
+      return "#E2A94E";
     } else if (level.toLowerCase() === "advanced") {
-      return "#F44336";
+      return "#E8735F";
     } else {
       return themes.vegasGold;
     }

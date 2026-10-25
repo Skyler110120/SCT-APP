@@ -30,13 +30,13 @@ export const courseOverviewCardStyles = StyleSheet.create({
   courseTitle: {
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   courseDescription: {
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
     marginBottom: 12,
   },
@@ -62,7 +62,7 @@ export const courseOverviewCardStyles = StyleSheet.create({
   badgeText: {
     fontSize: 12,
     lineHeight: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.vegasGold,
   },
   selectedIndicator: {
@@ -79,7 +79,7 @@ export const courseOverviewCardStyles = StyleSheet.create({
   selectedText: {
     fontSize: 14,
     lineHeight: 18,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.vegasGold,
   },
 });

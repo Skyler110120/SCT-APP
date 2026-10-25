@@ -25,13 +25,13 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   title: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     flex: 1,
     textAlign: "center",
   },
@@ -42,7 +42,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 16,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   // Level 1: Timeline
@@ -58,18 +58,18 @@ export const courseStructureBuilderStyles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black + "80",
   },
   monthCardTitle: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     marginBottom: 4,
   },
   monthCardSubtitle: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
   },
@@ -87,7 +87,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   addMonthButtonText: {
     fontSize: 14,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   // Level 2: Month view (classes list)
@@ -99,7 +99,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black + "60",
   },
   classRowInfo: {
@@ -107,12 +107,12 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   classRowTitle: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   classRowMeta: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.7,
     marginTop: 4,
@@ -137,7 +137,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   addClassButtonText: {
     fontSize: 15,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
     marginLeft: 8,
   },
@@ -147,20 +147,20 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   classDetailLabel: {
     fontSize: 12,
-    fontFamily: "Chakra-Medium",
-    color: themes.vegasGold,
+    fontFamily: "Archivo_500Medium",
+    color: themes.textSecondary,
     marginBottom: 6,
     textTransform: "uppercase",
   },
   classDetailValue: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     lineHeight: 20,
   },
   classDetailValueMultiline: {
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     lineHeight: 20,
     minHeight: 40,
@@ -170,17 +170,17 @@ export const courseStructureBuilderStyles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: themes.black + "40",
   },
   drillCardName: {
     fontSize: 15,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   drillCardMeta: {
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
     marginTop: 4,
@@ -203,7 +203,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   addDrillButtonText: {
     fontSize: 14,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
     marginLeft: 6,
   },
@@ -217,7 +217,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   platformDrillsLinkText: {
     fontSize: 14,
-    fontFamily: "Chakra-Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.vegasGold,
   },
   emptyState: {
@@ -226,7 +226,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 15,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
     textAlign: "center",
@@ -239,7 +239,7 @@ export const courseStructureBuilderStyles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
 });

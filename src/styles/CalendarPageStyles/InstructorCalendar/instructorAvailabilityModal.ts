@@ -15,7 +15,7 @@ export const instructorAvailablityModal = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 20,
     backgroundColor: themes.black,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
   },
   modalScroll: {
     flexShrink: 1,
@@ -39,14 +39,14 @@ export const instructorAvailablityModal = StyleSheet.create({
   modalTitle: {
     marginBottom: 20,
     fontSize: 28,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     textAlign: "center",
-    color: themes.vegasGold,
+    color: themes.textPrimary,
   },
   modalText: {
     fontSize: 16,
     marginBottom: 8,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     color: themes.white,
   },
@@ -66,7 +66,7 @@ export const instructorAvailablityModal = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   modalUpdateContainer: {
@@ -84,7 +84,7 @@ export const instructorAvailablityModal = StyleSheet.create({
   },
   modalDayText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
   },
   modalDayButtonSelected: {
@@ -94,7 +94,7 @@ export const instructorAvailablityModal = StyleSheet.create({
   },
   modalDayTextSelected: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.black,
   },
   modalCreateContainer: {
@@ -106,7 +106,7 @@ export const instructorAvailablityModal = StyleSheet.create({
     fontSize: 16,
     marginTop: 8,
     textAlign: "center",
-    fontFamily: "Chakra-Bold",
-    color: "#FF4444",
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: "#E8735F",
   },
 });

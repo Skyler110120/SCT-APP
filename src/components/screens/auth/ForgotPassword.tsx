@@ -104,22 +104,22 @@ const styles = StyleSheet.create({
   title: {
     color: themes.white,
     fontSize: 24,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   subtitle: {
     color: themes.lightGray,
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     lineHeight: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     borderRadius: 8,
     color: themes.white,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   button: {
     marginTop: 4,
@@ -134,14 +134,14 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: themes.white,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     fontSize: 16,
   },
   linkText: {
     color: themes.vegasGold,
     textAlign: "center",
     textDecorationLine: "underline",
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginTop: 6,
   },
 });

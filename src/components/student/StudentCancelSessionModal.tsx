@@ -18,6 +18,17 @@ type Props = {
 
 const isScheduled = (s: SessionDetailed) => (s.status ?? "").toLowerCase() === "scheduled";
 
+/** Matches the API's `can_be_cancelled` rule: scheduled sessions can be cancelled up to 1 hour before start. */
+const CANCEL_CUTOFF_MINUTES = 60;
+export const CANCEL_CUTOFF_NOTE = "Can't cancel within 1 hour of start";
+
+/** null = not a booked/scheduled session (no cancel action at all); false = inside the cutoff (show disabled). */
+export function studentCancelState(session: SessionDetailed): boolean | null {
+  if (!isScheduled(session)) return null;
+  if (session.can_be_cancelled === false) return false;
+  return new Date(session.start_time).getTime() - Date.now() > CANCEL_CUTOFF_MINUTES * 60 * 1000;
+}
+
 /** Student cancel flow (mirrors web StudentDashboard). The API cancels later bookings after a gap. */
 export default function StudentCancelSessionModal({ session, onClose, onCancelled, onReschedule }: Props) {
   const [mode, setMode] = useState<Mode>("loading");
@@ -151,7 +162,7 @@ export default function StudentCancelSessionModal({ session, onClose, onCancelle
               </TouchableOpacity>
               {mode === "simple" ? (
                 <TouchableOpacity style={styles.primary} onPress={handleCancelOnly} disabled={isCancelling}>
-                  <Text style={styles.primaryText}>{isCancelling ? "Cancelling…" : "Yes, cancel"}</Text>
+                  <Text style={styles.primaryText}>{isCancelling ? "Cancelling…" : "Yes, cancel session"}</Text>
                 </TouchableOpacity>
               ) : (
                 <>
@@ -184,20 +195,20 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: themes.black,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     borderWidth: 2,
     borderRadius: 16,
     padding: 20,
   },
   title: {
-    color: themes.vegasGold,
+    color: themes.textPrimary,
     fontSize: 22,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     textAlign: "center",
     marginBottom: 14,
   },
   body: { color: themes.white, fontSize: 15, lineHeight: 21, marginBottom: 10 },
-  bold: { fontWeight: "700" },
+  bold: { fontFamily: "Archivo_700Bold" },
   error: { color: themes.danger, marginVertical: 8, textAlign: "center" },
   actions: { gap: 10, marginTop: 8 },
   primary: {
@@ -206,7 +217,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
   },
-  primaryText: { color: themes.black, fontFamily: "Oswald_500Medium", fontSize: 16 },
+  primaryText: { color: themes.black, fontFamily: "ArchivoNarrow_600SemiBold", fontSize: 16 },
   secondary: {
     borderColor: themes.vegasGold,
     borderWidth: 1,
@@ -214,5 +225,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
   },
-  secondaryText: { color: themes.vegasGold, fontFamily: "Oswald_500Medium", fontSize: 16 },
+  secondaryText: { color: themes.vegasGold, fontFamily: "ArchivoNarrow_600SemiBold", fontSize: 16 },
 });

@@ -4,7 +4,7 @@ import { themes } from "@/src/context/themes";
 export const courseListStyles = StyleSheet.create({
   tableContainer: {
     borderWidth: 1,
-    borderColor: themes.vegasGold,
+    borderColor: themes.border,
     backgroundColor: "transparent",
     overflow: "hidden",
   },
@@ -13,8 +13,8 @@ export const courseListStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themes.vegasGold,
     fontSize: 28,
-    fontFamily: "Chakra-Bold",
-    color: themes.vegasGold,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
   },
   emptyState: {
     padding: 32,
@@ -23,7 +23,7 @@ export const courseListStyles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.5,
   },
@@ -32,7 +32,7 @@ export const courseListStyles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: themes.vegasGold,
+    backgroundColor: themes.border,
   },
   row: {
     flex: 1,
@@ -46,13 +46,13 @@ export const courseListStyles = StyleSheet.create({
   name: {
     marginBottom: 4,
     fontSize: 24,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.white,
   },
   description: {
     marginBottom: 8,
     fontSize: 18,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.white,
     opacity: 0.8,
   },
@@ -72,7 +72,7 @@ export const courseListStyles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   actions: {
@@ -89,10 +89,10 @@ export const courseListStyles = StyleSheet.create({
   actionText: {
     marginLeft: 6,
     fontSize: 14,
-    fontFamily: "Chakra-BoldItalic",
+    fontFamily: "ArchivoNarrow_700Bold",
     color: themes.vegasGold,
   },
   removeText: {
-    color: "#FF4444",
+    color: "#E8735F",
   },
 });

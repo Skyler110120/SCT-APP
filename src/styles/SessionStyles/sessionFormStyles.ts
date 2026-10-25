@@ -22,7 +22,7 @@ export const sessionFormStyles = StyleSheet.create({
     marginTop: 12,
     color: themes.textSecondary,
     fontSize: 16,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
   },
 
   // Header
@@ -39,18 +39,18 @@ export const sessionFormStyles = StyleSheet.create({
   backButtonText: {
     color: themes.vegasGold,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   headerTitle: {
     flex: 1,
-    color: themes.vegasGold,
+    color: themes.textPrimary,
     fontSize: 20,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
   },
   headerSubtitle: {
     color: themes.white,
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     opacity: 0.7,
   },
 
@@ -69,7 +69,7 @@ export const sessionFormStyles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "rgba(197, 179, 88, 0.4)",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: "rgba(237,235,227,0.05)",
     marginRight: 8,
   },
   studentChipActive: {
@@ -79,16 +79,16 @@ export const sessionFormStyles = StyleSheet.create({
   studentChipText: {
     color: themes.white,
     fontSize: 14,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   studentChipTextActive: {
     color: themes.black,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   studentChipStatus: {
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(237,235,227,0.5)",
     fontSize: 11,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginTop: 2,
   },
   studentChipStatusActive: {
@@ -105,9 +105,9 @@ export const sessionFormStyles = StyleSheet.create({
     borderColor: "rgba(197, 179, 88, 0.15)",
   },
   sectionTitle: {
-    color: themes.vegasGold,
+    color: themes.textPrimary,
     fontSize: 18,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     marginBottom: 12,
   },
   sectionDivider: {
@@ -123,13 +123,13 @@ export const sessionFormStyles = StyleSheet.create({
   fieldLabel: {
     color: themes.white,
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     marginBottom: 8,
   },
   fieldHint: {
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(237,235,227,0.5)",
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginTop: 4,
   },
 
@@ -150,18 +150,18 @@ export const sessionFormStyles = StyleSheet.create({
     borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(237,235,227,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(237,235,227,0.1)",
   },
   sliderSegmentActive: {
     backgroundColor: themes.vegasGold,
     borderColor: themes.vegasGold,
   },
   sliderSegmentText: {
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(237,235,227,0.5)",
     fontSize: 13,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   sliderSegmentTextActive: {
     color: themes.black,
@@ -169,7 +169,7 @@ export const sessionFormStyles = StyleSheet.create({
   sliderValue: {
     color: themes.vegasGold,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     minWidth: 28,
     textAlign: "center",
   },
@@ -186,7 +186,7 @@ export const sessionFormStyles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(197, 179, 88, 0.3)",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(237,235,227,0.05)",
     alignItems: "center",
   },
   toggleButtonActive: {
@@ -196,11 +196,11 @@ export const sessionFormStyles = StyleSheet.create({
   toggleButtonText: {
     color: themes.white,
     fontSize: 13,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
   toggleButtonTextActive: {
     color: themes.black,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
 
   // Bool toggle (Yes/No)
@@ -214,7 +214,7 @@ export const sessionFormStyles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(197, 179, 88, 0.3)",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: "rgba(237,235,227,0.05)",
     alignItems: "center",
   },
   boolButtonActive: {
@@ -224,7 +224,7 @@ export const sessionFormStyles = StyleSheet.create({
   boolButtonText: {
     color: themes.white,
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   boolButtonTextActive: {
     color: themes.black,
@@ -239,7 +239,7 @@ export const sessionFormStyles = StyleSheet.create({
     color: themes.white,
     padding: 12,
     fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     minHeight: 44,
   },
   textInputMultiline: {
@@ -250,11 +250,11 @@ export const sessionFormStyles = StyleSheet.create({
   // Progress button
   progressButton: {
     marginTop: 24,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#86BC7E",
     borderRadius: 12,
     paddingVertical: 18,
     alignItems: "center",
-    shadowColor: "#4CAF50",
+    shadowColor: "#86BC7E",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -267,16 +267,16 @@ export const sessionFormStyles = StyleSheet.create({
   progressButtonText: {
     color: themes.white,
     fontSize: 18,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     letterSpacing: 1,
   },
   progressButtonTextActive: {
     color: themes.black,
   },
   progressButtonSubtext: {
-    color: "rgba(255,255,255,0.7)",
+    color: "rgba(237,235,227,0.7)",
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginTop: 4,
   },
 
@@ -295,7 +295,7 @@ export const sessionFormStyles = StyleSheet.create({
     color: themes.black,
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
   },
 
   // Save draft
@@ -311,25 +311,25 @@ export const sessionFormStyles = StyleSheet.create({
     color: themes.vegasGold,
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
   },
 
   // Completed badge
   completedBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    backgroundColor: "rgba(134,188,126,0.15)",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: "rgba(76, 175, 80, 0.3)",
+    borderColor: "rgba(134,188,126,0.3)",
   },
   completedBadgeText: {
-    color: "#4CAF50",
+    color: "#86BC7E",
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
     marginLeft: 8,
   },
 
@@ -341,9 +341,9 @@ export const sessionFormStyles = StyleSheet.create({
     padding: 24,
   },
   errorText: {
-    color: "#FF4444",
+    color: "#E8735F",
     fontSize: 16,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     textAlign: "center",
     marginBottom: 16,
   },
@@ -356,7 +356,7 @@ export const sessionFormStyles = StyleSheet.create({
   retryButtonText: {
     color: themes.black,
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
 
   // Drills
@@ -369,8 +369,8 @@ export const sessionFormStyles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.25)",
   },
   drillCardComplete: {
-    borderColor: "rgba(76, 175, 80, 0.6)",
-    backgroundColor: "rgba(76, 175, 80, 0.08)",
+    borderColor: "rgba(134,188,126,0.6)",
+    backgroundColor: "rgba(134,188,126,0.08)",
   },
   drillHeader: {
     flexDirection: "row",
@@ -388,24 +388,24 @@ export const sessionFormStyles = StyleSheet.create({
     marginRight: 12,
   },
   drillCheckboxChecked: {
-    backgroundColor: "#4CAF50",
-    borderColor: "#4CAF50",
+    backgroundColor: "#86BC7E",
+    borderColor: "#86BC7E",
   },
   drillCheckmark: {
     color: themes.white,
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   drillName: {
     flex: 1,
     color: themes.white,
     fontSize: 16,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   drillMeta: {
-    color: "rgba(255,255,255,0.7)",
+    color: "rgba(237,235,227,0.7)",
     fontSize: 13,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
     marginTop: 4,
   },
   drillVideoRow: {
@@ -426,7 +426,7 @@ export const sessionFormStyles = StyleSheet.create({
   drillVideoLinkText: {
     color: themes.vegasGold,
     fontSize: 13,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
 
   // Week info
@@ -443,11 +443,11 @@ export const sessionFormStyles = StyleSheet.create({
   weekInfoText: {
     color: themes.vegasGold,
     fontSize: 14,
-    fontFamily: "Chakra-Bold",
+    fontFamily: "ArchivoNarrow_700Bold",
   },
   weekInfoSubtext: {
-    color: "rgba(255,255,255,0.6)",
+    color: "rgba(237,235,227,0.6)",
     fontSize: 12,
-    fontFamily: "Chakra-Regular",
+    fontFamily: "Archivo_400Regular",
   },
 });

@@ -102,7 +102,7 @@ const CompanyForm = ({
             <TextInput
               style={[
                 styles.textInput,
-                errors.name && { borderWidth: 1, borderColor: "#FF4444" },
+                errors.name && { borderWidth: 1, borderColor: "#E8735F" },
               ]}
               value={formData.name}
               onChangeText={(text) => handleChange("name", text)}
@@ -118,7 +118,7 @@ const CompanyForm = ({
             <TextInput
               style={[
                 styles.textInput,
-                errors.website && { borderWidth: 1, borderColor: "#FF4444" },
+                errors.website && { borderWidth: 1, borderColor: "#E8735F" },
               ]}
               value={formData.website || ""}
               onChangeText={(text) => handleChange("website", text)}

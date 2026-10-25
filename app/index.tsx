@@ -15,7 +15,7 @@ export default function RootIndex() {
             marginTop: 16,
             color: themes.white,
             fontSize: 16,
-            fontFamily: 'Chakra-Regular'
+            fontFamily: 'Archivo_400Regular'
         }}>
             Loading...
         </Text>

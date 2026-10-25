@@ -45,19 +45,19 @@ export const calendarScreenStyles = StyleSheet.create({
   scheduleText: {
     fontSize: 18,
     lineHeight: 24,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     marginBottom: 12,
     color: themes.white,
   },
   sessionText: {
     fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textPrimary,
     lineHeight: 20,
   },
   sessionTitleText: {
     fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
     lineHeight: 22,
   },
@@ -97,7 +97,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.textPrimary,
   },
   actionButtonActive: {
@@ -105,7 +105,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   actionButtonTextActive: {
     fontSize: 16,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   addButtonContainer: {
@@ -124,7 +124,7 @@ export const calendarScreenStyles = StyleSheet.create({
   addButtonText: {
     fontSize: 15,
     lineHeight: 20,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   availabilityCardSelected: {
@@ -144,7 +144,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   selectionIndicatorText: {
     fontSize: 12,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.black,
   },
   availabilityActionButtons: {
@@ -165,7 +165,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   updateButtonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   }, 
   deleteButton: {
@@ -180,7 +180,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
+    fontFamily: "ArchivoNarrow_600SemiBold",
     color: themes.white,
   },
   weeklyScheduleContainer: {
@@ -194,14 +194,14 @@ export const calendarScreenStyles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
   },
   noAvailabilityText: {
     paddingLeft: 12,
     fontSize: 14,
     textAlign: "center",
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   instructorFilterRow: {
@@ -212,7 +212,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   instructorFilterLabel: {
     fontSize: 14,
-    fontFamily: "Inter_500Medium",
+    fontFamily: "Archivo_500Medium",
     color: themes.white,
   },
   instructorChipRow: {
@@ -234,7 +234,7 @@ export const calendarScreenStyles = StyleSheet.create({
   },
   instructorChipText: {
     fontSize: 13,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
   },
   instructorChipTextSelected: {
@@ -244,21 +244,21 @@ export const calendarScreenStyles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
     lineHeight: 22,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.textPrimary,
   },
   hintText: {
     marginTop: 8,
     textAlign: "center",
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Archivo_400Regular",
     color: themes.textSecondary,
   },
   errorText: {
     fontSize: 16,
     marginTop: 8,
     textAlign: "center",
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Archivo_600SemiBold",
     color: themes.danger,
   },
   bookingActionWrap: {
@@ -269,6 +269,7 @@ export const calendarScreenStyles = StyleSheet.create({
     paddingBottom: 96,
   },
   monthNavRow: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -277,22 +278,40 @@ export const calendarScreenStyles = StyleSheet.create({
     minHeight: 52,
   },
   monthNavButton: {
-    minWidth: 56,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: themes.border,
+    backgroundColor: themes.backgroundSoft,
     alignItems: "center",
     justifyContent: "center",
   },
   monthNavButtonText: {
     fontSize: 14,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontFamily: "Archivo_600SemiBold",
+    color: themes.textSecondary,
   },
   monthTitle: {
-    fontSize: 20,
-    fontFamily: "Oswald_500Medium",
-    color: themes.vegasGold,
+    fontSize: 22,
+    fontFamily: "ArchivoNarrow_700Bold",
+    color: themes.textPrimary,
     flex: 1,
     textAlign: "center",
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  legendSwatch: {
+    width: 14,
+    height: 3,
+    borderRadius: 2,
+  },
+  legendText: {
+    fontSize: 12,
+    fontFamily: "Archivo_500Medium",
+    color: themes.textSecondary,
   },
 });

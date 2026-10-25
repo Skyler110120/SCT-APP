@@ -38,7 +38,7 @@ export default function LoginPage() {
             marginTop: 16,
             color: themes.white,
             fontSize: 16,
-            fontFamily: "Chakra-Regular",
+            fontFamily: "Archivo_400Regular",
           }}
         >
           Checking authentication...
@@ -63,7 +63,7 @@ export default function LoginPage() {
             marginTop: 16,
             color: themes.white,
             fontSize: 16,
-            fontFamily: "Chakra-Regular",
+            fontFamily: "Archivo_400Regular",
           }}
         >
           Redirecting to dashboard...
