@@ -71,6 +71,9 @@ const daysOfWeek = [
 /** Backend weekday format: Monday=0 ... Sunday=6 */
 const toBackendDayOfWeek = (jsDay: number) => (jsDay + 6) % 7;
 const toJsDayOfWeek = (backendDay: number) => (backendDay + 1) % 7;
+const dayLabel = (backendDay: number) =>
+  daysOfWeek[toJsDayOfWeek(backendDay)]?.label ?? "Day";
+const validDate = (date: Date) => (Number.isNaN(date.getTime()) ? new Date() : date);
 
 const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
   visible,
@@ -233,27 +236,27 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
     onDelete?.(availabilityId);
   };
 
-  const formateTimeString = (timeString: string) => {
-    if (!timeString) return "Invalid Time";
-    const tempDate = new Date(`1970-01-01T${timeString}`);
-    if (isNaN(tempDate.getTime())) return "Invalid Time";
-    return tempDate.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const pickerDate = (): Date => {
     if (activePicker === "start_date" && formData.start_date) {
-      return createLocalDate(formData.start_date);
+      return validDate(createLocalDate(formData.start_date));
     }
     if (activePicker === "end_date" && formData.end_date) {
-      return createLocalDate(formData.end_date);
+      return validDate(createLocalDate(formData.end_date));
     }
     if (activePicker === "start_time" && formData.start_time) {
-      return new Date(`1970-01-01T${formData.start_time}`);
+      return validDate(new Date(`1970-01-01T${formData.start_time}`));
     }
     return new Date();
+  };
+
+  // A date picker is its own modal. Dismissing the sheet while that picker is
+  // still presented throws during unmount and the root error boundary takes over.
+  const requestClose = () => {
+    if (activePicker) {
+      setActivePicker(null);
+      return;
+    }
+    onClose();
   };
 
   const handlePickerConfirm = (date: Date) => {
@@ -274,7 +277,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={requestClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
@@ -284,12 +287,12 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 Are you sure you want to delete this availability
               </Text>
               <Text style={styles.modalText}>
-                {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}{" "}
-                {formateTimeString(selectedAvailability.start_time)} -{" "}
-                {formateTimeString(selectedAvailability.end_time)}
+                {dayLabel(selectedAvailability.day_of_week)}{" "}
+                {formatTimeString(selectedAvailability.start_time)} -{" "}
+                {formatTimeString(selectedAvailability.end_time)}
               </Text>
               <View style={styles.modalButtonContainer}>
-                <TouchableOpacity style={styles.modalButton} onPress={onClose}>
+                <TouchableOpacity style={styles.modalButton} onPress={requestClose}>
                   <Text style={styles.modalButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -317,7 +320,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                 {mode === "edit" && selectedAvailability ? (
                   <Text style={styles.modalTitle}>
                     Edit Availability for{" "}
-                    {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}
+                    {dayLabel(selectedAvailability.day_of_week)}
                   </Text>
                 ) : (
                   <Text style={styles.modalTitle}>Set Availability</Text>
@@ -334,7 +337,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                         style={{ flexDirection: "row", alignItems: "center" }}
                       >
                         <Text style={styles.modalText}>
-                          {daysOfWeek[toJsDayOfWeek(availability.day_of_week)].label}:{" "}
+                          {dayLabel(availability.day_of_week)}:{" "}
                           {formatTimeString(availability.start_time)} -{" "}
                           {formatTimeString(availability.end_time)}{" "}
                           {formatDateRange(availability.start_date, availability.end_date)}
@@ -356,7 +359,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
                       ]}
                     >
                       <Text style={styles.modalDayTextSelected}>
-                        {daysOfWeek[toJsDayOfWeek(selectedAvailability.day_of_week)].label}
+                        {dayLabel(selectedAvailability.day_of_week)}
                       </Text>
                     </View>
                     <Text style={styles.modalText}>
@@ -447,7 +450,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
               </ScrollView>
 
               <View style={styles.modalFooter}>
-                <TouchableOpacity style={styles.modalButton} onPress={onClose}>
+                <TouchableOpacity style={styles.modalButton} onPress={requestClose}>
                   <Text style={styles.modalButtonText}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -470,7 +473,7 @@ const InstructorAvailabilityModal: React.FC<AvailabilityModalProps> = ({
       </View>
 
       <DateTimePickerModal
-        isVisible={activePicker !== null}
+        isVisible={visible && activePicker !== null}
         mode={activePicker === "start_time" ? "time" : "date"}
         onConfirm={handlePickerConfirm}
         onCancel={() => setActivePicker(null)}

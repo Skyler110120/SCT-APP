@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -72,10 +72,11 @@ const toLocalDateKey = (isoString: string) => formatDateForAPI(new Date(isoStrin
 const isUnavailableRow = (availability: Availability) =>
   (availability.status ?? "").toLowerCase() === "unavailable";
 
-/** API times like "09:00:00" or "09:00". */
+/** API times like "09:00:00" or "09:00". Never throws — a bad row must not crash the screen. */
 const timeToMinutes = (timeStr: string) => {
+  if (!timeStr || typeof timeStr !== "string") return 0;
   const [h, m] = timeStr.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
 };
 
 /** Month bounds for a YYYY-MM-DD string, padded a day each side because the API filters by UTC date. */
@@ -105,6 +106,9 @@ export default function CalendarScreen() {
   const canManageOtherInstructorAvailability =
     isAdmin || (isInstructor && Boolean(user?.can_manage_others_availability));
   const availabilityScrollViewRef = useRef<ScrollView>(null);
+  // Android back blurs this screen before it unmounts. Ignore month updates after that
+  // so the calendar is not rebuilt while the screen is leaving.
+  const screenActiveRef = useRef(true);
   const bottomContentPadding = insets.bottom + 150;
 
   const goToPrevMonth = () => {
@@ -130,22 +134,38 @@ export default function CalendarScreen() {
 
   const [events, setEvents] = useState<Event[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
+  const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
+  const requestedDate = Array.isArray(dateParam) ? dateParam[0] : dateParam;
+  const openingDate =
+    requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : null;
   const today = formatDateForAPI(new Date());
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(openingDate ?? today);
   const firstOfThisMonth = (() => {
     const d = new Date();
     d.setDate(1);
     return formatDateForAPI(d);
   })();
-  const [visibleMonth, setVisibleMonth] = useState(firstOfThisMonth);
+  const [visibleMonth, setVisibleMonth] = useState(
+    openingDate ? `${openingDate.slice(0, 7)}-01` : firstOfThisMonth
+  );
 
-  const { date: dateParam } = useLocalSearchParams<{ date?: string }>();
   useEffect(() => {
+    if (!screenActiveRef.current) return;
     const requested = Array.isArray(dateParam) ? dateParam[0] : dateParam;
     if (!requested || !/^\d{4}-\d{2}-\d{2}$/.test(requested)) return;
-    setSelectedDate(requested);
-    setVisibleMonth(`${requested.slice(0, 7)}-01`);
+    setSelectedDate((current) => (current === requested ? current : requested));
+    const nextMonth = `${requested.slice(0, 7)}-01`;
+    setVisibleMonth((current) => (current === nextMonth ? current : nextMonth));
   }, [dateParam]);
+
+  useFocusEffect(
+    useCallback(() => {
+      screenActiveRef.current = true;
+      return () => {
+        screenActiveRef.current = false;
+      };
+    }, [])
+  );
 
   const [showAvailabilityManagement, setShowAvailabilityManagement] =
     useState<boolean>(false);
@@ -840,6 +860,12 @@ export default function CalendarScreen() {
   const studentWeeksWithSession = useMemo(() => buildWeeksWithSession(sessions), [sessions]);
   const studentWeekStateMap = useMemo(() => {
     if (!isStudentCalendar || !studentEnrollment) return new Map<string, BookingWeekState>();
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(visibleMonthStartWeek) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(visibleMonthEndWeek)
+    ) {
+      return new Map<string, BookingWeekState>();
+    }
     const todayWeekStart = getWeekBounds(new Date()).startDate;
     const context: BookingTrackContext = {
       currentWeekStart: todayWeekStart,
@@ -877,18 +903,27 @@ export default function CalendarScreen() {
     }
   > = {};
   if (isStudentCalendar) {
-    for (
-      let weekStart = visibleMonthStartWeek;
-      weekStart <= visibleMonthEndWeek;
-      weekStart = addDays(weekStart, 7)
-    ) {
+    let weekStart = visibleMonthStartWeek;
+    let steps = 0;
+    while (weekStart && weekStart <= visibleMonthEndWeek && steps < 8) {
       const marker = getTrackMarker(weekStart);
-      if (!marker) continue;
-      for (let i = 0; i < 7; i += 1) {
-        markedDates[addDays(weekStart, i)] = {
-          customStyles: { container: { backgroundColor: TRACK_MARKER_COLORS[marker] } },
-        };
+      if (marker) {
+        for (let i = 0; i < 7; i += 1) {
+          markedDates[addDays(weekStart, i)] = {
+            customStyles: {
+              container: {
+                backgroundColor: TRACK_MARKER_COLORS[marker],
+                // react-native-calendars writes borderRadius onto this object during render.
+                borderRadius: 16,
+              },
+            },
+          };
+        }
       }
+      const nextWeek = addDays(weekStart, 7);
+      if (!nextWeek || nextWeek <= weekStart) break;
+      weekStart = nextWeek;
+      steps += 1;
     }
   }
   datesWithActivity.forEach((dateStr) => {
@@ -903,7 +938,7 @@ export default function CalendarScreen() {
     selected: true,
     selectedColor: themes.vegasGold,
     customStyles: {
-      container: { backgroundColor: themes.vegasGold },
+      container: { backgroundColor: themes.vegasGold, borderRadius: 16 },
       text: { color: themes.black },
     },
   };
@@ -1227,7 +1262,6 @@ export default function CalendarScreen() {
           >
             <View style={styles.calendarContainer}>
               <Calendar
-                key={visibleMonth}
                 initialDate={visibleMonth}
                 current={selectedDate}
                 markingType={isStudentCalendar ? "custom" : "dot"}
@@ -1270,14 +1304,16 @@ export default function CalendarScreen() {
                     },
                   } as any),
                 }}
-                enableSwipeMonths={true}
+                enableSwipeMonths={false}
                 hideArrows={true}
                 onMonthChange={(month) => {
-                  if (month?.dateString) {
-                    const d = createLocalDate(month.dateString);
-                    d.setDate(1);
-                    setVisibleMonth(formatDateForAPI(d));
-                  }
+                  // Swipe is off because its gesture handler calls this while Android is
+                  // removing the screen, and that update crashes the app. Prev/Next still work.
+                  if (!screenActiveRef.current) return;
+                  const dateString = month?.dateString;
+                  if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return;
+                  const nextMonth = `${dateString.slice(0, 7)}-01`;
+                  setVisibleMonth((current) => (current === nextMonth ? current : nextMonth));
                 }}
                 renderHeader={() => {
                   const d = new Date(visibleMonth + "T00:00:00");

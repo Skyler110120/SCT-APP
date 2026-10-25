@@ -61,6 +61,17 @@ const MAKEUP_INFO_POST =
 const openCalendarOn = (date: string) =>
   router.push({ pathname: "/company/calendar", params: { date } });
 
+const openCoursesAtWeek = (currentWeek: number | null | undefined) => {
+  if (currentWeek != null && currentWeek > 0) {
+    router.push({
+      pathname: "/company/courses",
+      params: { week: String(currentWeek) },
+    });
+    return;
+  }
+  router.push("/company/courses");
+};
+
 /** Student home screen (mirrors web StudentDashboard). */
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -446,7 +457,7 @@ export default function StudentDashboard() {
             <Text style={styles.cardTitle}>What&apos;s next</Text>
             <Text style={styles.body}>
               Head to{" "}
-              <Text style={styles.link} onPress={() => router.push("/company/courses")}>
+              <Text style={styles.link} onPress={() => openCoursesAtWeek(enrollment?.current_week)}>
                 Courses
               </Text>{" "}
               to watch this week&apos;s videos.

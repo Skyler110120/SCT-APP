@@ -1,6 +1,13 @@
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import DrillDetailModal from "@/src/components/course/DrillDetailModal";
 import { InAppVideoPlayer } from "@/src/components/InAppVideoPlayer";
@@ -14,6 +21,8 @@ import {
   DrillVideo,
 } from "@/src/types/course.drills.types";
 
+type WeekClass = { week_index: number; global_week_number?: number | null };
+
 type Props = {
   courseId: number;
   isStudent: boolean;
@@ -24,10 +33,38 @@ type Props = {
   studentUnlockedProgramMonth?: number | null;
   /** Bumped by the parent on pull-to-refresh. */
   refreshKey?: number;
+  /** Curriculum week (`enrollment.current_week`) to bring into view. */
+  focusWeek?: number | null;
+  /** Increments each time the courses screen is opened with `focusWeek`. */
+  scrollNonce?: number;
+  scrollRef?: React.RefObject<ScrollView | null>;
+  contentRef?: React.RefObject<View | null>;
 };
+
+/** Curriculum week used by the course schedule: 4 classes per program month. */
+export function classGlobalWeek(monthIndex: number, cls: WeekClass): number {
+  return cls.global_week_number ?? (monthIndex - 1) * 4 + cls.week_index;
+}
+
+export function isCurrentProgramWeek(monthIndex: number, cls: WeekClass, focusWeek: number): boolean {
+  return classGlobalWeek(monthIndex, cls) === focusWeek;
+}
+
+export function programMonthIndexForWeek(focusWeek: number): number {
+  return Math.floor((focusWeek - 1) / 4) + 1;
+}
 
 const text = { color: themes.white } as const;
 const muted = { color: themes.white, opacity: 0.7, fontSize: 13 } as const;
+const currentWeekLabel = { color: themes.vegasGold, fontSize: 12, fontWeight: "700" as const };
+const currentWeekCard = {
+  marginTop: 6,
+  padding: 8,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: themes.vegasGold,
+  backgroundColor: "rgba(197, 179, 88, 0.12)",
+};
 
 const monthTitleOf = (month: CourseMonthWithClasses) =>
   month.title?.trim() || `Month ${month.month_index}`;
@@ -40,6 +77,10 @@ export default function CourseSchedule({
   studentMonthLimit,
   studentUnlockedProgramMonth,
   refreshKey = 0,
+  focusWeek = null,
+  scrollNonce = 0,
+  scrollRef,
+  contentRef,
 }: Props) {
   const [structure, setStructure] = useState<CourseStructure | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,6 +89,42 @@ export default function CourseSchedule({
   const [drillDetail, setDrillDetail] = useState<{ classDrill: ClassDrill; weekContextLine: string } | null>(null);
   const [playback, setPlayback] = useState<{ url: string; title: string } | null>(null);
   const [openingVideoId, setOpeningVideoId] = useState<number | null>(null);
+  const focusAnchorRef = useRef<View>(null);
+  const handledScrollNonce = useRef<number | null>(null);
+  const anchorLaidOut = useRef(false);
+
+  const scrollToCurrentWeek = useCallback(() => {
+    if (focusWeek == null || scrollNonce === 0 || !anchorLaidOut.current) return;
+    if (handledScrollNonce.current === scrollNonce) return;
+    const target = focusAnchorRef.current;
+    const content = contentRef?.current;
+    const scroller = scrollRef?.current;
+    if (
+      !target ||
+      !content ||
+      !scroller ||
+      typeof target.measureInWindow !== "function" ||
+      typeof content.measureInWindow !== "function"
+    ) {
+      return;
+    }
+    try {
+      target.measureInWindow((_targetX, targetY) => {
+        content.measureInWindow((_contentX, contentY) => {
+          if (handledScrollNonce.current === scrollNonce) return;
+          scroller.scrollTo({ y: Math.max(0, targetY - contentY - 12), animated: true });
+          handledScrollNonce.current = scrollNonce;
+        });
+      });
+    } catch {
+      // The native node is not measurable until layout finishes.
+    }
+  }, [contentRef, focusWeek, scrollNonce, scrollRef]);
+
+  const handleAnchorLayout = useCallback(() => {
+    anchorLaidOut.current = true;
+    scrollToCurrentWeek();
+  }, [scrollToCurrentWeek]);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +141,11 @@ export default function CourseSchedule({
       cancelled = true;
     };
   }, [courseId, refreshKey]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(scrollToCurrentWeek);
+    return () => cancelAnimationFrame(frame);
+  }, [scrollToCurrentWeek, structure]);
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<Set<number>>>, id: number) =>
     setter((prev) => {
@@ -170,8 +252,16 @@ export default function CourseSchedule({
       .map((cls) => {
         const drillCount = cls.class_drills?.length ?? 0;
         const weekOpen = expandedWeeks.has(cls.id);
+        const isCurrentWeek = focusWeek != null && isCurrentProgramWeek(month.month_index, cls, focusWeek);
         return (
-          <View key={cls.id} style={{ marginTop: 10 }}>
+          <View
+            key={cls.id}
+            ref={isCurrentWeek ? focusAnchorRef : undefined}
+            collapsable={false}
+            onLayout={isCurrentWeek ? handleAnchorLayout : undefined}
+            testID={isCurrentWeek ? "current-course-week" : undefined}
+            style={isCurrentWeek ? currentWeekCard : { marginTop: 10 }}
+          >
             {nestedWeekToggle ? (
               <TouchableOpacity
                 onPress={() => toggle(setExpandedWeeks, cls.id)}
@@ -182,14 +272,18 @@ export default function CourseSchedule({
                 <Text style={[text, { fontWeight: "600", flex: 1 }]}>
                   Week {cls.week_index}: {classTitleOf(cls)}
                 </Text>
+                {isCurrentWeek && <Text style={currentWeekLabel}>This week</Text>}
                 <Text style={muted}>
                   {drillCount} drill{drillCount !== 1 ? "s" : ""}
                 </Text>
               </TouchableOpacity>
             ) : (
-              <Text style={[text, { fontWeight: "600" }]}>
-                Week {cls.week_index}: {classTitleOf(cls)}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={[text, { fontWeight: "600", flex: 1 }]}>
+                  Week {cls.week_index}: {classTitleOf(cls)}
+                </Text>
+                {isCurrentWeek && <Text style={currentWeekLabel}>This week</Text>}
+              </View>
             )}
             {renderClassMeta(cls)}
             {(!nestedWeekToggle || weekOpen) && renderDrills(month, cls)}
@@ -228,12 +322,20 @@ export default function CourseSchedule({
           const classes = month.classes ?? [];
           const drillCount = classes.reduce((sum, c) => sum + (c.class_drills?.length ?? 0), 0);
           const monthOpen = expandedMonths.has(month.id);
+          const monthIsFocusFallback =
+            focusWeek != null &&
+            month.month_index === programMonthIndexForWeek(focusWeek) &&
+            !classes.some((cls) => isCurrentProgramWeek(month.month_index, cls, focusWeek));
           return (
             <View
               key={month.id}
+              ref={monthIsFocusFallback ? focusAnchorRef : undefined}
+              collapsable={false}
+              onLayout={monthIsFocusFallback ? handleAnchorLayout : undefined}
+              testID={monthIsFocusFallback ? "current-course-week" : undefined}
               style={{
                 borderWidth: 1,
-                borderColor: "rgba(197, 179, 88, 0.35)",
+                borderColor: monthIsFocusFallback ? themes.vegasGold : "rgba(197, 179, 88, 0.35)",
                 borderRadius: 10,
                 padding: 12,
                 marginBottom: 10,

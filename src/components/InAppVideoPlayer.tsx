@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,20 +16,29 @@ function ActivePlayer({
   url,
   title,
   onClose,
+  closeRef,
 }: {
   url: string;
   title?: string;
   onClose: () => void;
+  closeRef: React.MutableRefObject<() => void>;
 }) {
   const player = useVideoPlayer(url, (video) => {
     video.play();
   });
 
-  useEffect(() => {
-    return () => {
+  // useVideoPlayer releases the native player in its own unmount cleanup.
+  // Calling pause() after that throws "native shared object not found", and the
+  // root error boundary then replaces the screen with Try again / Report issue.
+  const handleClose = () => {
+    try {
       player.pause();
-    };
-  }, [player]);
+    } catch {
+      // The player can already be released if close races with unmount.
+    }
+    onClose();
+  };
+  closeRef.current = handleClose;
 
   return (
     <SafeAreaView testID="in-app-video-player" style={styles.screen}>
@@ -38,7 +47,7 @@ function ActivePlayer({
           {title || "Video"}
         </AppText>
         <Pressable
-          onPress={onClose}
+          onPress={handleClose}
           accessibilityRole="button"
           accessibilityLabel="Close video"
           hitSlop={8}
@@ -60,6 +69,10 @@ function ActivePlayer({
 
 export function InAppVideoPlayer({ visible, url, title, onClose }: InAppVideoPlayerProps) {
   const open = visible && !!url;
+  const closeRef = React.useRef(onClose);
+  if (!open) {
+    closeRef.current = onClose;
+  }
 
   return (
     <Modal
@@ -67,9 +80,11 @@ export function InAppVideoPlayer({ visible, url, title, onClose }: InAppVideoPla
       animationType="fade"
       presentationStyle="fullScreen"
       supportedOrientations={["portrait", "landscape"]}
-      onRequestClose={onClose}
+      onRequestClose={() => closeRef.current()}
     >
-      {open && url ? <ActivePlayer url={url} title={title} onClose={onClose} /> : null}
+      {open && url ? (
+        <ActivePlayer url={url} title={title} onClose={onClose} closeRef={closeRef} />
+      ) : null}
     </Modal>
   );
 }

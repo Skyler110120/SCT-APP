@@ -154,13 +154,31 @@ const TimeOffModal: React.FC<TimeOffModalProps> = ({
   };
 
   const pickerValue = (): Date => {
-    if (picker === "slot") return new Date(`1970-01-01T${slotTime}:00`);
+    if (picker === "slot") {
+      const parsed = new Date(`1970-01-01T${slotTime}:00`);
+      return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    }
     const key = picker === "rangeEnd" ? rangeEnd : dayDate;
-    return key ? createLocalDate(key) : new Date();
+    if (!key) return new Date();
+    const parsed = createLocalDate(key);
+    return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+  };
+
+  const requestClose = () => {
+    if (picker) {
+      setPicker(null);
+      return;
+    }
+    onClose();
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={requestClose}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <ScrollView>
@@ -264,7 +282,11 @@ const TimeOffModal: React.FC<TimeOffModalProps> = ({
             )}
 
             <View style={styles.modalButtonContainer}>
-              <TouchableOpacity style={styles.modalButton} onPress={onClose} disabled={isSubmitting}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={requestClose}
+                disabled={isSubmitting}
+              >
                 <Text style={styles.modalButtonText}>Close</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -284,7 +306,7 @@ const TimeOffModal: React.FC<TimeOffModalProps> = ({
       </View>
 
       <DateTimePickerModal
-        isVisible={picker !== null}
+        isVisible={visible && picker !== null}
         mode={picker === "slot" ? "time" : "date"}
         onConfirm={(date) => {
           const target = picker;

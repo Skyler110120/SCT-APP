@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -40,8 +41,27 @@ import {
   StudentWeeklyProgress
 } from "@/src/types/enrollment.types";
 
+function parseFocusWeek(weekParam: string | string[] | undefined): number | null {
+  const raw = Array.isArray(weekParam) ? weekParam[0] : weekParam;
+  if (!raw) return null;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export default function Courses() {
   const { user } = useAuth();
+  const { week: weekParam } = useLocalSearchParams<{ week?: string | string[] }>();
+  const focusWeek = parseFocusWeek(weekParam);
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
+  const [scrollNonce, setScrollNonce] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (focusWeek == null) return;
+      setScrollNonce((n) => n + 1);
+    }, [focusWeek])
+  );
 
   const isInstructor = user?.role === UserRole.INSTRUCTOR;
   const isAdmin = user?.role === UserRole.ADMIN;
@@ -856,6 +876,7 @@ export default function Courses() {
       <BackgroundGradient>
         <SafeAreaView style={styles.safeArea}>
           <ScrollView
+            ref={scrollRef}
             style={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
             refreshControl={
@@ -867,7 +888,7 @@ export default function Courses() {
               />
             }
           >
-            <View style={styles.contentContainer}>
+            <View ref={contentRef} collapsable={false} style={styles.contentContainer}>
               <View style={styles.headerSection}>
                 <Text style={styles.pageTitle}>{getPageTitle()}</Text>
 
@@ -933,6 +954,10 @@ export default function Courses() {
                   }
                   studentUnlockedProgramMonth={myEnrollment?.unlocked_program_month}
                   refreshKey={scheduleRefreshKey}
+                  focusWeek={isStudent ? focusWeek : null}
+                  scrollNonce={scrollNonce}
+                  scrollRef={scrollRef}
+                  contentRef={contentRef}
                 />
               )}
             </View>
