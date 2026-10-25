@@ -107,7 +107,11 @@ export default function BottomNavBar({}: BottomNavBarProps) {
           <TouchableOpacity
             key={item.name}
             style={styles.navItem}
-            onPress={() => router.push(item.route as AppRouterType)}
+            onPress={() => {
+              if (pathname === item.route) return;
+              // Replace, so the bottom bar does not pile screens onto the back stack.
+              router.replace(item.route as AppRouterType);
+            }}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
           >

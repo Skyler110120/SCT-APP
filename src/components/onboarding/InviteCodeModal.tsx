@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { onboardingService } from "../../services/onboardingService";
+import { AuthBrandLockup } from "@/src/components/auth/AuthBrandLockup";
 
 interface InviteCodeModalProps {
   isVisible: boolean;
@@ -117,6 +118,9 @@ export function InviteCodeModal({
         style={styles.modalOverlay}
       >
         <View style={styles.modalContent}>
+          <View style={styles.brandSlot}>
+            <AuthBrandLockup compact markOnly />
+          </View>
           <Text style={styles.modalTitle}>Join Your Company</Text>
 
           <View style={styles.formGroup}>

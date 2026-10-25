@@ -4,10 +4,9 @@ import { StyleSheet } from "react-native";
 export const registerScreenStyles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    justifyContent: "center",
+  },
+  formScroll: {
+    flex: 1,
   },
   card: {
     width: "100%",
@@ -29,7 +28,10 @@ export const registerScreenStyles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 20,
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingBottom: 24,
   },
   registerScreenContentContainer: {
     flexDirection: "column",

@@ -349,22 +349,23 @@ export default function RegisterScreen() {
   return (
     <AuthGridBackground>
       <SafeAreaView style={styles.container}>
-        <View style={styles.card}>
-          <View style={styles.backButtonContainer}>
-            <TouchableOpacity onPress={handleBack}>
-              <Image source={Images.buttons.backButton} />
-            </TouchableOpacity>
-          </View>
-          <KeyboardAwareScrollView
-            contentContainerStyle={styles.scrollContainer}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            enableOnAndroid={true}
-            enableAutomaticScroll={true}
-            extraScrollHeight={Platform.OS === "ios" ? 40 : 80}
-            extraHeight={120}
-            keyboardOpeningTime={0}
-          >
+        <KeyboardAwareScrollView
+          style={styles.formScroll}
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          enableAutomaticScroll={true}
+          extraScrollHeight={Platform.OS === "ios" ? 40 : 80}
+          extraHeight={120}
+          keyboardOpeningTime={0}
+        >
+          <View style={styles.card}>
+            <View style={styles.backButtonContainer}>
+              <TouchableOpacity onPress={handleBack}>
+                <Image source={Images.buttons.backButton} />
+              </TouchableOpacity>
+            </View>
             <View style={styles.registerScreenContentContainer}>
               <View style={styles.brandHeader}>
                 <AuthBrandLockup compact />
@@ -470,8 +471,8 @@ export default function RegisterScreen() {
                 </AppText>
               </View>
             </View>
-          </KeyboardAwareScrollView>
-        </View>
+          </View>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     </AuthGridBackground>
   );

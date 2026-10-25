@@ -10,11 +10,16 @@ export const inviteCodeModalStyles = StyleSheet. create({
   },
   modalContent: {
     width: "80%",
+    maxWidth: 420,
     padding: 20,
     backgroundColor: themes.backgroundElevated,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: themes.border,
+  },
+  brandSlot: {
+    alignItems: "center",
+    marginBottom: 14,
   },
   modalTitle: {
     marginBottom: 16,

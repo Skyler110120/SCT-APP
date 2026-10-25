@@ -12,13 +12,14 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
 const mockPush = jest.fn();
+const mockReplace = jest.fn();
 let mockPathname = "/learning/dashboard";
 let mockUser: any = null;
 
 jest.mock("expo-router", () => {
   const React = require("react");
   return {
-    useRouter: () => ({ push: mockPush }),
+    useRouter: () => ({ push: mockPush, replace: mockReplace }),
     usePathname: () => mockPathname,
     Link: ({ children }: { children: any }) => children,
   };
@@ -50,6 +51,7 @@ import { UserRole } from "@/src/types/enums";
 
 beforeEach(() => {
   mockPush.mockReset();
+  mockReplace.mockReset();
   mockPathname = "/learning/dashboard";
   mockUser = null;
 });
@@ -75,16 +77,25 @@ describe("BottomNavBar", () => {
     expect(screen.getByText("Home")).toBeTruthy();
   });
 
-  it("shows the active label only for the matched pathname", () => {
-    // When the student is on the Courses tab route, the Home label is NOT
-    // rendered (only the active tab shows its label).
+  it("shows every tab label, with Courses current when that route is open", () => {
     mockUser = { role: UserRole.STUDENT };
     mockPathname = "/company/courses";
 
     render(<BottomNavBar />);
 
-    expect(screen.queryByText("Home")).toBeNull();
+    expect(screen.getByText("Home")).toBeTruthy();
     expect(screen.getByText("Courses")).toBeTruthy();
+  });
+
+  it("switches tabs with replace so Android back is not a stack pop", () => {
+    mockUser = { role: UserRole.STUDENT };
+    mockPathname = "/learning/dashboard";
+
+    render(<BottomNavBar />);
+    fireEvent.press(screen.getByText("Courses"));
+
+    expect(mockReplace).toHaveBeenCalledWith("/company/courses");
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("shows the Profile label when route matches profile path for instructor", () => {
@@ -96,12 +107,12 @@ describe("BottomNavBar", () => {
     expect(screen.getByText("Profile")).toBeTruthy();
   });
 
-  it("renders nothing for the active label when user is null (defaults to empty nav)", () => {
+  it("still shows the student tabs when there is no signed-in user", () => {
     mockUser = null;
     mockPathname = "/welcome";
 
-    // No active label rendered because no nav items match the welcome route.
     render(<BottomNavBar />);
-    expect(screen.queryByText("Home")).toBeNull();
+    expect(screen.getByText("Home")).toBeTruthy();
+    expect(screen.getByText("Courses")).toBeTruthy();
   });
 });

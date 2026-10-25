@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Slot, Redirect } from 'expo-router';
-import { View, AppState, AppStateStatus } from 'react-native';
+import { router, Slot, Redirect, usePathname } from 'expo-router';
+import { View, AppState, AppStateStatus, BackHandler, Platform } from 'react-native';
 import { useAuth } from '@/src/context/AuthContext';
+import { decideAndroidBack, getHomeRouteForRole } from '@/src/utils/navBarUtils';
 import {
   setNotificationHandler,
   requestNotificationPermissions,
@@ -46,6 +47,24 @@ export default function AppLayout() {
       await checkAndNotifyWednesdayBookingReminder(user);
     })();
   }, [user]);
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (!user) return false;
+      const decision = decideAndroidBack(pathname, user.role, user);
+      if (decision === 'system') return false;
+      if (decision === 'home') {
+        router.replace(getHomeRouteForRole(user.role, user) as never);
+        return true;
+      }
+      BackHandler.exitApp();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [pathname, user]);
 
   logger.debug('App Layout authentication check');
 

@@ -10,6 +10,11 @@ export interface NavItem {
   route: string;
 }
 
+function normalizePath(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1);
+  return pathname;
+}
+
 /**
  * Returns nav items for the given role per OFFICIAL_ROLE_REQUIREMENTS.
  * MasterAdmin: system routes + profile
@@ -61,4 +66,40 @@ export function getNavItemsForRole(
     { name: "Courses", route: "/company/courses" },
     { name: "Profile", route: "/learning/profile" },
   ];
+}
+
+/** First tab for the role. Android back from any other tab returns here. */
+export function getHomeRouteForRole(
+  role: string | undefined,
+  user?: User | null
+): string {
+  return getNavItemsForRole(role, user)[0]?.route ?? "/learning/dashboard";
+}
+
+/** True for a bottom-bar destination. Deeper screens such as a session form are not tab roots. */
+export function isTabRootRoute(
+  pathname: string,
+  role: string | undefined,
+  user?: User | null
+): boolean {
+  const path = normalizePath(pathname);
+  return getNavItemsForRole(role, user).some((item) => item.route === path);
+}
+
+export type AndroidBackDecision = "home" | "exit" | "system";
+
+/**
+ * The bottom bar is not a history stack. From a tab, Android back returns to that
+ * role's home. From home, it leaves the app. A screen opened on top of a tab still
+ * uses the normal back behavior.
+ */
+export function decideAndroidBack(
+  pathname: string,
+  role: string | undefined,
+  user?: User | null
+): AndroidBackDecision {
+  const path = normalizePath(pathname);
+  if (!isTabRootRoute(path, role, user)) return "system";
+  if (path === getHomeRouteForRole(role, user)) return "exit";
+  return "home";
 }

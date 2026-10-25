@@ -23,6 +23,7 @@ const navIcons = {
 
 const logo = {
   sctLogo: require("@/src/assets/images/sct-logo.jpg"),
+  sctMark: require("@/src/assets/images/sct-logo-mark.png"),
 };
 
 const buttons = {
