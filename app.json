@@ -27,7 +27,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./src/assets/images/sct-logo.jpg"
+      "favicon": "./src/assets/images/app-icon.png"
     },
     "plugins": [
       "expo-router",
