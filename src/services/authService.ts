@@ -45,6 +45,9 @@ export const authService = {
       });
 
       await authStorage.setAuthToken(tokenData.access_token);
+      if (tokenData.refresh_token) {
+        await authStorage.setRefreshToken(tokenData.refresh_token);
+      }
       await authStorage.setTokenData(JSON.stringify(tokenData));
 
       logger.debug("Login successful");
@@ -122,6 +125,9 @@ export const authService = {
       const tokenData = await apiFetch<TokenResponse>(`/auth/refresh`);
 
       await authStorage.setAuthToken(tokenData.access_token);
+      if (tokenData.refresh_token) {
+        await authStorage.setRefreshToken(tokenData.refresh_token);
+      }
       await authStorage.setTokenData(JSON.stringify(tokenData));
 
       logger.debug("User information refreshed successfully");
@@ -169,7 +175,8 @@ export const authService = {
 
       logger.debug("Auth check successful");
       return {
-        token,
+        // /auth/me may have renewed an expired access token on the way.
+        token: (await authStorage.getAuthToken()) || token,
         user: user.data,
       };
     } catch (error) {

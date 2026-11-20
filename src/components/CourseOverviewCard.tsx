@@ -23,7 +23,7 @@ const CourseOverviewCard: React.FC<CourseOverviewCardProps> = ({
   showMaterialAccess = false,
 }) => {
   const videoCount = course?.videos?.length || 0;
-  const hasPdf = Boolean(course?.pdf_s3_key?.trim());
+  const hasPdf = (course?.documents?.length ?? 0) > 0 || Boolean(course?.pdf_s3_key?.trim());
   const hasScript = Boolean(course?.instructor_script_s3_key?.trim())
   const canAccessScript = course.viewType === 'instructor' || course.viewType === 'admin';
 

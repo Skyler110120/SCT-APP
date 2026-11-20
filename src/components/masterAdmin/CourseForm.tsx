@@ -3,6 +3,7 @@ import { courseFormStyles as styles } from "@/src/styles/CoursePageStyles/Master
 import {
   CourseAdminView,
   CourseCreateRequest,
+  CourseDocument,
   CourseDifficulty,
   CourseUpdateRequest,
   GunType,
@@ -18,7 +19,6 @@ import {
   Modal,
   Platform,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -30,6 +30,7 @@ import {
   MAX_PDF_SCRIPT_SIZE_BYTES,
   formatBytes,
 } from "@/src/constants/uploadLimits";
+import CourseDocumentsEditor from "./CourseDocumentsEditor";
 
 interface CourseFormProps {
   visible: boolean;
@@ -42,6 +43,8 @@ interface CourseFormProps {
   existingCourseCount?: number;
   /** In edit mode, called when user taps "Add video" so parent can open VideoForm for this course. */
   onOpenAddVideo?: (course: CourseAdminView) => void;
+  /** Called after PDFs are added, edited, or removed (saved immediately, not on Save). */
+  onDocumentsChange?: (courseId: number, documents: CourseDocument[]) => void;
 }
 
 export default function CourseForm({
@@ -53,6 +56,7 @@ export default function CourseForm({
   onUpdateCourse,
   existingCourseCount = 0,
   onOpenAddVideo,
+  onDocumentsChange,
 }: CourseFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -62,12 +66,9 @@ export default function CourseForm({
   );
   const [orderIndex, setOrderIndex] = useState("1");
   const [isActive, setIsActive] = useState(true);
-  const [pdfS3Key, setPdfS3Key] = useState("");
-  const [pdfFilename, setPdfFilename] = useState<string | null>(null);
   const [instructorScriptS3Key, setInstructorScriptS3Key] = useState("");
   const [instructorScriptFilename, setInstructorScriptFilename] = useState<string | null>(null);
-  const [pdfIsPublic, setPdfIsPublic] = useState(false);
-  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [documentCount, setDocumentCount] = useState(0);
   const [uploadingScript, setUploadingScript] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -82,9 +83,7 @@ export default function CourseForm({
         setDifficultyLevel(course.difficulty_level as CourseDifficulty);
         setOrderIndex(course.order_index.toString());
         setIsActive(course.is_active);
-        setPdfS3Key(course.pdf_s3_key || "");
-        setPdfFilename(course.pdf_filename || null);
-        setPdfIsPublic(course.pdf_is_public ?? false);
+        setDocumentCount(course.documents?.length ?? 0);
         setInstructorScriptS3Key(course.instructor_script_s3_key || "");
         setInstructorScriptFilename(course.instructor_script_filename || null);
       } else {
@@ -94,9 +93,7 @@ export default function CourseForm({
         setDifficultyLevel(CourseDifficulty.BEGINNER);
         setOrderIndex(String((existingCourseCount ?? 0) + 1));
         setIsActive(true);
-        setPdfS3Key("");
-        setPdfFilename(null);
-        setPdfIsPublic(false);
+        setDocumentCount(0);
         setInstructorScriptS3Key("");
         setInstructorScriptFilename(null);
       }
@@ -120,60 +117,6 @@ export default function CourseForm({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleUploadPdf = async () => {
-    if (!course?.id) return;
-    setUploadingPdf(true);
-    try {
-      const pickResult = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf",
-        copyToCacheDirectory: true,
-      });
-      if (pickResult.canceled) {
-        setUploadingPdf(false);
-        return;
-      }
-      const file = pickResult.assets[0];
-      const fileInfo = await FileSystem.getInfoAsync(file.uri);
-      const size = (fileInfo as { size?: number }).size;
-      if (typeof size === "number" && size > MAX_PDF_SCRIPT_SIZE_BYTES) {
-        Alert.alert(
-          "File too large",
-          `PDF must be under ${formatBytes(MAX_PDF_SCRIPT_SIZE_BYTES)}. This file is ${formatBytes(size)}.`
-        );
-        setUploadingPdf(false);
-        return;
-      }
-      const urlRes = await materialService.requestUploadUrl({
-        course_id: course.id,
-        material_type: "course_pdf",
-        filename: file.name,
-        content_type: "application/pdf",
-      });
-      if (!urlRes.success || !urlRes.data) {
-        Alert.alert("Error", urlRes.error || "Failed to get upload URL");
-        setUploadingPdf(false);
-        return;
-      }
-      const uploadRes = await materialService.uploadFileToPresignedUrl(
-        urlRes.data.upload_url,
-        file.uri,
-        "application/pdf"
-      );
-      if (!uploadRes.success) {
-        Alert.alert("Upload failed", uploadRes.error || "Please try again.");
-        setUploadingPdf(false);
-        return;
-      }
-      setPdfS3Key(urlRes.data.s3_key);
-      setPdfFilename(file.name);
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Error", "Upload failed. Please try again.");
-    } finally {
-      setUploadingPdf(false);
-    }
   };
 
   const handleUploadScript = async () => {
@@ -248,13 +191,9 @@ export default function CourseForm({
           difficulty_level: difficultyLevel || undefined,
           order_index: parseInt(orderIndex) || undefined,
           is_active: isActive,
-          pdf_s3_key: pdfS3Key.trim() || undefined,
           instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
-          pdf_filename: pdfFilename || undefined,
           instructor_script_filename: instructorScriptFilename || undefined,
-          pdf_content_type: pdfS3Key ? "application/pdf" : undefined,
           instructor_script_content_type: instructorScriptS3Key ? "application/pdf" : undefined,
-          pdf_is_public: pdfIsPublic,
         };
 
         console.log("📚 Updating course:", updateData);
@@ -266,11 +205,8 @@ export default function CourseForm({
           required_gun_type: requiredGunType,
           difficulty_level: difficultyLevel,
           order_index: parseInt(orderIndex),
-          pdf_s3_key: pdfS3Key.trim() || undefined,
           instructor_script_s3_key: instructorScriptS3Key.trim() || undefined,
-          pdf_filename: pdfFilename || undefined,
           instructor_script_filename: instructorScriptFilename || undefined,
-          pdf_is_public: pdfIsPublic,
         };
         console.log("📚 Creating course:", createData);
         await onCreateCourse(createData);
@@ -284,7 +220,7 @@ export default function CourseForm({
   const getMaterialStatus = () => {
     if (!isEditMode || !course) return null;
 
-    const hasPdf = Boolean(course.pdf_s3_key?.trim());
+    const hasPdf = documentCount > 0;
     const hasScript = Boolean(course.instructor_script_s3_key?.trim());
 
     return { hasPdf, hasScript };
@@ -390,59 +326,19 @@ export default function CourseForm({
               </View>
 
               <View style={styles.createSection}>
-                <Text style={styles.modalLabel}>Course PDF</Text>
+                <Text style={styles.modalLabel}>Course PDFs</Text>
                 {isEditMode && course ? (
-                  <>
-                    <Text style={styles.inputDescription}>
-                      {pdfS3Key
-                        ? `Current file: ${pdfFilename || "Course PDF"}`
-                        : "No PDF uploaded."}
-                    </Text>
-                    <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                      <TouchableOpacity
-                        style={[styles.confirmButton, { flex: 1 }]}
-                        onPress={handleUploadPdf}
-                        disabled={uploadingPdf}
-                      >
-                        {uploadingPdf ? (
-                          <ActivityIndicator size="small" color={themes.white} />
-                        ) : (
-                          <Text style={styles.buttonText}>
-                            {pdfS3Key ? "Replace PDF" : "Upload course PDF"}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                      {pdfS3Key && (
-                        <TouchableOpacity
-                          style={[styles.cancelButton, { flex: 1 }]}
-                          onPress={() => {
-                            setPdfS3Key("");
-                            setPdfFilename(null);
-                          }}
-                          disabled={uploadingPdf}
-                        >
-                          <Text style={styles.buttonText}>Remove</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
-                      <Text style={[styles.inputDescription, { marginBottom: 0 }]}>
-                        Visible to students (public)
-                      </Text>
-                      <Switch
-                        value={pdfIsPublic}
-                        onValueChange={setPdfIsPublic}
-                        trackColor={{ false: "#555", true: themes.vegasGold }}
-                        thumbColor={themes.white}
-                      />
-                    </View>
-                    <Text style={[styles.inputDescription, { marginTop: 4 }]}>
-                      When on, enrolled students can view this PDF. When off, only instructors and admins can see it.
-                    </Text>
-                  </>
+                  <CourseDocumentsEditor
+                    courseId={course.id}
+                    initialDocuments={course.documents ?? []}
+                    onChange={(docs) => {
+                      setDocumentCount(docs.length);
+                      onDocumentsChange?.(course.id, docs);
+                    }}
+                  />
                 ) : (
                   <Text style={styles.inputDescription}>
-                    Save the course first, then add a PDF from the edit screen.
+                    Save the course first, then add PDFs from the edit screen.
                   </Text>
                 )}
               </View>
@@ -533,8 +429,8 @@ export default function CourseForm({
                         ]}
                       >
                         {materialStatus.hasPdf
-                          ? "PDF Available"
-                          : "No PDF Available"}
+                          ? `${documentCount} PDF${documentCount !== 1 ? "s" : ""} Available`
+                          : "No PDFs Available"}
                       </Text>
                     </View>
                     <View style={styles.materialStatusRow}>

@@ -3,6 +3,7 @@ import * as SecureStore from "expo-secure-store";
 
 const STORAGE_KEYS = {
   AUTH_TOKEN: "auth_token",
+  REFRESH_TOKEN: "refresh_token",
   TOKEN_DATA: "token_data",
   USER_DATA: "user_data",
 } as const;
@@ -61,6 +62,14 @@ export const authStorage = {
     return getAndMigrateLegacyKey(STORAGE_KEYS.AUTH_TOKEN);
   },
 
+  async setRefreshToken(token: string): Promise<void> {
+    await safeSecureSetItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+  },
+
+  async getRefreshToken(): Promise<string | null> {
+    return getAndMigrateLegacyKey(STORAGE_KEYS.REFRESH_TOKEN);
+  },
+
   async setTokenData(tokenDataJson: string): Promise<void> {
     await safeSecureSetItem(STORAGE_KEYS.TOKEN_DATA, tokenDataJson);
   },
@@ -80,10 +89,12 @@ export const authStorage = {
   async clearAuthData(): Promise<void> {
     await Promise.all([
       safeSecureDeleteItem(STORAGE_KEYS.AUTH_TOKEN),
+      safeSecureDeleteItem(STORAGE_KEYS.REFRESH_TOKEN),
       safeSecureDeleteItem(STORAGE_KEYS.TOKEN_DATA),
       safeSecureDeleteItem(STORAGE_KEYS.USER_DATA),
       AsyncStorage.multiRemove([
         STORAGE_KEYS.AUTH_TOKEN,
+        STORAGE_KEYS.REFRESH_TOKEN,
         STORAGE_KEYS.TOKEN_DATA,
         STORAGE_KEYS.USER_DATA,
       ]),

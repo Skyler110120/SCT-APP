@@ -14,6 +14,33 @@ export enum GunType {
     REVOLVER = 'Revolver'
 }
 
+/** One PDF attached to a course. A course can have any number of these. */
+export interface CourseDocument {
+    id: number;
+    course_id: number;
+    title: string;
+    filename?: string | null;
+    content_type?: string | null;
+    /** When true, enrolled students can see this PDF. */
+    is_public: boolean;
+    order_index: number;
+}
+
+export interface CourseDocumentCreateRequest {
+    title?: string;
+    s3_key: string;
+    filename?: string;
+    content_type?: string;
+    is_public?: boolean;
+    order_index?: number;
+}
+
+export interface CourseDocumentUpdateRequest {
+    title?: string;
+    is_public?: boolean;
+    order_index?: number;
+}
+
 export interface CourseVideo {
     id: number;
     title: string;
@@ -54,6 +81,7 @@ export interface CourseStudentView {
     instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
+    documents?: CourseDocument[];
     material_info?: MaterialInfoResponse;
 }
 
@@ -69,6 +97,7 @@ export interface CourseInstructorView {
     instructor_script_s3_key?: string | null;
     total_weeks: number;
     videos: CourseVideo[];
+    documents?: CourseDocument[];
     material_info?: MaterialInfoResponse;
 }
 
@@ -92,6 +121,7 @@ export interface CourseAdminView {
     created_at: string;
     updated_at: string;
     videos: CourseVideo[];
+    documents?: CourseDocument[];
     material_info?: MaterialInfoResponse;
 }
 

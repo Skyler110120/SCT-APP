@@ -21,6 +21,7 @@ const getEnvironment = (): Environment => {
 const currentEnv = getEnvironment();
 const config = environments[currentEnv];
 
+export const APP_ENV: Environment = currentEnv;
 export const API_URL = config.API_URL;
 export const API_TIMEOUT = config.API_TIMEOUT;
 export const USE_HTTPS = config.USE_HTTPS;

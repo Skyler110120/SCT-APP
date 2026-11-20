@@ -3,6 +3,7 @@ import { API_URL, API_TIMEOUT } from "../config";
 import { emitGlobalError } from "../utils/globalErrorBus";
 import { authStorage } from "./authStorage";
 import { logger } from "../utils/logger";
+import { CLIENT_ERRORS_PATH, reportClientError } from "./errorReporter";
 
 const ISSUE_REPORT_PATH = "/issue-reports";
 
@@ -127,6 +128,8 @@ function fetchWithTimeout(url: string, options: RequestInit, timeout: number): P
 type ApiFetchOptions = RequestInit & {
   suppressGlobalError?: boolean;
   friendlyErrorTitle?: string;
+  /** Internal: set on the single retry after a session refresh. */
+  _isRetryAfterRefresh?: boolean;
 };
 
 function buildGlobalErrorEvent(args: {
@@ -186,7 +189,7 @@ function buildGlobalErrorEvent(args: {
     return {
       title: title || "Request failed",
       message,
-      kind: normalizedStatus === 401 ? "auth" : "validation",
+      kind: (normalizedStatus === 401 ? "auth" : "validation") as "auth" | "validation",
       severity: "warning" as const,
       canRetry: normalizedStatus !== 401 && normalizedStatus !== 403,
       status: normalizedStatus,
@@ -209,6 +212,73 @@ function buildGlobalErrorEvent(args: {
   };
 }
 
+const AUTH_PATHS_WITHOUT_REFRESH = new Set([
+  "/auth/login",
+  "/auth/login/",
+  "/auth/token/refresh",
+  "/auth/token/refresh/",
+]);
+
+let refreshInFlight: Promise<boolean> | null = null;
+
+/**
+ * Trade the stored refresh token for a new access token. Concurrent 401s share
+ * one refresh call. Resolves false when there is no usable refresh token.
+ */
+export function refreshSession(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const refreshToken = await authStorage.getRefreshToken();
+        if (!refreshToken) return false;
+        const response = await fetchWithTimeout(
+          `${API_URL}/auth/token/refresh`,
+          {
+            method: "POST",
+            headers: { Accept: "application/json", "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+          },
+          API_TIMEOUT
+        );
+        if (!response.ok) return false;
+        const data = await response.json();
+        if (!data?.access_token) return false;
+        await authStorage.setAuthToken(data.access_token);
+        if (data.refresh_token) await authStorage.setRefreshToken(data.refresh_token);
+        await authStorage.setTokenData(JSON.stringify(data));
+        return true;
+      } catch (error) {
+        logger.error("[apiFetch] Session refresh failed:", error);
+        return false;
+      }
+    })().finally(() => {
+      // Cleared on the outer promise so it also resets when the function
+      // returns before its first await.
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+/** Report an API failure to /client-errors and, unless suppressed, show it to the user. */
+function surfaceApiError(
+  event: ReturnType<typeof buildGlobalErrorEvent>,
+  path: string,
+  suppressGlobalError: boolean
+): void {
+  const isReportingCall = path.includes(ISSUE_REPORT_PATH) || path.includes(CLIENT_ERRORS_PATH);
+  if (isReportingCall) return;
+  reportClientError({
+    kind: event.kind,
+    severity: event.severity,
+    message: event.status && event.status >= 500 ? `HTTP ${event.status} ${event.method} ${event.path}` : event.message,
+    apiMethod: event.method,
+    apiPath: event.path,
+    httpStatus: event.status || undefined,
+  });
+  if (!suppressGlobalError) emitGlobalError(event);
+}
+
 export async function apiFetch<T = any>(path: string, options: ApiFetchOptions = {}): Promise<T> {
     // Normalize the path to ensure trailing slashes for root endpoints
     const normalizedPath = normalizeApiPath(path, options.method);
@@ -224,6 +294,7 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
     const {
       suppressGlobalError = false,
       friendlyErrorTitle,
+      _isRetryAfterRefresh = false,
       ...requestOptions
     } = options;
 
@@ -246,7 +317,12 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
       logger.debug(`[apiFetch] ${response.status} in ${duration}ms`);
     
       if (response.status === 401){
-        if(normalizedPath !== "/auth/login" && normalizedPath !== "/auth/login/"){
+        if (!AUTH_PATHS_WITHOUT_REFRESH.has(normalizedPath)) {
+          // The 30-minute access token expired: renew it and retry once, so the
+          // user stays signed in instead of being sent back to the login screen.
+          if (!_isRetryAfterRefresh && (await refreshSession())) {
+            return apiFetch<T>(path, { ...options, _isRetryAfterRefresh: true });
+          }
           await clearAuthData();
           if (unauthorizedHandler) {
             unauthorizedHandler();
@@ -289,15 +365,17 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
           `Request failed with status ${response.status}`;
 
         // Client errors (4xx) are expected outcomes the calling screen reports itself.
-        if (response.status >= 500 && !path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
-          emitGlobalError(
+        if (response.status >= 500) {
+          surfaceApiError(
             buildGlobalErrorEvent({
               message: msg,
               status: response.status,
               path: normalizedPath,
               method: requestOptions.method || "GET",
               title: friendlyErrorTitle,
-            })
+            }),
+            normalizedPath,
+            suppressGlobalError
           );
         }
         throw new ApiError(response.status, msg, serverDetail, data);
@@ -309,32 +387,32 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
       
       // Handle network errors
       if (error?.message?.includes('timeout')) {
-        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
-          emitGlobalError(
-            buildGlobalErrorEvent({
-              message: "Request timeout",
-              status: 408,
-              path: normalizedPath,
-              method: requestOptions.method || "GET",
-              title: friendlyErrorTitle,
-            })
-          );
-        }
+        surfaceApiError(
+          buildGlobalErrorEvent({
+            message: "Request timeout",
+            status: 408,
+            path: normalizedPath,
+            method: requestOptions.method || "GET",
+            title: friendlyErrorTitle,
+          }),
+          normalizedPath,
+          suppressGlobalError
+        );
         throw new ApiError(408, "The request timed out. Please try again.");
       }
       
       if (error?.message?.includes('Network request failed') || error?.message?.includes('Failed to fetch')) {
-        if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
-          emitGlobalError(
-            buildGlobalErrorEvent({
-              message: "Network request failed",
-              status: 0,
-              path: normalizedPath,
-              method: requestOptions.method || "GET",
-              title: friendlyErrorTitle,
-            })
-          );
-        }
+        surfaceApiError(
+          buildGlobalErrorEvent({
+            message: "Network request failed",
+            status: 0,
+            path: normalizedPath,
+            method: requestOptions.method || "GET",
+            title: friendlyErrorTitle,
+          }),
+          normalizedPath,
+          suppressGlobalError
+        );
         throw new ApiError(0, "Cannot reach the server. Check your connection and try again.");
       }
       
@@ -344,17 +422,17 @@ export async function apiFetch<T = any>(path: string, options: ApiFetchOptions =
       }
       
       // Wrap other errors
-      if (!path.includes(ISSUE_REPORT_PATH) && !suppressGlobalError) {
-        emitGlobalError(
-          buildGlobalErrorEvent({
-            message: error?.message || "Unknown network error",
-            status: 0,
-            path: normalizedPath,
-            method: requestOptions.method || "GET",
-            title: friendlyErrorTitle,
-          })
-        );
-      }
+      surfaceApiError(
+        buildGlobalErrorEvent({
+          message: error?.message || "Unknown network error",
+          status: 0,
+          path: normalizedPath,
+          method: requestOptions.method || "GET",
+          title: friendlyErrorTitle,
+        }),
+        normalizedPath,
+        suppressGlobalError
+      );
       throw new ApiError(0, error?.message || 'Unknown network error');
     }
 }
