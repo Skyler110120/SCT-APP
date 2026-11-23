@@ -44,8 +44,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DateBlock, WeekTrack } from "@/src/components/ui";
+import { CHECK_IN_OPENS_MS } from "@/src/utils/checkInWindow";
 
-const CHECK_IN_OPENS_MS = 15 * 60 * 1000;
 
 const FALLBACK_SUB_STATUS: SubscriptionStatusData = {
   has_subscription: false,

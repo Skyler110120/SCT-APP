@@ -8,6 +8,7 @@ import {
   ResetPasswordRequest,
   MessageResponse,
 } from "../types/auth.types";
+import { unregisterPushToken } from "./pushNotifications";
 import { apiFetch } from "./api";
 import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import { authStorage } from "./authStorage";
@@ -232,6 +233,8 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       logger.debug("Logging out user");
+      // While still signed in, so the API knows whose device this was.
+      await unregisterPushToken();
       await this.clearAuthData();
       logger.debug("User logged out successfully");
     } catch (error) {
