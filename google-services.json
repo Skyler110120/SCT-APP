@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "257488744343",
+    "project_id": "sct-training-19897",
+    "storage_bucket": "sct-training-19897.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257488744343:android:f40111bc0ef9500f609ed2",
+        "android_client_info": {
+          "package_name": "com.everydaytechllc.sct"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz16mpgZIcx3tTYHqbcosi7DasoF10mFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
