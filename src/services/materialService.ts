@@ -17,6 +17,13 @@ import {
   UploadUrlRequest,
   UploadUrlResponse,
 } from "../types/material.types";
+import type {
+  CourseDocument,
+  CourseDocumentCreateRequest,
+  CourseDocumentUpdateRequest,
+} from "../types/course.types";
+
+type ServiceResult<T> = { success: true; data: T } | { success: false; error: string };
 
 export const materialService = {
   /**
@@ -45,6 +52,90 @@ export const materialService = {
         success: false,
         error: getApiErrorMessage(error, "Network error occurred while fetching material info"),
       };
+    }
+  },
+
+  /**
+   * List a course's PDFs (students only get the ones visible to students).
+   */
+  async getCourseDocuments(courseId: number): Promise<ServiceResult<CourseDocument[]>> {
+    try {
+      const data = await apiFetch<CourseDocument[]>(`/materials/courses/${courseId}/documents`);
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error fetching course documents:", error);
+      return { success: false, error: getApiErrorMessage(error, "Failed to load course PDFs") };
+    }
+  },
+
+  /**
+   * Attach an uploaded PDF to a course (MasterAdmin).
+   */
+  async addCourseDocument(
+    courseId: number,
+    body: CourseDocumentCreateRequest
+  ): Promise<ServiceResult<CourseDocument>> {
+    try {
+      const data = await apiFetch<CourseDocument>(`/materials/courses/${courseId}/documents`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error adding course document:", error);
+      return { success: false, error: getApiErrorMessage(error, "Failed to add PDF") };
+    }
+  },
+
+  /**
+   * Rename a PDF, change its visibility, or reorder it (MasterAdmin).
+   */
+  async updateCourseDocument(
+    courseId: number,
+    documentId: number,
+    body: CourseDocumentUpdateRequest
+  ): Promise<ServiceResult<CourseDocument>> {
+    try {
+      const data = await apiFetch<CourseDocument>(
+        `/materials/courses/${courseId}/documents/${documentId}`,
+        { method: "PATCH", body: JSON.stringify(body) }
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error updating course document:", error);
+      return { success: false, error: getApiErrorMessage(error, "Failed to update PDF") };
+    }
+  },
+
+  /**
+   * Remove a PDF from a course (MasterAdmin).
+   */
+  async deleteCourseDocument(courseId: number, documentId: number): Promise<ServiceResult<null>> {
+    try {
+      await apiFetch(`/materials/courses/${courseId}/documents/${documentId}`, { method: "DELETE" });
+      return { success: true, data: null };
+    } catch (error) {
+      console.error("Error deleting course document:", error);
+      return { success: false, error: getApiErrorMessage(error, "Failed to remove PDF") };
+    }
+  },
+
+  /**
+   * Get a temporary access URL for one course PDF.
+   */
+  async getCourseDocumentAccess(
+    courseId: number,
+    documentId: number
+  ): Promise<MaterialAccessServiceResponse> {
+    try {
+      const data = await apiFetch<MaterialAccessResponse>(
+        `/materials/courses/${courseId}/documents/${documentId}/access`,
+        { method: "POST", body: JSON.stringify({}) }
+      );
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error getting course document access:", error);
+      return { success: false, error: getApiErrorMessage(error, "Failed to open PDF") };
     }
   },
 

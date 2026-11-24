@@ -494,6 +494,10 @@ export default function MasterAdminCourseManagement() {
           onUpdateCourse={editingCourse ? handleUpdateCourse : undefined}
           existingCourseCount={courses.length}
           onOpenAddVideo={handleAddVideoFromCourseForm}
+          onDocumentsChange={(courseId, documents) =>
+            // Only the list copy: updating editingCourse would reset unsaved form fields.
+            setCourses((prev) => prev.map((c) => (c.id === courseId ? { ...c, documents } : c)))
+          }
         />
 
         {selectedCourse && (

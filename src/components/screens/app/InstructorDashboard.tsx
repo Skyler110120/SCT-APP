@@ -7,7 +7,7 @@ import { sessionService } from "@/src/services/sessionService";
 import { SessionDetailed } from "@/src/types/sessions.types";
 import { UserRole } from "@/src/types/enums";
 import { formatDateForAPI, formatTimeString } from "@/src/utils/dateTimeUtils";
-const CHECK_IN_OPENS_MINUTES_BEFORE = 15;
+import { CHECK_IN_OPENS_MINUTES_BEFORE } from "@/src/utils/checkInWindow";
 
 const isSameDay = (date1: Date, date2: Date) =>
   date1.getFullYear() === date2.getFullYear() &&
@@ -144,7 +144,7 @@ export default function InstructorDashboard() {
         Alert.alert(
           "Check-in not open",
           opensAt.getTime() > Date.now()
-            ? `Check-in opens at ${formatTimeString(opensAt.toISOString())} (15 minutes before your session).`
+            ? `Check-in opens at ${formatTimeString(opensAt.toISOString())} (1 hour before your session).`
             : "Check-in for this session has closed."
         );
         return;

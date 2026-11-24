@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Slot } from 'expo-router';
+import { Slot, usePathname } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import * as Linking from 'expo-linking';
@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthProvider } from '@/src/context/AuthContext';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import GlobalErrorReporter from '@/src/components/GlobalErrorReporter';
+import { installGlobalErrorHandlers, setErrorReporterScreen } from '@/src/services/errorReporter';
 import { themes } from '@/src/context/themes';
 import {
   Archivo_400Regular,
@@ -28,6 +29,9 @@ if (!__DEV__) {
   console.info = () => {};
 }
 
+// Report uncaught errors from the first line of app code onward.
+installGlobalErrorHandlers();
+
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Archivo_400Regular,
@@ -38,6 +42,12 @@ export default function RootLayout() {
     ArchivoNarrow_600SemiBold,
     ArchivoNarrow_700Bold,
   });
+
+  // Tag error reports with the screen the user was on.
+  const pathname = usePathname();
+  useEffect(() => {
+    setErrorReporterScreen(pathname);
+  }, [pathname]);
 
   // Older builds persisted the full signup form, including the plaintext password, under this key.
   useEffect(() => {

@@ -8,6 +8,7 @@ import {
   ResetPasswordRequest,
   MessageResponse,
 } from "../types/auth.types";
+import { unregisterPushToken } from "./pushNotifications";
 import { apiFetch } from "./api";
 import { getApiErrorMessage } from "../utils/apiErrorMessage";
 import { authStorage } from "./authStorage";
@@ -45,6 +46,9 @@ export const authService = {
       });
 
       await authStorage.setAuthToken(tokenData.access_token);
+      if (tokenData.refresh_token) {
+        await authStorage.setRefreshToken(tokenData.refresh_token);
+      }
       await authStorage.setTokenData(JSON.stringify(tokenData));
 
       logger.debug("Login successful");
@@ -122,6 +126,9 @@ export const authService = {
       const tokenData = await apiFetch<TokenResponse>(`/auth/refresh`);
 
       await authStorage.setAuthToken(tokenData.access_token);
+      if (tokenData.refresh_token) {
+        await authStorage.setRefreshToken(tokenData.refresh_token);
+      }
       await authStorage.setTokenData(JSON.stringify(tokenData));
 
       logger.debug("User information refreshed successfully");
@@ -169,7 +176,8 @@ export const authService = {
 
       logger.debug("Auth check successful");
       return {
-        token,
+        // /auth/me may have renewed an expired access token on the way.
+        token: (await authStorage.getAuthToken()) || token,
         user: user.data,
       };
     } catch (error) {
@@ -225,6 +233,8 @@ export const authService = {
   async logout(): Promise<void> {
     try {
       logger.debug("Logging out user");
+      // While still signed in, so the API knows whose device this was.
+      await unregisterPushToken();
       await this.clearAuthData();
       logger.debug("User logged out successfully");
     } catch (error) {

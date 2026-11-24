@@ -99,6 +99,8 @@ export interface CreateCompanyRequest {
 
 export interface TokenResponse {
   access_token: string;
+  /** Long-lived token traded for a new access token at POST /auth/token/refresh. */
+  refresh_token?: string;
   token_type: string;
   id: number;
   email: string;

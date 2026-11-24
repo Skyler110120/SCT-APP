@@ -164,6 +164,8 @@ export interface SessionParticipantWorkflow {
   ended_early: boolean;
   is_session_submitted: boolean;
   pretraining_completed_at?: string | null;
+  /** True when the instructor answered pre-training on the student's behalf. */
+  pretraining_completed_by_instructor?: boolean;
   drills_completed_at?: string | null;
   posttraining_completed_at?: string | null;
   session_submitted_at?: string | null;

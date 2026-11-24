@@ -8,6 +8,7 @@ import {
   requestNotificationPermissions,
   checkAndNotifyWednesdayBookingReminder,
 } from '@/src/services/bookingReminderNotifications';
+import { registerPushToken, subscribeToNotificationTaps } from '@/src/services/pushNotifications';
 import { logger } from '@/src/utils/logger';
 import { LoadingState } from '@/src/components/ui';
 
@@ -18,6 +19,12 @@ export default function AppLayout() {
   useEffect(() => {
     setNotificationHandler();
   }, []);
+
+  // Tapping a pre-training reminder opens that session's check-in.
+  useEffect(() => {
+    if (!user) return;
+    return subscribeToNotificationTaps();
+  }, [user]);
 
   useEffect(() => {
     if (!user || user.role !== 'STUDENT') return;
@@ -44,6 +51,8 @@ export default function AppLayout() {
         permissionsRequested.current = true;
         await requestNotificationPermissions();
       }
+      // Pre-training reminders are pushed by the API to this device.
+      await registerPushToken();
       await checkAndNotifyWednesdayBookingReminder(user);
     })();
   }, [user]);

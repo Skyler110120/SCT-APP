@@ -7,6 +7,7 @@ import {
 import { theme } from "@/src/context/themes";
 import { AppButton, AppCard, AppText } from "@/src/components/ui";
 import { emitGlobalError } from "@/src/utils/globalErrorBus";
+import { flushClientErrors, reportClientError } from "@/src/services/errorReporter";
 
 interface Props {
   children: React.ReactNode;
@@ -28,6 +29,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    reportClientError({
+      kind: "crash",
+      message: error?.message || "Unexpected rendering failure.",
+      stack: [error?.stack, errorInfo?.componentStack].filter(Boolean).join("\n--- component stack ---\n"),
+    });
+    void flushClientErrors();
     if (__DEV__) {
       console.error("ErrorBoundary caught:", error, errorInfo);
     }

@@ -1,3 +1,6 @@
+jest.mock("../../services/pushNotifications", () => ({
+  unregisterPushToken: jest.fn().mockResolvedValue(undefined),
+}));
 /**
  * Tests for authService.
  * All API calls are mocked via jest.mock — no network needed.

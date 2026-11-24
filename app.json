@@ -3,6 +3,12 @@
     "name": "SCT Training",
     "slug": "SCT-App",
     "version": "1.0.1",
+    "runtimeVersion": "1.0.1",
+    "updates": {
+      "url": "https://u.expo.dev/36a15265-6916-4629-81eb-b52b554fa2f4",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "icon": "./src/assets/images/app-icon.png",
     "scheme": "sctapp",

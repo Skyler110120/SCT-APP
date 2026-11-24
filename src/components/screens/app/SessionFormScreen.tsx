@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -99,7 +99,7 @@ function toDraft(participant: SessionParticipantWorkflow): DraftState {
 function phaseLabel(p: SessionParticipantWorkflow): string {
   if (p.is_session_submitted) return "Completed";
   if (p.current_phase === "PRE_TRAINING") {
-    return p.pretraining_status === "COMPLETED" ? "Pre-training done" : "Pre-training";
+    return p.pretraining_status === "COMPLETED" ? "Checked in" : "Waiting for check-in";
   }
   if (p.current_phase === "DRILLS") return "Drills";
   if (p.current_phase === "POST_TRAINING") return "Post-training";
@@ -124,6 +124,10 @@ export default function SessionFormScreen() {
   const [loadingVideoId, setLoadingVideoId] = useState<number | null>(null);
   const [playback, setPlayback] = useState<{ url: string; title: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Students answer pre-training themselves. Answering for them is a fallback
+  // the instructor has to open deliberately, per student.
+  const [answeringFor, setAnsweringFor] = useState<Set<number>>(new Set());
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const replaceFromWorkflow = useCallback(
     (workflowParticipants: SessionParticipantWorkflow[]) => {
@@ -187,6 +191,65 @@ export default function SessionFormScreen() {
   const activeDraft = activeStudentId
     ? drafts.get(activeStudentId) ?? EMPTY_DRAFT
     : EMPTY_DRAFT;
+
+  /**
+   * Refresh only the students whose check-in status changed, so nothing the
+   * instructor is typing for other students gets overwritten.
+   */
+  const participantsRef = useRef(participants);
+  participantsRef.current = participants;
+
+  const refreshCheckIns = useCallback(async () => {
+    const res = await sessionFormService.getSessionWorkflow(sessionId);
+    if (!res.success || !res.data) return;
+    const current = participantsRef.current;
+    const changed = res.data.participants.filter((f) => {
+      const old = current.find((c) => c.student_id === f.student_id);
+      return !old || old.pretraining_status !== f.pretraining_status;
+    });
+    if (!changed.length) return;
+    setParticipants((prev) => prev.map((c) => changed.find((f) => f.student_id === c.student_id) ?? c));
+    setDrafts((prev) => {
+      const next = new Map(prev);
+      for (const p of changed) next.set(p.student_id, toDraft(p));
+      return next;
+    });
+    setDrillMetricDrafts((prev) => mergeDrillMetricDrafts(prev, changed));
+  }, [sessionId]);
+
+  const waitingStudentIds = participants
+    .filter((p) => p.current_phase === "PRE_TRAINING" && p.pretraining_status !== "COMPLETED")
+    .map((p) => p.student_id)
+    .join(",");
+
+  // While any student hasn't checked in, look for their answers every 15 seconds.
+  useEffect(() => {
+    if (!waitingStudentIds) return;
+    const timer = setInterval(() => {
+      void refreshCheckIns();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [waitingStudentIds, refreshCheckIns]);
+
+  const checkAgain = async () => {
+    setIsCheckingIn(true);
+    await refreshCheckIns();
+    setIsCheckingIn(false);
+  };
+
+  const confirmAnswerForStudent = (studentId: number, studentName: string) => {
+    Alert.alert(
+      `Answer for ${studentName}?`,
+      "Only do this if the student can't check in on their own phone. Ask them each question and enter their answers.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Answer for student",
+          onPress: () => setAnsweringFor((prev) => new Set(prev).add(studentId)),
+        },
+      ]
+    );
+  };
 
   const updateField = <K extends keyof DraftState>(field: K, value: DraftState[K]) => {
     if (!activeStudentId) return;
@@ -266,7 +329,7 @@ export default function SessionFormScreen() {
   ) => {
     const formId = participant.form?.id;
     if (!formId) {
-      Alert.alert("Pre-training required", "Complete pre-training first to start the test form.");
+      Alert.alert("Waiting for check-in", "The student needs to answer their pre-training questions before the test form can start.");
       return;
     }
     const draft = drillMetricDrafts.get(drillMetricKey(participant.student_id, drill.id));
@@ -627,9 +690,39 @@ export default function SessionFormScreen() {
               </Text>
             </View>
 
-            {activeParticipant.current_phase === "PRE_TRAINING" && (
+            {activeParticipant.current_phase === "PRE_TRAINING" &&
+              !answeringFor.has(activeParticipant.student_id) && (
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Not checked in yet</Text>
+                  <Text style={styles.fieldHint}>
+                    {activeParticipant.student_name} hasn&apos;t answered their pre-training questions yet.
+                    They were sent a reminder an hour before the session. Drills unlock as soon as they
+                    check in; this screen updates on its own.
+                  </Text>
+                  {renderPrimaryButton(isCheckingIn ? "Checking..." : "Check again", checkAgain, isCheckingIn)}
+                  <TouchableOpacity
+                    onPress={() =>
+                      confirmAnswerForStudent(activeParticipant.student_id, activeParticipant.student_name)
+                    }
+                    accessibilityRole="button"
+                    style={{ paddingVertical: 12, alignItems: "center" }}
+                  >
+                    <Text style={[styles.fieldHint, { textDecorationLine: "underline" }]}>
+                      Student can&apos;t check in? Answer for them
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+            {activeParticipant.current_phase === "PRE_TRAINING" &&
+              answeringFor.has(activeParticipant.student_id) && (
               <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Pre-Training Check-In</Text>
+                <Text style={styles.sectionTitle}>
+                  Pre-training for {activeParticipant.student_name}
+                </Text>
+                <Text style={styles.fieldHint}>
+                  You&apos;re answering on the student&apos;s behalf. Ask them each question.
+                </Text>
                 <View style={styles.fieldContainer}>
                   <Text style={styles.fieldLabel}>Hours of Sleep</Text>
                   {renderNumberSelector(
@@ -692,7 +785,22 @@ export default function SessionFormScreen() {
                     10
                   )}
                 </View>
-                {renderPrimaryButton("Complete pre-training", submitPretraining, isSubmitting)}
+                {renderPrimaryButton("Submit answers and start", submitPretraining, isSubmitting)}
+                <TouchableOpacity
+                  onPress={() =>
+                    setAnsweringFor((prev) => {
+                      const next = new Set(prev);
+                      next.delete(activeParticipant.student_id);
+                      return next;
+                    })
+                  }
+                  accessibilityRole="button"
+                  style={{ paddingVertical: 12, alignItems: "center" }}
+                >
+                  <Text style={[styles.fieldHint, { textDecorationLine: "underline" }]}>
+                    Cancel, let the student check in
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
 

@@ -122,10 +122,12 @@ describe("authStorage.clearAuthData", () => {
     await authStorage.clearAuthData();
 
     expect(mockSecureDelete).toHaveBeenCalledWith("auth_token");
+    expect(mockSecureDelete).toHaveBeenCalledWith("refresh_token");
     expect(mockSecureDelete).toHaveBeenCalledWith("token_data");
     expect(mockSecureDelete).toHaveBeenCalledWith("user_data");
     expect(mockAsyncMultiRemove).toHaveBeenCalledWith([
       "auth_token",
+      "refresh_token",
       "token_data",
       "user_data",
     ]);
@@ -138,6 +140,7 @@ describe("authStorage.clearAuthData", () => {
 
     expect(mockAsyncMultiRemove).toHaveBeenCalledWith([
       "auth_token",
+      "refresh_token",
       "token_data",
       "user_data",
     ]);

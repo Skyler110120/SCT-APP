@@ -9,7 +9,16 @@ jest.mock("../../services/authStorage", () => ({
   authStorage: {
     getAuthToken: jest.fn(),
     clearAuthData: jest.fn(),
+    getRefreshToken: jest.fn(),
+    setAuthToken: jest.fn(),
+    setRefreshToken: jest.fn(),
+    setTokenData: jest.fn(),
   },
+}));
+
+jest.mock("../../services/errorReporter", () => ({
+  CLIENT_ERRORS_PATH: "/client-errors",
+  reportClientError: jest.fn(),
 }));
 
 jest.mock("expo-router", () => ({
@@ -25,6 +34,7 @@ jest.mock("../../utils/globalErrorBus", () => ({
 import { authStorage } from "../../services/authStorage";
 import { router } from "expo-router";
 import { emitGlobalError } from "../../utils/globalErrorBus";
+import { reportClientError } from "../../services/errorReporter";
 
 const mockGetAuthToken = authStorage.getAuthToken as jest.MockedFunction<
   typeof authStorage.getAuthToken
@@ -40,6 +50,7 @@ describe("apiFetch", () => {
     jest.clearAllMocks();
     mockGetAuthToken.mockResolvedValue("token-123");
     mockClearAuthData.mockResolvedValue();
+    (authStorage.getRefreshToken as jest.Mock).mockResolvedValue(null);
   });
 
   it("adds trailing slash for root POST endpoints", async () => {
@@ -304,5 +315,113 @@ describe("apiFetch", () => {
     expect(mockEmitGlobalError).toHaveBeenCalledWith(
       expect.objectContaining({ title: "Could not load courses" })
     );
+  });
+
+  describe("session refresh", () => {
+    const ok = (body: unknown) => ({ ok: true, status: 200, json: async () => body } as Response);
+    const unauthorized = () => ({ ok: false, status: 401, json: async () => ({ detail: "expired" }) } as Response);
+
+    it("renews an expired access token and retries the request once", async () => {
+      (authStorage.getRefreshToken as jest.Mock).mockResolvedValue("refresh-1");
+      mockGetAuthToken.mockResolvedValueOnce("old-token").mockResolvedValue("new-token");
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(ok({ access_token: "new-token", refresh_token: "refresh-2" }))
+        .mockResolvedValueOnce(ok({ id: 7 }));
+
+      await expect(apiFetch("/profiles/me")).resolves.toEqual({ id: 7 });
+
+      const calls = (global.fetch as jest.Mock).mock.calls;
+      expect(calls[1][0]).toBe("https://api.example.com/auth/token/refresh");
+      expect(JSON.parse(calls[1][1].body)).toEqual({ refresh_token: "refresh-1" });
+      expect(calls[2][1].headers.Authorization).toBe("Bearer new-token");
+      expect(authStorage.setAuthToken).toHaveBeenCalledWith("new-token");
+      expect(authStorage.setRefreshToken).toHaveBeenCalledWith("refresh-2");
+      expect(mockClearAuthData).not.toHaveBeenCalled();
+      expect(mockRouterReplace).not.toHaveBeenCalled();
+    });
+
+    it("signs out when the refresh token is rejected", async () => {
+      (authStorage.getRefreshToken as jest.Mock).mockResolvedValue("refresh-1");
+      global.fetch = jest.fn().mockResolvedValueOnce(unauthorized()).mockResolvedValueOnce(unauthorized());
+
+      await expect(apiFetch("/profiles/me")).rejects.toThrow("Unauthorized");
+      expect(mockClearAuthData).toHaveBeenCalled();
+      expect(mockRouterReplace).toHaveBeenCalledWith("/login");
+    });
+
+    it("signs out instead of looping when the retried request is still 401", async () => {
+      (authStorage.getRefreshToken as jest.Mock).mockResolvedValue("refresh-1");
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(unauthorized())
+        .mockResolvedValueOnce(ok({ access_token: "new-token" }))
+        .mockResolvedValueOnce(unauthorized());
+
+      await expect(apiFetch("/profiles/me")).rejects.toThrow("Unauthorized");
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+      expect(mockClearAuthData).toHaveBeenCalled();
+    });
+
+    it("shares one refresh call between concurrent 401s", async () => {
+      (authStorage.getRefreshToken as jest.Mock).mockResolvedValue("refresh-1");
+      global.fetch = jest.fn((url: string) =>
+        Promise.resolve(
+          url.endsWith("/auth/token/refresh")
+            ? ok({ access_token: "new-token" })
+            : (global.fetch as jest.Mock).mock.calls.filter((c) => c[0] === url).length === 1
+              ? unauthorized()
+              : ok({ url })
+        )
+      ) as jest.Mock;
+
+      await Promise.all([apiFetch("/profiles/me"), apiFetch("/notifications/unread-count")]);
+      const refreshCalls = (global.fetch as jest.Mock).mock.calls.filter((c) =>
+        String(c[0]).endsWith("/auth/token/refresh")
+      );
+      expect(refreshCalls).toHaveLength(1);
+    });
+
+    it("does not try to refresh on a failed login", async () => {
+      (authStorage.getRefreshToken as jest.Mock).mockResolvedValue("refresh-1");
+      global.fetch = jest.fn().mockResolvedValueOnce(unauthorized());
+
+      await expect(apiFetch("/auth/login", { method: "POST", body: "{}" })).rejects.toThrow("Invalid credentials");
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("automatic error reporting", () => {
+    it("reports server errors even when the screen suppresses the popup", async () => {
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => ({ detail: "down" }),
+      } as Response);
+
+      await expect(apiFetch("/courses/5", { suppressGlobalError: true })).rejects.toBeInstanceOf(ApiError);
+      expect(reportClientError).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: "server", httpStatus: 503, apiPath: "/courses/5", apiMethod: "GET" })
+      );
+      expect(mockEmitGlobalError).not.toHaveBeenCalled();
+    });
+
+    it("does not report 4xx validation errors", async () => {
+      global.fetch = jest.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        json: async () => ({ detail: "bad" }),
+      } as Response);
+
+      await expect(apiFetch("/courses/5")).rejects.toBeInstanceOf(ApiError);
+      expect(reportClientError).not.toHaveBeenCalled();
+    });
+
+    it("reports network failures", async () => {
+      global.fetch = jest.fn().mockRejectedValueOnce(new Error("Network request failed"));
+      await expect(apiFetch("/courses")).rejects.toBeInstanceOf(ApiError);
+      expect(reportClientError).toHaveBeenCalledWith(expect.objectContaining({ kind: "network" }));
+    });
   });
 });

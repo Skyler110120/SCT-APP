@@ -6,8 +6,10 @@ import {
   Alert,
   FlatList,
   Linking,
+  Modal,
   RefreshControl,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -30,6 +32,7 @@ import { materialService } from "@/src/services/materialService";
 
 import { UserRole } from "@/src/types/enums";
 import {
+  CourseDocument,
   CourseInstructorView,
   CourseStudentView,
   CourseView,
@@ -40,6 +43,14 @@ import {
   StudentStats,
   StudentWeeklyProgress
 } from "@/src/types/enrollment.types";
+
+/** PDFs this user can open, in display order. Students only receive public ones from the API. */
+function visibleDocuments(course: CourseView, isStudent: boolean): CourseDocument[] {
+  const docs = course.documents ?? [];
+  return [...docs]
+    .filter((d) => !isStudent || d.is_public)
+    .sort((a, b) => a.order_index - b.order_index || a.id - b.id);
+}
 
 function parseFocusWeek(weekParam: string | string[] | undefined): number | null {
   const raw = Array.isArray(weekParam) ? weekParam[0] : weekParam;
@@ -98,6 +109,8 @@ export default function Courses() {
     type: "pdf" | "script" | null;
     loading: boolean;
   }>({ type: null, loading: false });
+  const [pdfPickerVisible, setPdfPickerVisible] = useState(false);
+  const [openingDocumentId, setOpeningDocumentId] = useState<number | null>(null);
 
   const getPageTitle = () => {
     if (isAdmin) return "Course Overview";
@@ -297,10 +310,51 @@ export default function Courses() {
     }
   };
 
-  const handleOpenPDF = async (course: CourseView) => {
-    const hasPdfMaterial = Boolean(course.pdf_s3_key?.trim());
+  const openCourseDocument = async (course: CourseView, doc: CourseDocument) => {
+    setOpeningDocumentId(doc.id);
+    setAccessingMaterial({ type: "pdf", loading: true });
+    try {
+      const response = await materialService.getCourseDocumentAccess(course.id, doc.id);
+      if (response.success && response.data) {
+        setPdfPickerVisible(false);
+        await openDocument(response.data.access_url, doc.title);
+      } else {
+        Alert.alert(
+          "Access Failed",
+          response.error || "Unable to access course materials at this time"
+        );
+      }
+    } catch (error) {
+      console.error("Error accessing PDF:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred while accessing materials. Please try again"
+      );
+    } finally {
+      setOpeningDocumentId(null);
+      setAccessingMaterial({ type: null, loading: false });
+    }
+  };
 
-    if (!hasPdfMaterial) {
+  const handleOpenPDF = async (course: CourseView) => {
+    const docs = visibleDocuments(course, isStudent);
+    if (docs.length === 1) {
+      await openCourseDocument(course, docs[0]);
+      return;
+    }
+    if (docs.length > 1) {
+      setPdfPickerVisible(true);
+      return;
+    }
+
+    // Fallback for an API that hasn't been migrated to multiple PDFs yet.
+    // Same guard as the render: once `documents` exists, an empty visible list
+    // means nothing is available to this user (avoids a 403 for students).
+    const hasLegacyPdf =
+      course.documents === undefined &&
+      Boolean(course.pdf_s3_key?.trim()) &&
+      (!isStudent || Boolean(course.pdf_is_public));
+    if (!hasLegacyPdf) {
       Alert.alert(
         "No Plan Available",
         "Student PDF materials have not been uploaded for this course yet."
@@ -308,16 +362,11 @@ export default function Courses() {
       return;
     }
     setAccessingMaterial({ type: "pdf", loading: true });
-
     try {
-      console.log("Requesting secure PDF access for course:", course.id);
       const response = await materialService.getCoursePdfAccess(course.id);
-
       if (response.success && response.data) {
-        console.log("Got presigned URL, opening PDF...");
         await openDocument(response.data.access_url, "Course Materials");
       } else {
-        console.error("Failed to get PDF access:", response.error);
         Alert.alert(
           "Access Failed",
           response.error || "Unable to access course materials at this time"
@@ -591,11 +640,15 @@ export default function Courses() {
       );
     }
 
-    const hasPdf = Boolean(selectedCourse.pdf_s3_key?.trim());
-    const pdfIsPublic = Boolean(selectedCourse.pdf_is_public);
-    const hasPdfMaterial = isStudent
-      ? hasPdf && pdfIsPublic
-      : hasPdf;
+    const courseDocs = visibleDocuments(selectedCourse, isStudent);
+    const hasLegacyPdf =
+      selectedCourse.documents === undefined &&
+      Boolean(selectedCourse.pdf_s3_key?.trim()) &&
+      (!isStudent || Boolean(selectedCourse.pdf_is_public));
+    const hasPdfMaterial = courseDocs.length > 0 || hasLegacyPdf;
+    const studentPdfCount = courseDocs.filter((d) => d.is_public).length;
+    const instructorOnlyPdfCount = courseDocs.length - studentPdfCount;
+    const pdfLabel = (n: number) => `${n} PDF${n !== 1 ? "s" : ""}`;
     const hasScriptMaterial = Boolean(selectedCourse.instructor_script_s3_key?.trim());
 
     const instructorCourse = isInstructorCourse(selectedCourse);
@@ -617,15 +670,15 @@ export default function Courses() {
               {selectedCourse.description || "No description available"}
             </Text>
 
-            {canViewInstructorScript && instructorCourse && (studentVideoCount > 0 || instructorOnlyVideoCount > 0 || hasPdf || hasScriptMaterial) && (
+            {canViewInstructorScript && instructorCourse && (studentVideoCount > 0 || instructorOnlyVideoCount > 0 || courseDocs.length > 0 || hasScriptMaterial) && (
               <View style={{ marginBottom: 8 }}>
                 <Text style={[styles.selectedCourseDescription, { fontSize: 12, opacity: 0.9 }]}>
-                  Student materials: {pdfIsPublic && hasPdf ? "PDF, " : ""}
+                  Student materials: {studentPdfCount > 0 ? `${pdfLabel(studentPdfCount)}, ` : ""}
                   {studentVideoCount} video{studentVideoCount !== 1 ? "s" : ""}
-                  {(instructorOnlyVideoCount > 0 || hasScriptMaterial) && (
+                  {(instructorOnlyVideoCount > 0 || hasScriptMaterial || instructorOnlyPdfCount > 0) && (
                     <>
                       {" • Instructor only: "}
-                      {[hasScriptMaterial && "Script", instructorOnlyVideoCount > 0 && `${instructorOnlyVideoCount} video${instructorOnlyVideoCount !== 1 ? "s" : ""}`]
+                      {[hasScriptMaterial && "Script", instructorOnlyPdfCount > 0 && pdfLabel(instructorOnlyPdfCount), instructorOnlyVideoCount > 0 && `${instructorOnlyVideoCount} video${instructorOnlyVideoCount !== 1 ? "s" : ""}`]
                         .filter(Boolean)
                         .join(", ")}
                     </>
@@ -743,9 +796,11 @@ export default function Courses() {
                 >
                   {accessingMaterial.type === 'pdf' 
                     ? "Loading..." 
-                    : hasPdfMaterial 
-                      ? "View PDF"
-                      : "Not available"}
+                    : courseDocs.length > 1
+                      ? `${courseDocs.length} PDFs`
+                      : hasPdfMaterial
+                        ? "View PDF"
+                        : "Not available"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -976,6 +1031,59 @@ export default function Courses() {
         )}
 
         {selectedCourse && (
+          <Modal
+            visible={pdfPickerVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setPdfPickerVisible(false)}
+          >
+            <TouchableOpacity
+              style={pdfPickerStyles.overlay}
+              activeOpacity={1}
+              onPress={() => setPdfPickerVisible(false)}
+            >
+              <TouchableOpacity activeOpacity={1} style={pdfPickerStyles.sheet}>
+                <Text style={pdfPickerStyles.heading}>
+                  {isStudent ? "Course Materials" : "Teaching Materials"}
+                </Text>
+                <ScrollView style={{ maxHeight: 420 }}>
+                  {visibleDocuments(selectedCourse, isStudent).map((doc) => (
+                    <TouchableOpacity
+                      key={doc.id}
+                      style={pdfPickerStyles.row}
+                      onPress={() => openCourseDocument(selectedCourse, doc)}
+                      disabled={openingDocumentId !== null}
+                      accessibilityLabel={`Open ${doc.title}`}
+                    >
+                      {openingDocumentId === doc.id ? (
+                        <ActivityIndicator size="small" color={themes.vegasGold} />
+                      ) : (
+                        <FontAwesome name="file-pdf-o" size={18} color={themes.vegasGold} />
+                      )}
+                      <View style={{ flex: 1 }}>
+                        <Text style={pdfPickerStyles.title} numberOfLines={2}>
+                          {doc.title}
+                        </Text>
+                        {!isStudent && !doc.is_public && (
+                          <Text style={pdfPickerStyles.sub}>Instructors and admins only</Text>
+                        )}
+                      </View>
+                      <FontAwesome name="chevron-right" size={12} color={themes.white} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <TouchableOpacity
+                  style={pdfPickerStyles.close}
+                  onPress={() => setPdfPickerVisible(false)}
+                >
+                  <Text style={pdfPickerStyles.closeText}>Close</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        )}
+
+        {selectedCourse && (
           <VideoListModal
             visible={videoListVisible}
             course={selectedCourse}
@@ -988,3 +1096,53 @@ export default function Courses() {
     </View>
   );
 }
+
+const pdfPickerStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 20,
+  },
+  sheet: {
+    backgroundColor: themes.black,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  heading: {
+    color: themes.white,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(255,255,255,0.15)",
+  },
+  title: {
+    color: themes.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  sub: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  close: {
+    marginTop: 12,
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  closeText: {
+    color: themes.vegasGold,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});

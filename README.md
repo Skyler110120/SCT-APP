@@ -35,6 +35,34 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Over-the-air updates (EAS Update)
+
+Small JavaScript/asset fixes can ship without an App Store or Play Store review.
+Installed apps check for an update each time they launch and switch to it on
+the next launch.
+
+```bash
+npm run update:production -- --message "Fix course list crash"
+```
+
+Rules:
+
+- **JS-only changes only.** Anything that adds or upgrades a native module,
+  changes permissions, icons, splash screen, `app.json` native settings or the
+  `ios/` project needs a new store build (`eas build --profile production`).
+- **Runtime version.** An update only reaches builds with the same runtime
+  version (currently `1.0.1`). When a release changes native code, bump the app
+  version and runtime version together in `app.json`,
+  `ios/SCTTraining/Supporting/Expo.plist` (`EXUpdatesRuntimeVersion`) and
+  `MARKETING_VERSION` in the Xcode project. `src/__tests__/config/updatesConfig.test.ts`
+  fails if they drift apart.
+- **Channels.** Store builds listen on `production`, internal builds on
+  `preview`. Try an update on `preview` first with `npm run update:preview`.
+- **Rollback.** `eas update:rollback` or republish a previous update from the
+  EAS dashboard.
+- Builds made before updates were enabled (1.0.1 build and earlier) cannot
+  receive updates; the first build after this change is the first one that can.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:

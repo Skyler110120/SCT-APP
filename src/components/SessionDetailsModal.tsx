@@ -18,8 +18,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { CHECK_IN_OPENS_MINUTES_BEFORE } from "@/src/utils/checkInWindow";
 
-const CHECK_IN_OPENS_MINUTES_BEFORE = 15;
 
 interface SessionDetailsModalProps {
   visible: boolean;
