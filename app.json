@@ -2,8 +2,8 @@
   "expo": {
     "name": "SCT Training",
     "slug": "SCT-App",
-    "version": "1.0.1",
-    "runtimeVersion": "1.0.1",
+    "version": "1.0.2",
+    "runtimeVersion": "1.0.2",
     "updates": {
       "url": "https://u.expo.dev/36a15265-6916-4629-81eb-b52b554fa2f4",
       "checkAutomatically": "ON_LOAD",
@@ -25,6 +25,7 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "package": "com.everydaytechllc.sct",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#000000"
